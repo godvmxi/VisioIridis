@@ -148,6 +148,7 @@ class AsrController extends Notifier<AsrEngineState> {
       lang: TagFormatter.normalize(result.lang),
       emotionTag: TagFormatter.normalize(result.emotion),
       eventTag: TagFormatter.normalize(result.event),
+      audioInput: state.audioInput,
     );
     // 既无文字又无需上屏的事件（如纯 BGM），直接丢弃。
     final keep = item.displayText(_l10n.eventName).isNotEmpty;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../asr/asr_engine.dart';
 import '../../l10n/l10n.dart';
 import '../../models/subtitle_item.dart';
 import '../../state/asr_controller.dart';
@@ -148,15 +149,21 @@ class _HistoryEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = AppPalette.of(context);
+    final icon = item.audioInput == AudioInput.systemAudio
+        ? Icons.volume_up_rounded
+        : Icons.mic_rounded;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Text.rich(
         TextSpan(
           style: TextStyle(fontSize: fontSize, height: 1.5, fontWeight: weight),
           children: [
-            TextSpan(
-              text: '${item.formattedTime} ',
-              style: TextStyle(color: palette.timestamp),
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Icon(icon, size: fontSize * 0.85, color: palette.timestamp),
+              ),
             ),
             TextSpan(
               text: item.displayText(AppLocalizations.of(context).eventName),

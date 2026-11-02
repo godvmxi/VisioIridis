@@ -1,3 +1,4 @@
+import '../asr/asr_engine.dart';
 import '../asr/tag_formatter.dart';
 
 /// 一条已定稿的字幕（PRD 6.2）。
@@ -9,6 +10,7 @@ class SubtitleItem {
     this.lang,
     this.emotionTag,
     this.eventTag,
+    this.audioInput = AudioInput.microphone,
   });
 
   final String id;
@@ -24,8 +26,8 @@ class SubtitleItem {
   /// 音频事件："Laughter" / "Applause" / "Cry" 等
   final String? eventTag;
 
-  String get formattedTime =>
-      "[${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}]";
+  /// 录制时的音频来源。
+  final AudioInput audioInput;
 
   /// 上屏文本：事件标签（如 😄 [笑声]）置于句首；[eventName] 给出事件名称。
   String displayText(String? Function(String event) eventName) {
