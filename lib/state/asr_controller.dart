@@ -4,14 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../asr/asr_engine.dart';
 import '../asr/asr_language.dart';
-import '../asr/mock_asr_engine.dart';
+import '../asr/prepared_model.dart';
+import '../asr/sherpa_asr_engine.dart';
 import '../asr/tag_formatter.dart';
 import '../models/subtitle_item.dart';
 import 'asr_state.dart';
 
-/// 当前使用的识别引擎。接入 sherpa-onnx 后替换为真实实现。
+/// 当前使用的识别引擎。
 final asrEngineProvider = Provider<AsrEngine>((ref) {
-  final engine = MockAsrEngine();
+  final engine = SherpaAsrEngine();
   ref.onDispose(engine.dispose);
   return engine;
 });
@@ -31,16 +32,25 @@ class AsrController extends Notifier<AsrEngineState> {
     return const AsrEngineState();
   }
 
-  Future<void> toggleListening() async {
-    if (state.isListening) {
-      await _engine.stop();
+  /// 加载 [model] 并开始拾音。失败时记录错误，不抛出。
+  Future<void> startListening(PreparedModel model) async {
+    if (state.isListening || state.isLoading) return;
+    state = state.copyWith(isLoading: true);
+    try {
+      await _engine.start(model, state.enabledLanguages);
       if (!ref.mounted) return;
-      state = state.copyWith(isListening: false, currentPendingText: '');
-    } else {
-      await _engine.start(state.enabledLanguages);
+      state = state.copyWith(isListening: true, isLoading: false);
+    } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isListening: true);
+      state = state.withError('$e');
     }
+  }
+
+  Future<void> stopListening() async {
+    if (!state.isListening) return;
+    await _engine.stop();
+    if (!ref.mounted) return;
+    state = state.copyWith(isListening: false, currentPendingText: '');
   }
 
   /// 切换某语言的勾选。若会导致三者全部取消则拒绝并返回 false（PRD 4.1 防空保护）。
@@ -71,6 +81,8 @@ class AsrController extends Notifier<AsrEngineState> {
         state = state.copyWith(currentPendingText: TagFormatter.cleanText(text));
       case AsrFinal():
         _commit(event);
+      case AsrError(:final message):
+        state = state.withError(message);
     }
   }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'asr_engine.dart';
 import 'asr_language.dart';
+import 'prepared_model.dart';
 
 /// 模拟引擎：逐字吐出示例句子作为临时结果，句末发出定稿结果。
 /// 仅用于在接入 sherpa-onnx 之前演示 UI。
@@ -31,7 +32,7 @@ class MockAsrEngine implements AsrEngine {
   Stream<AsrEvent> get events => _controller.stream;
 
   @override
-  Future<void> start(Set<AsrLanguage> languages) async {
+  Future<void> start(PreparedModel model, Set<AsrLanguage> languages) async {
     _timer?.cancel();
     _token = 0;
     _timer = Timer.periodic(tokenInterval, (_) => _tick());

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/subtitle_item.dart';
 import '../../state/asr_controller.dart';
+import '../../state/settings.dart';
 import '../app_colors.dart';
 
 /// 历史记录区：自动跟随 + 手动浏览锁定 + 回到最新（PRD 4.2）。
@@ -69,6 +70,8 @@ class _HistoryListState extends ConsumerState<HistoryList> {
   @override
   Widget build(BuildContext context) {
     final history = ref.watch(asrControllerProvider.select((s) => s.history));
+    final fontSize =
+        ref.watch(settingsProvider.select((s) => s.fontScale.history));
 
     ref.listen(asrControllerProvider.select((s) => s.history.length),
         (previous, next) {
@@ -95,7 +98,7 @@ class _HistoryListState extends ConsumerState<HistoryList> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: history.length,
             itemBuilder: (context, index) =>
-                _HistoryEntry(item: history[index]),
+                _HistoryEntry(item: history[index], fontSize: fontSize),
           ),
         ),
         Positioned(
@@ -124,25 +127,27 @@ class _HistoryListState extends ConsumerState<HistoryList> {
 }
 
 class _HistoryEntry extends StatelessWidget {
-  const _HistoryEntry({required this.item});
+  const _HistoryEntry({required this.item, required this.fontSize});
 
   final SubtitleItem item;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
+    final palette = AppPalette.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Text.rich(
         TextSpan(
-          style: const TextStyle(fontSize: 19, height: 1.5),
+          style: TextStyle(fontSize: fontSize, height: 1.5),
           children: [
             TextSpan(
               text: '${item.formattedTime} ',
-              style: const TextStyle(color: AppColors.timestamp),
+              style: TextStyle(color: palette.timestamp),
             ),
             TextSpan(
               text: item.displayText,
-              style: const TextStyle(color: AppColors.historyText),
+              style: TextStyle(color: palette.historyText),
             ),
           ],
         ),

@@ -40,18 +40,41 @@ void main() {
     expect(state.enabledLanguages, {AsrLanguage.english});
   });
 
-  test('toggleListening starts and stops the engine', () async {
-    await controller().toggleListening();
+  test('startListening and stopListening drive the engine', () async {
+    final starting = controller().startListening(testPreparedModel);
+    expect(state.isLoading, isTrue);
+    await starting;
     expect(state.isListening, isTrue);
+    expect(state.isLoading, isFalse);
     expect(engine.started, isTrue);
 
-    await controller().toggleListening();
+    await controller().stopListening();
     expect(state.isListening, isFalse);
     expect(engine.started, isFalse);
   });
 
+  test('start failure is reported as an error', () async {
+    engine.startError = Exception('需要麦克风权限才能识别');
+    await controller().startListening(testPreparedModel);
+    expect(state.isListening, isFalse);
+    expect(state.isLoading, isFalse);
+    expect(state.errorId, 1);
+    expect(state.errorMessage, contains('麦克风'));
+  });
+
+  test('runtime engine error stops listening and keeps history', () async {
+    await controller().startListening(testPreparedModel);
+    engine.emit(const AsrFinal('第一句'));
+    engine.emit(const AsrPartial('第二'));
+    engine.emit(const AsrError('录音中断'));
+    expect(state.isListening, isFalse);
+    expect(state.currentPendingText, '');
+    expect(state.history.single.text, '第一句');
+    expect(state.errorMessage, '录音中断');
+  });
+
   test('language change while listening is forwarded to the engine', () async {
-    await controller().toggleListening();
+    await controller().startListening(testPreparedModel);
     controller().toggleLanguage(AsrLanguage.cantonese);
     expect(engine.lastLanguages, {AsrLanguage.mandarin, AsrLanguage.english});
   });

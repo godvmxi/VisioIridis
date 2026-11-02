@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 下载模型配置与模型文件 (PRD 4.5) -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- 拾音 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- 麦克风类型前台服务保活 (PRD 5.4) -->

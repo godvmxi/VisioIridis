@@ -13,9 +13,19 @@ class AsrEngineState {
     this.currentPendingText = '',
     this.pendingSegment = 0,
     this.history = const [],
+    this.isLoading = false,
+    this.errorMessage,
+    this.errorId = 0,
   });
 
   final bool isListening;
+
+  /// 正在加载模型、启动录音。
+  final bool isLoading;
+
+  /// 最近一次错误；[errorId] 每次出错加 1，界面据此弹出提示。
+  final String? errorMessage;
+  final int errorId;
   final Set<AsrLanguage> enabledLanguages;
 
   /// 最新卡片上的临时结果。
@@ -35,6 +45,7 @@ class AsrEngineState {
     String? currentPendingText,
     int? pendingSegment,
     List<SubtitleItem>? history,
+    bool? isLoading,
   }) {
     return AsrEngineState(
       isListening: isListening ?? this.isListening,
@@ -42,6 +53,17 @@ class AsrEngineState {
       currentPendingText: currentPendingText ?? this.currentPendingText,
       pendingSegment: pendingSegment ?? this.pendingSegment,
       history: history ?? this.history,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: errorMessage,
+      errorId: errorId,
     );
   }
+
+  AsrEngineState withError(String message) => AsrEngineState(
+        enabledLanguages: enabledLanguages,
+        pendingSegment: pendingSegment + 1,
+        history: history,
+        errorMessage: message,
+        errorId: errorId + 1,
+      );
 }
