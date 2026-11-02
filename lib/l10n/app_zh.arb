@@ -1,0 +1,263 @@
+{
+  "@@locale": "zh",
+  "appTitle": "伊利斯之视",
+  "settings": "设置",
+  "interfaceLanguage": "界面语言",
+  "followSystem": "跟随系统",
+  "fontSize": "字体大小",
+  "fontStandard": "标准",
+  "fontLarge": "大",
+  "fontHuge": "特大",
+  "fontExtraHuge": "超大",
+  "fontGiant": "巨大",
+  "bold": "粗体",
+  "boldHint": "历史记录、浮动字幕等所有字幕文字使用粗体",
+  "colorMode": "配色模式",
+  "colorYellowOnBlack": "黄字黑底",
+  "colorWhiteOnBlack": "白字黑底",
+  "colorBlackOnWhite": "黑字白底",
+  "colorCustom": "自定义",
+  "backgroundColor": "背景色",
+  "textColor": "文字颜色",
+  "backgroundSwatch": "背景颜色 {index}",
+  "@backgroundSwatch": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "textSwatch": "文字颜色 {index}",
+  "@textSwatch": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "lowContrast": "对比度较低（{ratio}:1），字幕可能不易看清，建议不低于 4.5:1",
+  "@lowContrast": {
+    "placeholders": {
+      "ratio": {
+        "type": "String"
+      }
+    }
+  },
+  "floatingWindow": "浮动窗",
+  "showFloatingWindow": "显示浮动窗",
+  "overlayPermissionTitle": "需要悬浮窗权限",
+  "overlayPermissionBody": "浮动字幕需要“显示在其他应用上层”权限。\n接下来请在系统设置中找到本应用并允许，然后返回。",
+  "overlayPermissionDenied": "未获得悬浮窗权限，浮动窗未开启",
+  "goEnable": "去开启",
+  "cancel": "取消",
+  "done": "完成",
+  "recognitionModel": "识别模型",
+  "recognitionModelHint": "为每种语言指定使用的模型，打分为 10 分制；“自动”选择打分最高的模型。修改后点击“开始识别”时生效，需要时会提示下载新模型。",
+  "modelConfigLoadFailed": "模型配置加载失败：{error}",
+  "@modelConfigLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "previewHistory": "你好，请问今天几点开会？",
+  "previewFocus": "下午三点见",
+  "swatchSample": "字",
+  "language": "语言",
+  "chooseModelFor": "为“{language}”选择模型",
+  "@chooseModelFor": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "auto": "自动",
+  "noModelAvailable": "没有可用模型",
+  "autoPicks": "选打分最高的模型：{model}  {score} 分",
+  "@autoPicks": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      },
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "modelScoreTitle": "{model}    {language} {score} 分",
+  "@modelScoreTitle": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      },
+      "language": {
+        "type": "String"
+      },
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "supports": "支持：{scores}",
+  "@supports": {
+    "placeholders": {
+      "scores": {
+        "type": "String"
+      }
+    }
+  },
+  "startRecognition": "开始识别",
+  "stopRecognition": "停止识别",
+  "loadingModel": "正在加载识别模型...",
+  "waitingSpeech": "等待语音输入...",
+  "preparingModel": "正在准备模型...",
+  "restoringModel": "正在从保存目录恢复模型...",
+  "downloadingModel": "正在下载 {model}",
+  "@downloadingModel": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyingModel": "正在校验模型文件...",
+  "savingModel": "正在保存模型...",
+  "backToLatest": "回到最新",
+  "soundSource": "声音来源",
+  "microphone": "麦克风",
+  "speaker": "喇叭",
+  "recognitionLanguage": "识别语言",
+  "clearScreen": "清屏",
+  "currentModel": "当前模型：{model}",
+  "@currentModel": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
+  },
+  "keepOneLanguage": "至少保留一种识别语言",
+  "alsoAutoDetect": "还可自动识别",
+  "alsoAutoDetectHint": "勾选多种语言（自动识别）时可识别这些语言。",
+  "listSeparator": "、",
+  "clearConfirm": "确认清空所有历史字幕记录？",
+  "clearConfirmButton": "确认清空",
+  "noModelForLanguages": "当前语言组合没有可用的识别模型",
+  "modelSwitched": "识别模型已切换为「{model}」",
+  "@modelSwitched": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
+  },
+  "modelPrepFailed": "模型准备失败：{error}",
+  "@modelPrepFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "modelChangedTitle": "识别模型已变更",
+  "modelChangedFrom": "识别模型由「{from}」变更为「{to}」。",
+  "@modelChangedFrom": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadModelTitle": "下载识别模型",
+  "downloadNeededWithVad": "需要下载「{model}」及语音检测模型，共 {size}。",
+  "@downloadNeededWithVad": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadNeeded": "需要下载「{model}」，共 {size}。",
+  "@downloadNeeded": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "wifiSuggestion": "建议连接 Wi-Fi 后再下载。",
+  "useModelFirst": "先用「{model}」",
+  "@useModelFirst": {
+    "placeholders": {
+      "model": {
+        "type": "String"
+      }
+    }
+  },
+  "download": "下载",
+  "speakerNotice": "因系统限制，喇叭模式只能识别播放器等应用播放的声音，无法识别电话和语音/视频通话的声音",
+  "micPermissionDenied": "需要麦克风权限才能识别",
+  "recordingInterrupted": "录音中断：{error}",
+  "@recordingInterrupted": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "speakerDenied": "未获得录制喇叭声音的授权，已切回麦克风",
+  "speakerEnded": "喇叭声音录制已结束，已切回麦克风",
+  "switchBackFailed": "切回麦克风失败：{error}",
+  "@switchBackFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "modelLoadFailed": "模型加载失败：{error}",
+  "@modelLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "recognitionFailed": "识别出错：{error}",
+  "@recognitionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "eventLaughter": "笑声",
+  "eventApplause": "掌声",
+  "eventCry": "哭泣声",
+  "langZh": "普通话",
+  "langYue": "粤语",
+  "langEn": "英语",
+  "langHenan": "河南话",
+  "langJa": "日语",
+  "langKo": "韩语",
+  "overlayBack": "返回",
+  "overlayExit": "退出",
+  "overlayConfirmExit": "确定退出？",
+  "notificationChannel": "实时字幕",
+  "notificationChannelDescription": "识别进行中时显示",
+  "notificationTitle": "实时字幕识别中",
+  "notificationText": "点击返回 App",
+  "systemAudioNotificationChannel": "系统声音字幕",
+  "systemAudioNotificationTitle": "正在识别系统播放的声音"
+}

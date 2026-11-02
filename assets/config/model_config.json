@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 2,
+  "configVersion": 2,
+  "remoteConfigUrl": "https://example.com/visio-iridis/model_config.json",
+  "languages": [
+    { "id": "zh",    "name": "普通话", "defaultEnabled": true,  "order": 1 },
+    { "id": "yue",   "name": "粤语",   "defaultEnabled": true,  "order": 2 },
+    { "id": "en",    "name": "英语",   "defaultEnabled": true,  "order": 3 },
+    { "id": "henan", "name": "河南话", "defaultEnabled": false, "order": 4 },
+    { "id": "ja",    "name": "日语",   "defaultEnabled": false, "order": 5 },
+    { "id": "ko",    "name": "韩语",   "defaultEnabled": false, "order": 6 }
+  ],
+  "vad": {
+    "id": "silero-vad",
+    "version": "1",
+    "files": [
+      {
+        "name": "silero_vad.onnx",
+        "size": 643854,
+        "sha256": "9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6",
+        "urls": [
+          "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx"
+        ]
+      }
+    ]
+  },
+  "asrModels": [
+    {
+      "id": "sense-voice-small-int8",
+      "name": "SenseVoice Small",
+      "type": "sense_voice",
+      "version": "2024-07-17",
+      "license": "FunASR Model License",
+      "files": [
+        {
+          "name": "model.int8.onnx",
+          "size": 239233841,
+          "sha256": "c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/model.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/model.int8.onnx"
+          ]
+        },
+        {
+          "name": "tokens.txt",
+          "size": 315894,
+          "sha256": "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/tokens.txt",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/tokens.txt"
+          ]
+        }
+      ],
+      "languages": [
+        { "lang": "zh",  "score": 10, "decodeParam": "zh" },
+        { "lang": "yue", "score": 10, "decodeParam": "yue" },
+        { "lang": "en",  "score": 9,  "decodeParam": "en" },
+        { "lang": "ja",  "score": 8,  "decodeParam": "ja" },
+        { "lang": "ko",  "score": 8,  "decodeParam": "ko" }
+      ],
+      "autoDecodeParam": "auto"
+    },
+    {
+      "id": "telespeech-ctc-int8",
+      "name": "TeleSpeech",
+      "type": "telespeech_ctc",
+      "version": "2024-06-04",
+      "license": "TeleSpeech 模型社区许可协议",
+      "files": [
+        {
+          "name": "model.int8.onnx",
+          "size": 340990949,
+          "sha256": "2bf52b42c971696dc02a2db94c52c8fc75fab321ac4cf10b5a2d6863a73a33b3",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-telespeech-ctc-int8-zh-2024-06-04/resolve/main/model.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-telespeech-ctc-int8-zh-2024-06-04/resolve/main/model.int8.onnx"
+          ]
+        },
+        {
+          "name": "tokens.txt",
+          "size": 66642,
+          "sha256": "f1dea25fe751bc3eebd27b2ff3b86298f9598686a090701990dabddde0eba508",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-telespeech-ctc-int8-zh-2024-06-04/resolve/main/tokens.txt",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-telespeech-ctc-int8-zh-2024-06-04/resolve/main/tokens.txt"
+          ]
+        }
+      ],
+      "languages": [
+        { "lang": "zh",    "score": 7, "decodeParam": "" },
+        { "lang": "henan", "score": 9, "decodeParam": "" }
+      ],
+      "autoDecodeParam": ""
+    }
+  ]
+}
