@@ -17,6 +17,7 @@ class FloatingCaptionStyle {
     required this.historySize,
     this.historyBold = false,
     this.heightFraction = 1 / 3,
+    this.labels = const FloatingCaptionLabels(),
   });
 
   final Color background;
@@ -26,6 +27,26 @@ class FloatingCaptionStyle {
   final double historySize;
   final bool historyBold;
   final double heightFraction;
+  final FloatingCaptionLabels labels;
+}
+
+/// 浮动字幕窗口上的按钮文字，随界面语言变化。
+class FloatingCaptionLabels {
+  const FloatingCaptionLabels({
+    this.microphone = '麦克风',
+    this.speaker = '喇叭',
+    this.back = '返回',
+    this.exit = '退出',
+    this.confirmExit = '确定退出？',
+    this.cancel = '取消',
+  });
+
+  final String microphone;
+  final String speaker;
+  final String back;
+  final String exit;
+  final String confirmExit;
+  final String cancel;
 }
 
 /// 浮动字幕窗口相关的平台能力。
@@ -60,8 +81,9 @@ abstract class BackgroundPlatform {
   Future<void> hideOverlay();
 }
 
-final backgroundPlatformProvider =
-    Provider<BackgroundPlatform>((ref) => AndroidBackgroundPlatform());
+final backgroundPlatformProvider = Provider<BackgroundPlatform>(
+  (ref) => AndroidBackgroundPlatform(),
+);
 
 class AndroidBackgroundPlatform implements BackgroundPlatform {
   AndroidBackgroundPlatform() {
@@ -111,6 +133,12 @@ class AndroidBackgroundPlatform implements BackgroundPlatform {
         'focusSize': style.focusSize,
         'historySize': style.historySize,
         'historyBold': style.historyBold,
+        'microphone': style.labels.microphone,
+        'speaker': style.labels.speaker,
+        'back': style.labels.back,
+        'exit': style.labels.exit,
+        'confirmExit': style.labels.confirmExit,
+        'cancel': style.labels.cancel,
       });
 
   @override
@@ -119,13 +147,12 @@ class AndroidBackgroundPlatform implements BackgroundPlatform {
     required bool partial,
     required List<String> history,
     required bool systemAudio,
-  }) =>
-      _channel.invokeMethod<void>('update', {
-        'current': current,
-        'partial': partial,
-        'history': history,
-        'systemAudio': systemAudio,
-      });
+  }) => _channel.invokeMethod<void>('update', {
+    'current': current,
+    'partial': partial,
+    'history': history,
+    'systemAudio': systemAudio,
+  });
 
   @override
   Future<void> hideOverlay() => _channel.invokeMethod<void>('hide');
@@ -134,9 +161,11 @@ class AndroidBackgroundPlatform implements BackgroundPlatform {
   static Future<void> _waitForResume() {
     final done = Completer<void>();
     late final AppLifecycleListener listener;
-    listener = AppLifecycleListener(onResume: () {
-      if (!done.isCompleted) done.complete();
-    });
+    listener = AppLifecycleListener(
+      onResume: () {
+        if (!done.isCompleted) done.complete();
+      },
+    );
     return done.future
         .timeout(const Duration(minutes: 5), onTimeout: () {})
         .whenComplete(listener.dispose);

@@ -32,19 +32,44 @@ class AsrFinal extends AsrEvent {
 /// 识别的声音来源（PRD 4.8）。
 enum AudioInput { microphone, systemAudio }
 
+/// 引擎给出的提示或错误的种类，由界面按当前界面语言转成文字。
+enum AsrIssue {
+  micPermissionDenied,
+  recordingInterrupted,
+  speakerDenied,
+  speakerEnded,
+  switchBackFailed,
+  modelLoadFailed,
+  recognitionFailed,
+}
+
 /// 声音来源被引擎自动切换（如系统声音录制被用户结束后回到麦克风）。
 class AsrInputChanged extends AsrEvent {
   const AsrInputChanged(this.input, this.reason);
 
   final AudioInput input;
-  final String reason;
+  final AsrIssue reason;
 }
 
 /// 识别过程中的错误（如麦克风被占用），收到后识别已停止。
 class AsrError extends AsrEvent {
-  const AsrError(this.message);
+  const AsrError(this.issue, [this.detail = '']);
 
-  final String message;
+  final AsrIssue issue;
+
+  /// 系统或模型给出的原始错误信息，不翻译。
+  final String detail;
+}
+
+/// 开始识别或切换声音来源失败。
+class AsrStartException implements Exception {
+  const AsrStartException(this.issue, [this.detail = '']);
+
+  final AsrIssue issue;
+  final String detail;
+
+  @override
+  String toString() => detail.isEmpty ? issue.name : '${issue.name}: $detail';
 }
 
 /// 识别引擎接口。真实实现为 SherpaAsrEngine（VAD + SenseVoice），

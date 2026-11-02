@@ -27,9 +27,9 @@ class SubtitleItem {
   String get formattedTime =>
       "[${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}]";
 
-  /// 上屏文本：事件标签（如 😄 [笑声]）置于句首。
-  String get displayText {
-    final label = TagFormatter.eventLabel(eventTag);
+  /// 上屏文本：事件标签（如 😄 [笑声]）置于句首；[eventName] 给出事件名称。
+  String displayText(String? Function(String event) eventName) {
+    final label = TagFormatter.eventLabel(eventTag, eventName);
     if (label == null) return text;
     return text.isEmpty ? label : '$label $text';
   }

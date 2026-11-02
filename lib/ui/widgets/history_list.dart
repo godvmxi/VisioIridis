@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/l10n.dart';
 import '../../models/subtitle_item.dart';
 import '../../state/asr_controller.dart';
 import '../../state/settings.dart';
@@ -70,12 +71,15 @@ class _HistoryListState extends ConsumerState<HistoryList> {
   @override
   Widget build(BuildContext context) {
     final history = ref.watch(asrControllerProvider.select((s) => s.history));
-    final fontSize =
-        ref.watch(settingsProvider.select((s) => s.fontScale.size));
+    final fontSize = ref.watch(
+      settingsProvider.select((s) => s.fontScale.size),
+    );
     final weight = ref.watch(settingsProvider.select((s) => s.textWeight));
 
-    ref.listen(asrControllerProvider.select((s) => s.history.length),
-        (previous, next) {
+    ref.listen(asrControllerProvider.select((s) => s.history.length), (
+      previous,
+      next,
+    ) {
       if (next == 0) {
         setState(() {
           _autoFollow = true;
@@ -98,9 +102,11 @@ class _HistoryListState extends ConsumerState<HistoryList> {
             controller: _scroll,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: history.length,
-            itemBuilder: (context, index) =>
-                _HistoryEntry(
-                    item: history[index], fontSize: fontSize, weight: weight),
+            itemBuilder: (context, index) => _HistoryEntry(
+              item: history[index],
+              fontSize: fontSize,
+              weight: weight,
+            ),
           ),
         ),
         Positioned(
@@ -117,7 +123,7 @@ class _HistoryListState extends ConsumerState<HistoryList> {
                 child: FilledButton.icon(
                   onPressed: _resumeFollow,
                   icon: const Icon(Icons.arrow_downward_rounded),
-                  label: const Text('回到最新'),
+                  label: Text(AppLocalizations.of(context).backToLatest),
                 ),
               ),
             ),
@@ -153,7 +159,7 @@ class _HistoryEntry extends StatelessWidget {
               style: TextStyle(color: palette.timestamp),
             ),
             TextSpan(
-              text: item.displayText,
+              text: item.displayText(AppLocalizations.of(context).eventName),
               style: TextStyle(color: palette.historyText),
             ),
           ],

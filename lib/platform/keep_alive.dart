@@ -7,14 +7,28 @@ class KeepAlive {
 
   static bool _initialized = false;
 
+  /// 通知文字，由 App 按界面语言设置。
+  static ({
+    String channel,
+    String channelDescription,
+    String title,
+    String text,
+  })
+  texts = (
+    channel: '实时字幕',
+    channelDescription: '识别进行中时显示',
+    title: '实时字幕识别中',
+    text: '点击返回 App',
+  );
+
   static Future<void> start() async {
     try {
       if (!_initialized) {
         FlutterForegroundTask.init(
           androidNotificationOptions: AndroidNotificationOptions(
             channelId: 'asr_service',
-            channelName: '实时字幕',
-            channelDescription: '识别进行中时显示',
+            channelName: texts.channel,
+            channelDescription: texts.channelDescription,
             onlyAlertOnce: true,
           ),
           iosNotificationOptions: const IOSNotificationOptions(),
@@ -37,8 +51,8 @@ class KeepAlive {
       if (await FlutterForegroundTask.isRunningService) return;
       await FlutterForegroundTask.startService(
         serviceTypes: [ForegroundServiceTypes.microphone],
-        notificationTitle: '实时字幕识别中',
-        notificationText: '点击返回 App',
+        notificationTitle: texts.title,
+        notificationText: texts.text,
       );
     } catch (_) {
       // 前台服务只用于后台保活，失败时继续前台识别。

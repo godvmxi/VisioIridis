@@ -7,29 +7,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 字号档位（PRD 4.6）：每档一个字号，最新卡片、历史记录与浮动窗口统一使用。
 /// 枚举名会被持久化，调整档位时保留已有名称。
 enum FontScale {
-  standard('标准', 24),
-  large('大', 30),
-  huge('特大', 36),
-  extraHuge('超大', 44),
-  giant('巨大', 52);
+  standard(24),
+  large(30),
+  huge(36),
+  extraHuge(44),
+  giant(52);
 
-  const FontScale(this.label, this.size);
+  const FontScale(this.size);
 
-  final String label;
   final double size;
 }
 
 /// 配色模式（PRD 4.6）。
-enum ColorMode {
-  yellowOnBlack('黄字黑底'),
-  whiteOnBlack('白字黑底'),
-  blackOnWhite('黑字白底'),
-  custom('自定义');
+enum ColorMode { yellowOnBlack, whiteOnBlack, blackOnWhite, custom }
 
-  const ColorMode(this.label);
-
-  final String label;
-}
+/// 界面语言（PRD 4.6）。[system] 跟随系统语言。
+enum AppLanguage { system, zhHans, zhHant, en }
 
 class AppSettings {
   const AppSettings({
@@ -40,6 +33,7 @@ class AppSettings {
     this.boldText = false,
     this.customBackground = const Color(0xFF0D1B2A),
     this.customText = const Color(0xFF00E5FF),
+    this.appLanguage = AppLanguage.system,
   });
 
   final FontScale fontScale;
@@ -58,6 +52,8 @@ class AppSettings {
   final Color customBackground;
   final Color customText;
 
+  final AppLanguage appLanguage;
+
   /// 历史等非最新卡片文字的字重。
   FontWeight get textWeight => boldText ? FontWeight.bold : FontWeight.normal;
 
@@ -69,6 +65,7 @@ class AppSettings {
     bool? boldText,
     Color? customBackground,
     Color? customText,
+    AppLanguage? appLanguage,
   }) {
     return AppSettings(
       fontScale: fontScale ?? this.fontScale,
@@ -78,6 +75,7 @@ class AppSettings {
       boldText: boldText ?? this.boldText,
       customBackground: customBackground ?? this.customBackground,
       customText: customText ?? this.customText,
+      appLanguage: appLanguage ?? this.appLanguage,
     );
   }
 }
@@ -87,8 +85,9 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('sharedPreferencesProvider 未初始化'),
 );
 
-final settingsProvider =
-    NotifierProvider<SettingsController, AppSettings>(SettingsController.new);
+final settingsProvider = NotifierProvider<SettingsController, AppSettings>(
+  SettingsController.new,
+);
 
 class SettingsController extends Notifier<AppSettings> {
   static const _fontKey = 'settings.fontScale';
@@ -98,6 +97,7 @@ class SettingsController extends Notifier<AppSettings> {
   static const _boldKey = 'settings.boldText';
   static const _customBackgroundKey = 'settings.customBackground';
   static const _customTextKey = 'settings.customText';
+  static const _appLanguageKey = 'settings.appLanguage';
 
   SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 
@@ -105,18 +105,30 @@ class SettingsController extends Notifier<AppSettings> {
   AppSettings build() {
     final prefs = ref.watch(sharedPreferencesProvider);
     return AppSettings(
-      fontScale: _byName(FontScale.values, prefs.getString(_fontKey)) ??
+      fontScale:
+          _byName(FontScale.values, prefs.getString(_fontKey)) ??
           FontScale.large,
-      colorMode: _byName(ColorMode.values, prefs.getString(_colorKey)) ??
+      colorMode:
+          _byName(ColorMode.values, prefs.getString(_colorKey)) ??
           ColorMode.yellowOnBlack,
       modelPreferences: _decodeMap(prefs.getString(_modelsKey)),
       floatingCaption: prefs.getBool(_floatingKey) ?? false,
       boldText: prefs.getBool(_boldKey) ?? false,
-      customBackground: _color(prefs.getInt(_customBackgroundKey)) ??
+      customBackground:
+          _color(prefs.getInt(_customBackgroundKey)) ??
           const AppSettings().customBackground,
-      customText: _color(prefs.getInt(_customTextKey)) ??
+      customText:
+          _color(prefs.getInt(_customTextKey)) ??
           const AppSettings().customText,
+      appLanguage:
+          _byName(AppLanguage.values, prefs.getString(_appLanguageKey)) ??
+          AppLanguage.system,
     );
+  }
+
+  void setAppLanguage(AppLanguage value) {
+    state = state.copyWith(appLanguage: value);
+    _prefs.setString(_appLanguageKey, value.name);
   }
 
   void setCustomBackground(Color value) {

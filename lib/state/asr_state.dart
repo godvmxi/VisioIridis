@@ -68,22 +68,22 @@ class AsrEngineState {
 
   /// 提示一条消息，不改变识别状态。
   AsrEngineState withNotice(String message) => AsrEngineState(
-        isListening: isListening,
-        enabledLanguages: enabledLanguages,
-        currentPendingText: currentPendingText,
-        pendingSegment: pendingSegment,
-        history: history,
-        isLoading: isLoading,
-        errorMessage: message,
-        errorId: errorId + 1,
-        audioInput: audioInput,
-      );
+    isListening: isListening,
+    enabledLanguages: enabledLanguages,
+    currentPendingText: currentPendingText,
+    pendingSegment: pendingSegment,
+    history: history,
+    isLoading: isLoading,
+    errorMessage: message,
+    errorId: errorId + 1,
+    audioInput: audioInput,
+  );
 
   AsrEngineState withError(String message) => AsrEngineState(
-        enabledLanguages: enabledLanguages,
-        pendingSegment: pendingSegment + 1,
-        history: history,
-        errorMessage: message,
-        errorId: errorId + 1,
-      );
+    enabledLanguages: enabledLanguages,
+    pendingSegment: pendingSegment + 1,
+    history: history,
+    errorMessage: message,
+    errorId: errorId + 1,
+  );
 }

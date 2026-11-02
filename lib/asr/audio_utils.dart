@@ -7,9 +7,11 @@ class Pcm16Decoder {
 
   Float32List convert(Uint8List bytes) {
     final carry = _carry;
-    final input = carry == null ? bytes : (Uint8List(bytes.length + 1)
-      ..[0] = carry
-      ..setRange(1, bytes.length + 1, bytes));
+    final input = carry == null
+        ? bytes
+        : (Uint8List(bytes.length + 1)
+            ..[0] = carry
+            ..setRange(1, bytes.length + 1, bytes));
     final count = input.length ~/ 2;
     _carry = input.length.isOdd ? input.last : null;
 

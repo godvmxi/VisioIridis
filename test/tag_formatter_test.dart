@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seevoice/asr/asr_language.dart';
 import 'package:seevoice/asr/tag_formatter.dart';
+import 'package:seevoice/l10n/l10n.dart';
 
 void main() {
   group('TagFormatter', () {
@@ -12,19 +15,26 @@ void main() {
     });
 
     test('eventLabel maps known events case-insensitively', () {
-      expect(TagFormatter.eventLabel('Laughter'), '😄 [笑声]');
-      expect(TagFormatter.eventLabel('APPLAUSE'), '👏 [掌声]');
-      expect(TagFormatter.eventLabel('cry'), '😢 [哭泣声]');
-      expect(TagFormatter.eventLabel('Speech'), isNull);
-      expect(TagFormatter.eventLabel('BGM'), isNull);
-      expect(TagFormatter.eventLabel(null), isNull);
+      final zh = lookupAppLocalizations(const Locale('zh')).eventName;
+      expect(TagFormatter.eventLabel('Laughter', zh), '😄 [笑声]');
+      expect(TagFormatter.eventLabel('APPLAUSE', zh), '👏 [掌声]');
+      expect(TagFormatter.eventLabel('cry', zh), '😢 [哭泣声]');
+      expect(TagFormatter.eventLabel('Speech', zh), isNull);
+      expect(TagFormatter.eventLabel('BGM', zh), isNull);
+      expect(TagFormatter.eventLabel(null, zh), isNull);
+    });
+
+    test('eventLabel follows the interface language', () {
+      final en = lookupAppLocalizations(const Locale('en')).eventName;
+      final hant = lookupAppLocalizations(
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+      ).eventName;
+      expect(TagFormatter.eventLabel('Laughter', en), '😄 [laughter]');
+      expect(TagFormatter.eventLabel('Applause', hant), '👏 [掌聲]');
     });
 
     test('cleanText removes every tag', () {
-      expect(
-        TagFormatter.cleanText('<|zh|><|NEUTRAL|><|Speech|>你好'),
-        '你好',
-      );
+      expect(TagFormatter.cleanText('<|zh|><|NEUTRAL|><|Speech|>你好'), '你好');
     });
   });
 
@@ -36,8 +46,10 @@ void main() {
 
     test('two or three languages use auto', () {
       expect(
-        AsrLanguage.languageParamFor(
-            {AsrLanguage.mandarin, AsrLanguage.english}),
+        AsrLanguage.languageParamFor({
+          AsrLanguage.mandarin,
+          AsrLanguage.english,
+        }),
         'auto',
       );
       expect(AsrLanguage.languageParamFor(AsrLanguage.values.toSet()), 'auto');

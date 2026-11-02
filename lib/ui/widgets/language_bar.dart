@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../asr/asr_engine.dart';
 import '../../asr/asr_language.dart';
+import '../../l10n/l10n.dart';
 import '../../state/asr_controller.dart';
 import '../../state/current_model.dart';
 import '../../state/model_providers.dart';
@@ -25,13 +26,14 @@ class LanguageBar extends ConsumerWidget {
   }
 
   /// 主语言按钮的文字：第一个勾选的主语言，勾选多种时附上其余数量。
-  static String _summary(Set<AsrLanguage> enabled) {
+  static String _summary(AppLocalizations l10n, Set<AsrLanguage> enabled) {
     final ordered = [
       for (final l in AsrLanguage.values)
         if (enabled.contains(l)) l,
     ];
+    final first = l10n.languageName(ordered.first.code);
     final extra = ordered.length - 1;
-    return extra > 0 ? '${ordered.first.label} +$extra' : ordered.first.label;
+    return extra > 0 ? '$first +$extra' : first;
   }
 
   @override
@@ -43,6 +45,7 @@ class LanguageBar extends ConsumerWidget {
       asrControllerProvider.select((s) => s.audioInput),
     );
     final palette = AppPalette.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
@@ -56,16 +59,16 @@ class LanguageBar extends ConsumerWidget {
                 children: [
                   // 声音来源：麦克风或喇叭（系统播放的声音，PRD 4.8）。
                   Semantics(
-                    label: '声音来源',
+                    label: l10n.soundSource,
                     child: SegmentedButton<AudioInput>(
-                      segments: const [
+                      segments: [
                         ButtonSegment(
                           value: AudioInput.microphone,
-                          label: Text('麦克风'),
+                          label: Text(l10n.microphone),
                         ),
                         ButtonSegment(
                           value: AudioInput.systemAudio,
-                          label: Text('喇叭'),
+                          label: Text(l10n.speaker),
                         ),
                       ],
                       selected: {audioInput},
@@ -85,12 +88,12 @@ class LanguageBar extends ConsumerWidget {
                   const SizedBox(width: 8),
                   // 主语言：点击弹窗选择语言并查看当前模型支持的全部语言。
                   Semantics(
-                    label: '识别语言',
+                    label: l10n.recognitionLanguage,
                     child: ActionChip(
                       label: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(_summary(enabled)),
+                          Text(_summary(l10n, enabled)),
                           Icon(
                             Icons.arrow_drop_down_rounded,
                             color: palette.focusText,
@@ -112,14 +115,14 @@ class LanguageBar extends ConsumerWidget {
             ),
           ),
           IconButton(
-            tooltip: '清屏',
+            tooltip: l10n.clearScreen,
             iconSize: 28,
             color: palette.historyText,
             icon: const Icon(Icons.delete_outline_rounded),
             onPressed: () => _confirmClear(context, ref),
           ),
           IconButton(
-            tooltip: '设置',
+            tooltip: l10n.settings,
             iconSize: 28,
             color: palette.historyText,
             icon: const Icon(Icons.settings_outlined),
@@ -157,6 +160,7 @@ class _LanguageDialogState extends ConsumerState<_LanguageDialog> {
       asrControllerProvider.select((s) => s.enabledLanguages),
     );
     final model = ref.watch(currentModelProvider);
+    final l10n = AppLocalizations.of(context);
     final languages = ref.watch(modelConfigProvider).value?.languages ?? [];
     final names = {for (final l in languages) l.id: l};
     final mainCodes = AsrLanguage.values.map((l) => l.code).toSet();
@@ -169,14 +173,17 @@ class _LanguageDialogState extends ConsumerState<_LanguageDialog> {
         );
 
     return AlertDialog(
-      title: const Text('识别语言'),
+      title: Text(l10n.recognitionLanguage),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (model != null)
-              Text('当前模型：${model.name}', style: const TextStyle(fontSize: 14)),
+              Text(
+                l10n.currentModel(model.name),
+                style: const TextStyle(fontSize: 14),
+              ),
             const SizedBox(height: 8),
             for (final language in AsrLanguage.values)
               CheckboxListTile(
@@ -184,27 +191,29 @@ class _LanguageDialogState extends ConsumerState<_LanguageDialog> {
                 value: enabled.contains(language),
                 onChanged: (_) => _toggle(language),
                 title: Text(
-                  language.label,
+                  l10n.languageName(language.code),
                   style: const TextStyle(fontSize: 18),
                 ),
               ),
             if (_rejected)
-              const Text(
-                '至少保留一种识别语言',
-                style: TextStyle(color: Color(0xFFFF5252), fontSize: 14),
+              Text(
+                l10n.keepOneLanguage,
+                style: const TextStyle(color: Color(0xFFFF5252), fontSize: 14),
               ),
             if (others.isNotEmpty) ...[
               const SizedBox(height: 12),
-              const Text('还可自动识别', style: TextStyle(fontSize: 14)),
+              Text(l10n.alsoAutoDetect, style: const TextStyle(fontSize: 14)),
               const SizedBox(height: 4),
               Text(
-                others.map((code) => names[code]?.name ?? code).join('、'),
+                others
+                    .map((code) => l10n.languageName(code, names[code]?.name))
+                    .join(l10n.listSeparator),
                 style: const TextStyle(fontSize: 18),
               ),
               const SizedBox(height: 4),
-              const Text(
-                '勾选多种语言（自动识别）时可识别这些语言。',
-                style: TextStyle(fontSize: 13, height: 1.4),
+              Text(
+                l10n.alsoAutoDetectHint,
+                style: const TextStyle(fontSize: 13, height: 1.4),
               ),
             ],
           ],
@@ -213,7 +222,7 @@ class _LanguageDialogState extends ConsumerState<_LanguageDialog> {
       actions: [
         FilledButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('完成'),
+          child: Text(l10n.done),
         ),
       ],
     );
@@ -225,6 +234,7 @@ class _ClearConfirmSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
@@ -233,7 +243,7 @@ class _ClearConfirmSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '确认清空所有历史字幕记录？',
+              l10n.clearConfirm,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 20,
@@ -247,7 +257,10 @@ class _ClearConfirmSheet extends StatelessWidget {
                 minimumSize: const Size.fromHeight(52),
               ),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('确认清空', style: TextStyle(fontSize: 18)),
+              child: Text(
+                l10n.clearConfirmButton,
+                style: const TextStyle(fontSize: 18),
+              ),
             ),
             const SizedBox(height: 8),
             TextButton(
@@ -255,7 +268,7 @@ class _ClearConfirmSheet extends StatelessWidget {
                 minimumSize: const Size.fromHeight(52),
               ),
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消', style: TextStyle(fontSize: 18)),
+              child: Text(l10n.cancel, style: const TextStyle(fontSize: 18)),
             ),
           ],
         ),

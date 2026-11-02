@@ -37,8 +37,9 @@ int _compare((int, int) a, (int, int) b) =>
 String? decodeParamFor(AsrModelDef model, Set<String> languages) {
   final String param;
   if (languages.length == 1) {
-    final support =
-        model.languages.where((s) => s.lang == languages.first).firstOrNull;
+    final support = model.languages
+        .where((s) => s.lang == languages.first)
+        .firstOrNull;
     param = support?.decodeParam ?? '';
   } else {
     param = model.autoDecodeParam;

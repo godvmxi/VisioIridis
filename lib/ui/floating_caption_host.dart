@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../asr/asr_engine.dart';
+import '../l10n/l10n.dart';
 import '../platform/background_platform.dart';
 import '../state/asr_controller.dart';
 import '../state/asr_state.dart';
@@ -40,7 +41,8 @@ class _FloatingCaptionHostState extends ConsumerState<FloatingCaptionHost> {
     _platform = ref.read(backgroundPlatformProvider);
     _lifecycle = AppLifecycleListener(onHide: _onHide, onShow: _onShow);
     _inputRequests = _platform.audioInputRequests.listen(
-        (input) => ref.read(asrControllerProvider.notifier).setAudioInput(input));
+      (input) => ref.read(asrControllerProvider.notifier).setAudioInput(input),
+    );
     _exitRequests = _platform.exitRequests.listen((_) => _exit());
   }
 
@@ -60,14 +62,25 @@ class _FloatingCaptionHostState extends ConsumerState<FloatingCaptionHost> {
     if (!await _platform.canShowOverlay()) return;
 
     final palette = AppPalette.forSettings(settings);
-    await _platform.showOverlay(FloatingCaptionStyle(
-      background: palette.background.withValues(alpha: 0.75),
-      focusColor: palette.focusText,
-      historyColor: palette.historyText,
-      focusSize: settings.fontScale.size,
-      historySize: settings.fontScale.size,
-      historyBold: settings.boldText,
-    ));
+    final l10n = ref.read(appLocalizationsProvider);
+    await _platform.showOverlay(
+      FloatingCaptionStyle(
+        background: palette.background.withValues(alpha: 0.75),
+        focusColor: palette.focusText,
+        historyColor: palette.historyText,
+        focusSize: settings.fontScale.size,
+        historySize: settings.fontScale.size,
+        historyBold: settings.boldText,
+        labels: FloatingCaptionLabels(
+          microphone: l10n.microphone,
+          speaker: l10n.speaker,
+          back: l10n.overlayBack,
+          exit: l10n.overlayExit,
+          confirmExit: l10n.overlayConfirmExit,
+          cancel: l10n.cancel,
+        ),
+      ),
+    );
     _visible = true;
     await _push(ref.read(asrControllerProvider));
   }
@@ -89,17 +102,18 @@ class _FloatingCaptionHostState extends ConsumerState<FloatingCaptionHost> {
   }
 
   Future<void> _push(AsrEngineState state) => _platform.updateOverlay(
-        current: state.currentPendingText,
-        partial: state.currentPendingText.isNotEmpty,
-        history: [
-          for (final item in state.history.skip(
-              state.history.length > _historyLimit
-                  ? state.history.length - _historyLimit
-                  : 0))
-            item.displayText,
-        ],
-        systemAudio: state.audioInput == AudioInput.systemAudio,
-      );
+    current: state.currentPendingText,
+    partial: state.currentPendingText.isNotEmpty,
+    history: [
+      for (final item in state.history.skip(
+        state.history.length > _historyLimit
+            ? state.history.length - _historyLimit
+            : 0,
+      ))
+        item.displayText(ref.read(appLocalizationsProvider).eventName),
+    ],
+    systemAudio: state.audioInput == AudioInput.systemAudio,
+  );
 
   @override
   Widget build(BuildContext context) {

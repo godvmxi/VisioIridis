@@ -11,8 +11,8 @@ class ConfigRepository {
     required this.storageDir,
     HttpClient? client,
     DateTime Function()? now,
-  })  : _client = client ?? HttpClient(),
-        _now = now ?? DateTime.now;
+  }) : _client = client ?? HttpClient(),
+       _now = now ?? DateTime.now;
 
   static const checkInterval = Duration(hours: 24);
   static const timeout = Duration(seconds: 5);

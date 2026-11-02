@@ -34,8 +34,9 @@ class PrepState {
   final PrepProgress? progress;
 }
 
-final modelPrepProvider =
-    NotifierProvider<ModelPrepController, PrepState?>(ModelPrepController.new);
+final modelPrepProvider = NotifierProvider<ModelPrepController, PrepState?>(
+  ModelPrepController.new,
+);
 
 class ModelPrepController extends Notifier<PrepState?> {
   bool _cancelled = false;
@@ -48,7 +49,8 @@ class ModelPrepController extends Notifier<PrepState?> {
     Future<void> Function(
       void Function(PrepProgress) onProgress,
       CancelCheck isCancelled,
-    ) task,
+    )
+    task,
   ) async {
     _cancelled = false;
     state = PrepState(modelName: modelName);

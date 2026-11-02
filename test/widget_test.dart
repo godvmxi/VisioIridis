@@ -35,11 +35,17 @@ void main() {
   });
   tearDown(() => engine.dispose());
 
-  Future<void> pumpApp(WidgetTester tester,
-      {Map<String, Object> prefsValues = const {}}) async {
+  Future<void> pumpApp(
+    WidgetTester tester, {
+    Map<String, Object> prefsValues = const {},
+  }) async {
     // 上一个用例可能停在后台状态，先恢复到前台。
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    SharedPreferences.setMockInitialValues(prefsValues);
+    // 测试环境的系统语言为英语，默认固定为简体中文界面。
+    SharedPreferences.setMockInitialValues({
+      'settings.appLanguage': 'zhHans',
+      ...prefsValues,
+    });
     final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(
       ProviderScope(
@@ -48,8 +54,11 @@ void main() {
           modelPreparerProvider.overrideWithValue(ReadyModelPreparer()),
           sharedPreferencesProvider.overrideWithValue(prefs),
           backgroundPlatformProvider.overrideWithValue(platform),
-          modelConfigProvider.overrideWith((ref) => ModelConfig.parse(
-              File('assets/config/model_config.json').readAsStringSync())),
+          modelConfigProvider.overrideWith(
+            (ref) => ModelConfig.parse(
+              File('assets/config/model_config.json').readAsStringSync(),
+            ),
+          ),
         ],
         child: const SeeVoiceApp(),
       ),
@@ -65,8 +74,9 @@ void main() {
     expect(find.text('普通话 +2'), findsOneWidget);
   });
 
-  testWidgets('largest font fits on a phone screen while listening',
-      (tester) async {
+  testWidgets('largest font fits on a phone screen while listening', (
+    tester,
+  ) async {
     // POCO F6 的逻辑分辨率约 412 × 915 dp。
     tester.view.physicalSize = const Size(1236, 2745);
     tester.view.devicePixelRatio = 3;
@@ -99,8 +109,7 @@ void main() {
     // 拾音中状态点持续呼吸，不能用 pumpAndSettle。
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('等待语音输入...'), findsOneWidget);
-    expect(find.textContaining('今天几点开会？', findRichText: true),
-        findsOneWidget);
+    expect(find.textContaining('今天几点开会？', findRichText: true), findsOneWidget);
   });
 
   testWidgets('cannot deselect the last language', (tester) async {
@@ -144,7 +153,7 @@ void main() {
     await tester.tap(find.byTooltip('设置'));
     await tester.pumpAndSettle();
     expect(find.text('识别模型'), findsOneWidget);
-    expect(find.textContaining('自动：SenseVoice Small'), findsNWidgets(3));
+    expect(find.text('选打分最高的模型：SenseVoice Small  10 分'), findsOneWidget);
 
     await tester.tap(find.text('巨大'));
     await tester.tap(find.text('黑字白底'));
@@ -154,15 +163,18 @@ void main() {
     expect(preview.style?.fontSize, FontScale.giant.size);
     expect(preview.style?.color, AppPalette.blackOnWhite.focusText);
 
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
     expect(scaffold.backgroundColor, AppPalette.blackOnWhite.background);
   });
 
   /// 文本树中内容为 [text] 的片段合并所有祖先样式后的最终样式。
-  TextStyle? effectiveStyle(InlineSpan span, String text,
-      [TextStyle? inherited]) {
+  TextStyle? effectiveStyle(
+    InlineSpan span,
+    String text, [
+    TextStyle? inherited,
+  ]) {
     if (span is! TextSpan) return null;
     final style = inherited?.merge(span.style) ?? span.style;
     if (span.text == text) return style;
@@ -175,7 +187,8 @@ void main() {
 
   TextStyle? styleOf(WidgetTester tester, String text) {
     for (final rich in tester.widgetList<RichText>(
-        find.textContaining(text, findRichText: true))) {
+      find.textContaining(text, findRichText: true),
+    )) {
       final style = effectiveStyle(rich.text, text);
       if (style != null) return style;
     }
@@ -205,8 +218,9 @@ void main() {
     expect(styleOf(tester, '第一句')?.fontWeight, FontWeight.bold);
   });
 
-  testWidgets('custom colors apply to captions and warn on low contrast',
-      (tester) async {
+  testWidgets('custom colors apply to captions and warn on low contrast', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 3600);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
@@ -229,7 +243,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('对比度较低'), findsNothing);
 
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     engine.emit(const AsrFinal('第一句'));
     await tester.pumpAndSettle();
@@ -251,8 +265,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(styleOf(tester, '第一句')?.fontSize, FontScale.huge.size);
-    expect(tester.widget<Text>(find.text('正在说')).style?.fontSize,
-        FontScale.huge.size);
+    expect(
+      tester.widget<Text>(find.text('正在说')).style?.fontSize,
+      FontScale.huge.size,
+    );
   });
 
   testWidgets('top-bar sound source selector', (tester) async {
@@ -271,6 +287,69 @@ void main() {
     await tester.tap(find.text('麦克风'));
     await tester.pump();
     expect(engine.lastInput, AudioInput.microphone);
+  });
+
+  testWidgets('interface language switches the whole UI', (tester) async {
+    tester.view.physicalSize = const Size(1080, 3200);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await pumpApp(tester);
+    await tester.tap(find.byTooltip('设置'));
+    await tester.pumpAndSettle();
+    expect(find.text('界面语言'), findsOneWidget);
+
+    await tester.tap(find.byType(DropdownButton<AppLanguage>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('English').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Display language'), findsOneWidget);
+    expect(find.text('Font size'), findsOneWidget);
+    expect(find.text('Model for Mandarin'), findsOneWidget);
+    expect(find.text('Supports: Mandarin 7 · Henan dialect 9'), findsOneWidget);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('settings.appLanguage'), 'en');
+
+    await tester.tap(find.byType(DropdownButton<AppLanguage>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('繁體中文').last);
+    await tester.pumpAndSettle();
+    expect(find.text('介面語言'), findsOneWidget);
+    expect(find.text('為「普通話」選擇模型'), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.text('開始辨識'), findsOneWidget);
+    expect(find.text('麥克風'), findsOneWidget);
+    expect(find.text('普通話 +2'), findsOneWidget);
+  });
+
+  testWidgets('English interface reaches the overlay and captions', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      prefsValues: {
+        'settings.appLanguage': 'en',
+        'settings.floatingCaption': true,
+      },
+    );
+    expect(find.text('Start'), findsOneWidget);
+    expect(find.text('Mandarin +2'), findsOneWidget);
+
+    await tester.tap(find.text('Start'));
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    await tester.pump();
+    final labels = platform.shownStyle!.labels;
+    expect(labels.microphone, 'Mic');
+    expect(labels.exit, 'Exit');
+    expect(labels.confirmExit, 'Exit the app?');
+    expect(labels.cancel, 'Cancel');
+
+    engine.emit(const AsrFinal('', event: '<|Laughter|>'));
+    await tester.pump();
+    expect(platform.updates.last.history, ['😄 [laughter]']);
   });
 
   testWidgets('top bar order and language dialog', (tester) async {
@@ -310,21 +389,37 @@ void main() {
     await tester.tap(find.byTooltip('设置'));
     await tester.pumpAndSettle();
 
-    expect(find.text('自动：SenseVoice Small  10 分'), findsNWidgets(2));
-    await tester.tap(find.text('普通话').last);
-    await tester.pumpAndSettle();
-
+    // 默认选中第一种语言，下方直接列出候选模型及其支持的全部语言打分。
     expect(find.text('为“普通话”选择模型'), findsOneWidget);
+    expect(find.text('选打分最高的模型：SenseVoice Small  10 分'), findsOneWidget);
     expect(find.text('SenseVoice Small    普通话 10 分'), findsOneWidget);
     expect(find.text('TeleSpeech    普通话 7 分'), findsOneWidget);
-    expect(find.text('普通话 7 · 河南话 9'), findsOneWidget);
+    expect(find.text('支持：普通话 7 · 河南话 9'), findsOneWidget);
+    expect(find.text('支持：普通话 10 · 粤语 10 · 英语 9 · 日语 8 · 韩语 8'), findsOneWidget);
 
     await tester.tap(find.text('TeleSpeech    普通话 7 分'));
     await tester.pumpAndSettle();
-    expect(find.text('TeleSpeech  7 分'), findsOneWidget);
+    expect(
+      tester
+          .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
+          .groupValue,
+      'telespeech-ctc-int8',
+    );
+
+    // 切换语言后只列出支持该语言的模型。
+    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('粤语').last);
+    await tester.pumpAndSettle();
+    expect(find.text('为“粤语”选择模型'), findsOneWidget);
+    expect(find.text('SenseVoice Small    粤语 10 分'), findsOneWidget);
+    expect(find.textContaining('TeleSpeech'), findsNothing);
+
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('settings.modelPreferences'),
-        contains('telespeech-ctc-int8'));
+    expect(
+      prefs.getString('settings.modelPreferences'),
+      contains('telespeech-ctc-int8'),
+    );
   });
 
   group('floating caption (PRD 4.7)', () {
@@ -335,19 +430,24 @@ void main() {
     }
 
     Future<void> goBackground(WidgetTester tester) async {
-      setLifecycle(tester,
-          [AppLifecycleState.inactive, AppLifecycleState.hidden]);
+      setLifecycle(tester, [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+      ]);
       await tester.pump();
     }
 
     Future<void> goForeground(WidgetTester tester) async {
-      setLifecycle(tester,
-          [AppLifecycleState.inactive, AppLifecycleState.resumed]);
+      setLifecycle(tester, [
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]);
       await tester.pump();
     }
 
-    testWidgets('shows in background while listening and follows results',
-        (tester) async {
+    testWidgets('shows in background while listening and follows results', (
+      tester,
+    ) async {
       await pumpApp(tester, prefsValues: {'settings.floatingCaption': true});
       await tester.tap(find.text('开始识别'));
       await tester.pump();
@@ -355,8 +455,10 @@ void main() {
 
       await goBackground(tester);
       expect(platform.visible, isTrue);
-      expect(platform.shownStyle?.focusColor,
-          AppPalette.yellowOnBlack.focusText);
+      expect(
+        platform.shownStyle?.focusColor,
+        AppPalette.yellowOnBlack.focusText,
+      );
       expect(platform.shownStyle?.focusSize, FontScale.large.size);
       expect(platform.shownStyle?.historySize, FontScale.large.size);
       expect(platform.updates.last.history, ['第一句']);
@@ -377,8 +479,9 @@ void main() {
       expect(platform.visible, isFalse);
     });
 
-    testWidgets('overlay selects the sound source and toasts the notice',
-        (tester) async {
+    testWidgets('overlay selects the sound source and toasts the notice', (
+      tester,
+    ) async {
       await pumpApp(tester, prefsValues: {'settings.floatingCaption': true});
       await tester.tap(find.text('开始识别'));
       await tester.pump();
@@ -397,8 +500,9 @@ void main() {
       expect(platform.updates.last.systemAudio, isFalse);
     });
 
-    testWidgets('overlay exit stops listening and closes the app',
-        (tester) async {
+    testWidgets('overlay exit stops listening and closes the app', (
+      tester,
+    ) async {
       await pumpApp(tester, prefsValues: {'settings.floatingCaption': true});
       await tester.tap(find.text('开始识别'));
       await tester.pump();
@@ -435,15 +539,14 @@ void main() {
       expect(platform.visible, isFalse);
     });
 
-    testWidgets('hides when listening stops in the background',
-        (tester) async {
+    testWidgets('hides when listening stops in the background', (tester) async {
       await pumpApp(tester, prefsValues: {'settings.floatingCaption': true});
       await tester.tap(find.text('开始识别'));
       await tester.pump();
       await goBackground(tester);
       expect(platform.visible, isTrue);
 
-      engine.emit(const AsrError('录音中断'));
+      engine.emit(const AsrError(AsrIssue.recordingInterrupted));
       await tester.pump();
       expect(platform.visible, isFalse);
     });
@@ -467,8 +570,9 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
     });
 
-    testWidgets('stays off when overlay permission is not granted',
-        (tester) async {
+    testWidgets('stays off when overlay permission is not granted', (
+      tester,
+    ) async {
       platform.overlayAllowed = false;
       await openSettings(tester);
       await tester.tap(find.text('显示浮动窗'));

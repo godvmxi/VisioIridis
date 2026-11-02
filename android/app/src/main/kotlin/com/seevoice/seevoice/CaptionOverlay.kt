@@ -6,6 +6,8 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.util.TypedValue
 import android.view.Gravity
@@ -23,6 +25,7 @@ import kotlin.math.abs
  * App 在后台时显示的半透明浮动字幕窗口（PRD 4.7）。
  *
  * 顶部为拖动条（上下拖动移动窗口）、“麦克风 | 喇叭”声音来源选择（PRD 4.8）、“返回”与“退出”按钮；
+ * 点击“退出”后顶部改为“确定退出？”确认栏，[CONFIRM_SECONDS] 秒内无操作自动恢复，识别不中断；
  * 下方为可上下滑动的字幕区：
  * 历史记录在上、当前识别在最底部，内容贴底排列，窗口能容纳几条历史就显示几条。
  * 用户向上滑动查看历史时暂停自动跟随，滑回底部后恢复。
@@ -42,6 +45,23 @@ class CaptionOverlay(
     private var micOption: TextView? = null
     private var speakerOption: TextView? = null
     private var style: Style? = null
+    private var labels: Labels? = null
+    private var controls: View? = null
+    private var confirmBar: View? = null
+    private var cancelButton: TextView? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var countdown = 0
+    private val tick = object : Runnable {
+        override fun run() {
+            countdown--
+            if (countdown <= 0) {
+                cancelExit()
+            } else {
+                cancelButton?.text = cancelLabel()
+                handler.postDelayed(this, 1000)
+            }
+        }
+    }
     private var shownHistory: List<String> = emptyList()
 
     /** 是否停在底部；为 true 时新内容到来自动滚到底。 */
@@ -57,16 +77,27 @@ class CaptionOverlay(
         val historyBold: Boolean,
     )
 
+    /** 按界面语言显示的按钮文字，由 Dart 端传入。 */
+    data class Labels(
+        val microphone: String,
+        val speaker: String,
+        val back: String,
+        val exit: String,
+        val confirmExit: String,
+        val cancel: String,
+    )
+
     fun canShow(): Boolean = Settings.canDrawOverlays(context)
 
-    fun show(style: Style) {
+    fun show(style: Style, labels: Labels) {
         if (root != null || !canShow()) return
         this.style = style
+        this.labels = labels
         val metrics = context.resources.displayMetrics
         val height = (metrics.heightPixels * style.heightFraction).toInt()
         val margin = dp(12)
 
-        val header = buildHeader(style)
+        val header = buildHeader(style, labels)
 
         val history = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
         val current = TextView(context).apply {
@@ -147,6 +178,7 @@ class CaptionOverlay(
     }
 
     fun hide() {
+        handler.removeCallbacks(tick)
         root?.let { windowManager.removeView(it) }
         root = null
         scroll = null
@@ -154,8 +186,30 @@ class CaptionOverlay(
         currentView = null
         micOption = null
         speakerOption = null
+        controls = null
+        confirmBar = null
+        cancelButton = null
         shownHistory = emptyList()
     }
+
+    /** 点击“退出”：显示确认栏并开始倒计时，避免误触直接退出。 */
+    private fun askExit() {
+        countdown = CONFIRM_SECONDS
+        cancelButton?.text = cancelLabel()
+        controls?.visibility = View.GONE
+        confirmBar?.visibility = View.VISIBLE
+        handler.removeCallbacks(tick)
+        handler.postDelayed(tick, 1000)
+    }
+
+    /** 取消或超时：恢复正常的顶部按钮，浮动窗继续工作。 */
+    private fun cancelExit() {
+        handler.removeCallbacks(tick)
+        confirmBar?.visibility = View.GONE
+        controls?.visibility = View.VISIBLE
+    }
+
+    private fun cancelLabel() = "${labels?.cancel} ($countdown)"
 
     private fun setHistory(history: List<String>) {
         val box = historyBox ?: return
@@ -174,7 +228,7 @@ class CaptionOverlay(
         shownHistory = history
     }
 
-    private fun buildHeader(style: Style): LinearLayout {
+    private fun buildHeader(style: Style, labels: Labels): LinearLayout {
         val grip = TextView(context).apply {
             text = "≡"
             setTextColor(style.historyColor)
@@ -187,8 +241,8 @@ class CaptionOverlay(
             setPadding(dp(10), dp(4), dp(10), dp(4))
             setOnClickListener { onSelectSystemAudio(systemAudio) }
         }
-        val mic = option("麦克风", false)
-        val speaker = option("喇叭", true)
+        val mic = option(labels.microphone, false)
+        val speaker = option(labels.speaker, true)
         micOption = mic
         speakerOption = speaker
         renderSource(false)
@@ -202,28 +256,74 @@ class CaptionOverlay(
             addView(speaker)
         }
         val back = TextView(context).apply {
-            text = "返回"
+            text = labels.back
             setTextColor(style.historyColor)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
             setPadding(dp(12), dp(6), 0, dp(6))
             setOnClickListener { openApp() }
         }
         val exit = TextView(context).apply {
-            text = "退出"
+            text = labels.exit
             setTextColor(style.historyColor)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
             setPadding(dp(12), dp(6), 0, dp(6))
-            setOnClickListener { onExit() }
+            setOnClickListener { askExit() }
         }
+        val normal = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(source)
+            addView(back)
+            addView(exit)
+        }
+
+        val question = TextView(context).apply {
+            text = labels.confirmExit
+            setTextColor(style.focusColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            setTypeface(typeface, Typeface.BOLD)
+        }
+        val confirm = TextView(context).apply {
+            text = labels.exit
+            setTextColor(0xFFFFFFFF.toInt())
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            setPadding(dp(14), dp(6), dp(14), dp(6))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(14).toFloat()
+                setColor(0xFFD32F2F.toInt())
+            }
+            setOnClickListener {
+                cancelExit()
+                onExit()
+            }
+        }
+        val cancel = TextView(context).apply {
+            setTextColor(style.historyColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            setPadding(dp(14), dp(6), dp(4), dp(6))
+            setOnClickListener { cancelExit() }
+        }
+        val confirmRow = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            visibility = View.GONE
+            addView(question)
+            addView(View(context), LinearLayout.LayoutParams(dp(12), 1))
+            addView(confirm)
+            addView(cancel)
+        }
+        controls = normal
+        confirmBar = confirmRow
+        cancelButton = cancel
+
         return LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             minimumHeight = dp(32)
             addView(grip)
             addView(View(context), LinearLayout.LayoutParams(0, 1, 1f))
-            addView(source)
-            addView(back)
-            addView(exit)
+            addView(normal)
+            addView(confirmRow)
         }
     }
 
@@ -275,6 +375,11 @@ class CaptionOverlay(
                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             )
         )
+    }
+
+    private companion object {
+        /** 退出确认栏无操作时自动恢复的秒数。 */
+        const val CONFIRM_SECONDS = 5
     }
 
     private fun dp(value: Int): Int = TypedValue.applyDimension(

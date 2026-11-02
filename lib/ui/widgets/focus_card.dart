@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/l10n.dart';
 import '../../model_store/model_repository.dart';
 import '../../state/asr_controller.dart';
 import '../../state/model_providers.dart';
@@ -18,15 +19,19 @@ class FocusCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isListening =
-        ref.watch(asrControllerProvider.select((s) => s.isListening));
-    final text =
-        ref.watch(asrControllerProvider.select((s) => s.currentPendingText));
-    final segment =
-        ref.watch(asrControllerProvider.select((s) => s.pendingSegment));
+    final isListening = ref.watch(
+      asrControllerProvider.select((s) => s.isListening),
+    );
+    final text = ref.watch(
+      asrControllerProvider.select((s) => s.currentPendingText),
+    );
+    final segment = ref.watch(
+      asrControllerProvider.select((s) => s.pendingSegment),
+    );
     final prep = ref.watch(modelPrepProvider);
-    final isLoading =
-        ref.watch(asrControllerProvider.select((s) => s.isLoading));
+    final isLoading = ref.watch(
+      asrControllerProvider.select((s) => s.isLoading),
+    );
     final fontScale = ref.watch(settingsProvider.select((s) => s.fontScale));
     final weight = ref.watch(settingsProvider.select((s) => s.textWeight));
     final palette = AppPalette.of(context);
@@ -49,11 +54,7 @@ class FocusCard extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          Positioned(
-            left: 14,
-            top: 14,
-            child: _StatusDot(active: isListening),
-          ),
+          Positioned(left: 14, top: 14, child: _StatusDot(active: isListening)),
           Padding(
             padding: const EdgeInsets.fromLTRB(32, 12, 16, 12),
             child: AnimatedSwitcher(
@@ -86,7 +87,9 @@ class FocusCard extends ConsumerWidget {
                 key: currentKey,
                 child: _CardText(
                   text: text,
-                  placeholder: isLoading ? '正在加载识别模型...' : '等待语音输入...',
+                  placeholder: isLoading
+                      ? AppLocalizations.of(context).loadingModel
+                      : AppLocalizations.of(context).waitingSpeech,
                   fontSize: fontScale.size,
                   placeholderWeight: weight,
                 ),
@@ -127,14 +130,14 @@ class _PrepView extends ConsumerWidget {
 
   final PrepState state;
 
-  static String _title(PrepState state) {
+  static String _title(AppLocalizations l10n, PrepState state) {
     final progress = state.progress;
     return switch (progress?.phase) {
-      null => '正在准备模型...',
-      PrepPhase.copying => '正在从保存目录恢复模型...',
-      PrepPhase.downloading => '正在下载 ${state.modelName}',
-      PrepPhase.verifying => '正在校验模型文件...',
-      PrepPhase.saving => '正在保存到公共目录...',
+      null => l10n.preparingModel,
+      PrepPhase.copying => l10n.restoringModel,
+      PrepPhase.downloading => l10n.downloadingModel(state.modelName),
+      PrepPhase.verifying => l10n.verifyingModel,
+      PrepPhase.saving => l10n.savingModel,
     };
   }
 
@@ -148,7 +151,7 @@ class _PrepView extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          _title(state),
+          _title(AppLocalizations.of(context), state),
           style: TextStyle(fontSize: 20, color: palette.focusText),
         ),
         const SizedBox(height: 12),
@@ -172,7 +175,10 @@ class _PrepView extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () => ref.read(modelPrepProvider.notifier).cancel(),
-              child: const Text('取消', style: TextStyle(fontSize: 16)),
+              child: Text(
+                AppLocalizations.of(context).cancel,
+                style: const TextStyle(fontSize: 16),
+              ),
             ),
           ],
         ),

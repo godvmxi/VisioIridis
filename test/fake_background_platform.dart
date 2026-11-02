@@ -10,12 +10,10 @@ class FakeBackgroundPlatform implements BackgroundPlatform {
 
   FloatingCaptionStyle? shownStyle;
   bool visible = false;
-  final updates = <({
-    String current,
-    bool partial,
-    List<String> history,
-    bool systemAudio,
-  })>[];
+  final updates =
+      <
+        ({String current, bool partial, List<String> history, bool systemAudio})
+      >[];
   final _inputs = StreamController<AudioInput>.broadcast(sync: true);
   final toasts = <String>[];
   final _exits = StreamController<void>.broadcast(sync: true);
@@ -57,13 +55,12 @@ class FakeBackgroundPlatform implements BackgroundPlatform {
     required bool partial,
     required List<String> history,
     required bool systemAudio,
-  }) async =>
-      updates.add((
-        current: current,
-        partial: partial,
-        history: history,
-        systemAudio: systemAudio,
-      ));
+  }) async => updates.add((
+    current: current,
+    partial: partial,
+    history: history,
+    systemAudio: systemAudio,
+  ));
 
   @override
   Future<void> hideOverlay() async => visible = false;

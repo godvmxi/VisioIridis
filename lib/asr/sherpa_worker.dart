@@ -96,10 +96,10 @@ void sherpaWorkerMain(WorkerInit init) {
 
 class _SherpaPipeline {
   _SherpaPipeline(WorkerInit init)
-      : _out = init.replyTo,
-        _init = init,
-        _allowed = init.allowedLanguages,
-        _currentParam = init.decodeParam {
+    : _out = init.replyTo,
+      _init = init,
+      _allowed = init.allowedLanguages,
+      _currentParam = init.decodeParam {
     _vad = sherpa.VoiceActivityDetector(
       config: sherpa.VadModelConfig(
         sileroVad: sherpa.SileroVadModelConfig(
@@ -224,21 +224,27 @@ class _SherpaPipeline {
   void _emitFinal(Float32List samples) {
     var result = _decode(samples);
     if (_hasLanguageTags) {
-      final forced =
-          fallbackLanguage(TagFormatter.normalize(result.lang), _allowed);
+      final forced = fallbackLanguage(
+        TagFormatter.normalize(result.lang),
+        _allowed,
+      );
       if (forced != null) result = _decodeWithLanguage(samples, forced);
     }
-    _out.send(AsrFinal(
-      result.text,
-      lang: result.lang,
-      emotion: result.emotion,
-      event: result.event,
-    ));
+    _out.send(
+      AsrFinal(
+        result.text,
+        lang: result.lang,
+        emotion: result.emotion,
+        event: result.event,
+      ),
+    );
   }
 
   /// 临时切换语言参数重解码一次（PRD 4.1 语种校验），完成后恢复。
   sherpa.OfflineRecognizerResult _decodeWithLanguage(
-      Float32List samples, String language) {
+    Float32List samples,
+    String language,
+  ) {
     _recognizer.setConfig(_recognizerConfig(language));
     try {
       return _decode(samples);

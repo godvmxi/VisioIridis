@@ -25,8 +25,10 @@ void main() {
       final decoder = Pcm16Decoder();
       final first = decoder.convert(Uint8List.sublistView(bytes, 0, 3));
       final second = decoder.convert(Uint8List.sublistView(bytes, 3));
-      expect([...first, ...second],
-          [1000 / 32768, -2000 / 32768, 3000 / 32768]);
+      expect(
+        [...first, ...second],
+        [1000 / 32768, -2000 / 32768, 3000 / 32768],
+      );
     });
   });
 
@@ -39,8 +41,12 @@ void main() {
         [1, 2, 3, 4],
         [5, 6, 7, 8],
       ]);
-      expect(windower.add(Float32List.fromList([10, 11, 12])).single.toList(),
-          [9, 10, 11, 12]);
+      expect(windower.add(Float32List.fromList([10, 11, 12])).single.toList(), [
+        9,
+        10,
+        11,
+        12,
+      ]);
     });
   });
 

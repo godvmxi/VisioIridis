@@ -11,13 +11,17 @@ void main() {
 
   test('custom palette derives from background and text', () {
     final dark = AppPalette.custom(
-        background: const Color(0xFF0D1B2A), text: const Color(0xFF00E5FF));
+      background: const Color(0xFF0D1B2A),
+      text: const Color(0xFF00E5FF),
+    );
     expect(dark.brightness, Brightness.dark);
     expect(dark.historyText, const Color(0xFF00E5FF));
     expect(dark.timestamp.a, closeTo(0.6, 0.01));
 
     final light = AppPalette.custom(
-        background: Colors.white, text: const Color(0xFF0D47A1));
+      background: Colors.white,
+      text: const Color(0xFF0D47A1),
+    );
     expect(light.brightness, Brightness.light);
   });
 
@@ -30,8 +34,8 @@ void main() {
     expect(AppPalette.forSettings(settings).focusText, const Color(0xFFB71C1C));
     expect(
       AppPalette.forSettings(
-              settings.copyWith(colorMode: ColorMode.yellowOnBlack))
-          .focusText,
+        settings.copyWith(colorMode: ColorMode.yellowOnBlack),
+      ).focusText,
       AppPalette.yellowOnBlack.focusText,
     );
   });

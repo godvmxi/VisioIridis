@@ -123,7 +123,7 @@ class SystemAudioCaptureService : Service() {
     private fun buildNotification(): Notification {
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_ID, "系统声音字幕", NotificationManager.IMPORTANCE_LOW)
+            NotificationChannel(CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW)
         )
         val open = PendingIntent.getActivity(
             this, 0,
@@ -133,14 +133,19 @@ class SystemAudioCaptureService : Service() {
         )
         return Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("正在识别系统播放的声音")
-            .setContentText("点击返回 App")
+            .setContentTitle(notificationTitle)
+            .setContentText(notificationText)
             .setContentIntent(open)
             .setOngoing(true)
             .build()
     }
 
     companion object {
+        /** 通知文字，由 Dart 端按界面语言在开始录制前设置。 */
+        var channelName = "系统声音字幕"
+        var notificationTitle = "正在识别系统播放的声音"
+        var notificationText = "点击返回 App"
+
         const val EXTRA_RESULT_CODE = "resultCode"
         const val EXTRA_DATA = "data"
         private const val TAG = "SystemAudioCapture"

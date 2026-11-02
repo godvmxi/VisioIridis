@@ -45,8 +45,12 @@ void main() {
 
   test('downloads the whole file and reports progress', () async {
     var lastDone = 0;
-    await HttpDownloader().fetch([url('/f')], dest(), payload.length,
-        onProgress: (done, total) => lastDone = done);
+    await HttpDownloader().fetch(
+      [url('/f')],
+      dest(),
+      payload.length,
+      onProgress: (done, total) => lastDone = done,
+    );
     expect(dest().readAsBytesSync(), payload);
     expect(lastDone, payload.length);
     expect(rangeHeaders, [null]);
@@ -66,8 +70,11 @@ void main() {
   });
 
   test('falls back to the next url', () async {
-    await HttpDownloader()
-        .fetch([url('/missing'), url('/f')], dest(), payload.length);
+    await HttpDownloader().fetch(
+      [url('/missing'), url('/f')],
+      dest(),
+      payload.length,
+    );
     expect(dest().readAsBytesSync(), payload);
   });
 
@@ -84,8 +91,12 @@ void main() {
 
   test('stops when cancelled', () async {
     expect(
-      () => HttpDownloader().fetch([url('/f')], dest(), payload.length,
-          isCancelled: () => true),
+      () => HttpDownloader().fetch(
+        [url('/f')],
+        dest(),
+        payload.length,
+        isCancelled: () => true,
+      ),
       throwsA(isA<DownloadCancelled>()),
     );
   });

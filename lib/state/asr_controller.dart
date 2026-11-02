@@ -7,6 +7,7 @@ import '../asr/asr_language.dart';
 import '../asr/prepared_model.dart';
 import '../asr/sherpa_asr_engine.dart';
 import '../asr/tag_formatter.dart';
+import '../l10n/l10n.dart';
 import '../models/subtitle_item.dart';
 import 'asr_state.dart';
 
@@ -17,8 +18,9 @@ final asrEngineProvider = Provider<AsrEngine>((ref) {
   return engine;
 });
 
-final asrControllerProvider =
-    NotifierProvider<AsrController, AsrEngineState>(AsrController.new);
+final asrControllerProvider = NotifierProvider<AsrController, AsrEngineState>(
+  AsrController.new,
+);
 
 class AsrController extends Notifier<AsrEngineState> {
   late AsrEngine _engine;
@@ -46,9 +48,15 @@ class AsrController extends Notifier<AsrEngineState> {
       }
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.withError('$e');
+      state = state.withError(_describe(e));
     }
   }
+
+  AppLocalizations get _l10n => ref.read(appLocalizationsProvider);
+
+  String _describe(Object error) => error is AsrStartException
+      ? _l10n.asrIssue(error.issue, error.detail)
+      : '$error';
 
   Future<void> stopListening() async {
     if (!state.isListening) return;
@@ -59,10 +67,6 @@ class AsrController extends Notifier<AsrEngineState> {
 
   bool _switchingInput = false;
 
-  /// 切换到喇叭时提示的系统限制（PRD 4.8）。
-  static const speakerNotice =
-      '因系统限制，喇叭模式只能识别播放器等应用播放的声音，无法识别电话和语音/视频通话的声音';
-
   /// “声音来源”：麦克风或喇叭（系统播放的声音，PRD 4.8）。
   /// 未在识别时只记录选择，下次开始识别时生效；识别中立即切换。
   Future<void> setAudioInput(AudioInput input) async {
@@ -70,7 +74,7 @@ class AsrController extends Notifier<AsrEngineState> {
     if (!state.isListening) {
       state = state.copyWith(audioInput: input);
       if (input == AudioInput.systemAudio) {
-        state = state.withNotice(speakerNotice);
+        state = state.withNotice(_l10n.speakerNotice);
       }
       return;
     }
@@ -85,13 +89,13 @@ class AsrController extends Notifier<AsrEngineState> {
       if (!ref.mounted) return;
       state = state.copyWith(audioInput: input, currentPendingText: '');
       if (input == AudioInput.systemAudio) {
-        state = state.withNotice(speakerNotice);
+        state = state.withNotice(_l10n.speakerNotice);
       }
     } catch (e) {
       if (!ref.mounted) return;
       state = state
           .copyWith(audioInput: AudioInput.microphone, currentPendingText: '')
-          .withNotice('$e');
+          .withNotice(_describe(e));
     } finally {
       _switchingInput = false;
     }
@@ -122,15 +126,17 @@ class AsrController extends Notifier<AsrEngineState> {
   void _onEvent(AsrEvent event) {
     switch (event) {
       case AsrPartial(:final text):
-        state = state.copyWith(currentPendingText: TagFormatter.cleanText(text));
+        state = state.copyWith(
+          currentPendingText: TagFormatter.cleanText(text),
+        );
       case AsrFinal():
         _commit(event);
-      case AsrError(:final message):
-        state = state.withError(message);
+      case AsrError(:final issue, :final detail):
+        state = state.withError(_l10n.asrIssue(issue, detail));
       case AsrInputChanged(:final input, :final reason):
         state = state
             .copyWith(audioInput: input, currentPendingText: '')
-            .withNotice(reason);
+            .withNotice(_l10n.asrIssue(reason));
     }
   }
 
@@ -144,7 +150,7 @@ class AsrController extends Notifier<AsrEngineState> {
       eventTag: TagFormatter.normalize(result.event),
     );
     // 既无文字又无需上屏的事件（如纯 BGM），直接丢弃。
-    final keep = item.displayText.isNotEmpty;
+    final keep = item.displayText(_l10n.eventName).isNotEmpty;
     state = state.copyWith(
       history: keep ? [...state.history, item] : null,
       currentPendingText: '',

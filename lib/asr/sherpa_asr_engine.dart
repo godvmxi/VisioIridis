@@ -32,7 +32,7 @@ class SherpaAsrEngine implements AsrEngine {
   @override
   Future<void> start(PreparedModel model, Set<AsrLanguage> languages) async {
     if (!await _recorder.hasPermission()) {
-      throw const AsrStartException('需要麦克风权限才能识别');
+      throw const AsrStartException(AsrIssue.micPermissionDenied);
     }
     if (_loaded?.asrModelDir != model.asrModelDir) {
       await _shutdownWorker();
@@ -71,12 +71,14 @@ class SherpaAsrEngine implements AsrEngine {
     final Stream<Uint8List> stream;
     switch (input) {
       case AudioInput.microphone:
-        stream = await _recorder.startStream(const RecordConfig(
-          encoder: AudioEncoder.pcm16bits,
-          sampleRate: 16000,
-          numChannels: 1,
-          noiseSuppress: true,
-        ));
+        stream = await _recorder.startStream(
+          const RecordConfig(
+            encoder: AudioEncoder.pcm16bits,
+            sampleRate: 16000,
+            numChannels: 1,
+            noiseSuppress: true,
+          ),
+        );
       case AudioInput.systemAudio:
         // 先订阅再请求授权，避免漏掉授权后立即到来的数据。
         stream = SystemAudioCapture.pcm;
@@ -84,14 +86,14 @@ class SherpaAsrEngine implements AsrEngine {
     _input = input;
     _audio = stream.listen(
       (chunk) => _worker?.send(chunk),
-      onError: (Object e) => _fail('录音中断：$e'),
+      onError: (Object e) => _fail(AsrIssue.recordingInterrupted, '$e'),
       onDone: input == AudioInput.systemAudio ? _onSystemAudioEnded : null,
     );
     if (input == AudioInput.systemAudio && !await SystemAudioCapture.start()) {
       await _audio?.cancel();
       _audio = null;
       _input = AudioInput.microphone;
-      throw const AsrStartException('未获得录制喇叭声音的授权，已切回麦克风');
+      throw const AsrStartException(AsrIssue.speakerDenied);
     }
   }
 
@@ -118,10 +120,11 @@ class SherpaAsrEngine implements AsrEngine {
     _worker?.send(const WorkerFlush());
     try {
       await _startInput(AudioInput.microphone);
-      _events.add(const AsrInputChanged(
-          AudioInput.microphone, '喇叭声音录制已结束，已切回麦克风'));
+      _events.add(
+        const AsrInputChanged(AudioInput.microphone, AsrIssue.speakerEnded),
+      );
     } catch (e) {
-      _fail('切回麦克风失败：$e');
+      _fail(AsrIssue.switchBackFailed, '$e');
     }
   }
 
@@ -131,7 +134,8 @@ class SherpaAsrEngine implements AsrEngine {
     if (model == null) return;
     final codes = languages.map((l) => l.code).toSet();
     _worker?.send(
-        WorkerLanguages(decodeParamFor(model.asrModel, codes), codes));
+      WorkerLanguages(decodeParamFor(model.asrModel, codes), codes),
+    );
   }
 
   @override
@@ -143,7 +147,9 @@ class SherpaAsrEngine implements AsrEngine {
   }
 
   Future<void> _spawnWorker(
-      PreparedModel model, Set<AsrLanguage> languages) async {
+    PreparedModel model,
+    Set<AsrLanguage> languages,
+  ) async {
     final inbox = ReceivePort();
     final ready = Completer<void>();
     final codes = languages.map((l) => l.code).toSet();
@@ -156,9 +162,11 @@ class SherpaAsrEngine implements AsrEngine {
           ready.complete();
         case WorkerFailed(:final message):
           if (!ready.isCompleted) {
-            ready.completeError(AsrStartException('模型加载失败：$message'));
+            ready.completeError(
+              AsrStartException(AsrIssue.modelLoadFailed, message),
+            );
           } else {
-            _fail('识别出错：$message');
+            _fail(AsrIssue.recognitionFailed, message);
           }
         case AsrEvent event:
           _events.add(event);
@@ -203,17 +211,8 @@ class SherpaAsrEngine implements AsrEngine {
     }
   }
 
-  void _fail(String message) {
+  void _fail(AsrIssue issue, String detail) {
     stop();
-    _events.add(AsrError(message));
+    _events.add(AsrError(issue, detail));
   }
-}
-
-class AsrStartException implements Exception {
-  const AsrStartException(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
 }

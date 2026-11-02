@@ -27,8 +27,9 @@ abstract class Downloader {
 
 class HttpDownloader implements Downloader {
   HttpDownloader({HttpClient? client})
-      : _client = client ??
-            (HttpClient()..connectionTimeout = const Duration(seconds: 15));
+    : _client =
+          client ??
+          (HttpClient()..connectionTimeout = const Duration(seconds: 15));
 
   final HttpClient _client;
 
@@ -44,8 +45,13 @@ class HttpDownloader implements Downloader {
     for (final url in urls) {
       if (isCancelled?.call() ?? false) throw const DownloadCancelled();
       try {
-        await _fetchOne(Uri.parse(url), dest, expectedSize, onProgress,
-            isCancelled);
+        await _fetchOne(
+          Uri.parse(url),
+          dest,
+          expectedSize,
+          onProgress,
+          isCancelled,
+        );
         return;
       } on DownloadCancelled {
         rethrow;
@@ -90,8 +96,7 @@ class HttpDownloader implements Downloader {
       offset = 0;
     } else {
       await response.drain<void>();
-      if (response.statusCode ==
-          HttpStatus.requestedRangeNotSatisfiable) {
+      if (response.statusCode == HttpStatus.requestedRangeNotSatisfiable) {
         await dest.delete();
       }
       throw HttpException('HTTP ${response.statusCode}', uri: uri);
@@ -117,5 +122,5 @@ class HttpDownloader implements Downloader {
 
 /// 在后台 Isolate 计算文件 sha256（小写十六进制），避免阻塞 UI。
 Future<String> sha256OfFile(String path) => Isolate.run(
-      () async => (await sha256.bind(File(path).openRead()).first).toString(),
-    );
+  () async => (await sha256.bind(File(path).openRead()).first).toString(),
+);

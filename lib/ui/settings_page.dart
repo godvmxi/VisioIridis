@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../asr/asr_language.dart';
+import '../l10n/l10n.dart';
 import '../model_store/model_config.dart';
 import '../model_store/model_selector.dart';
 import '../platform/background_platform.dart';
@@ -9,7 +10,7 @@ import '../state/model_providers.dart';
 import '../state/settings.dart';
 import 'app_colors.dart';
 
-/// 设置页：字体大小、配色模式、按语言选择识别模型（PRD 4.6）。
+/// 设置页：界面语言、字体大小、配色模式、按语言选择识别模型（PRD 4.6）。
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
@@ -19,22 +20,45 @@ class SettingsPage extends ConsumerWidget {
     final controller = ref.read(settingsProvider.notifier);
     final config = ref.watch(modelConfigProvider);
     final palette = AppPalette.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: palette.background,
       appBar: AppBar(
-        title: const Text('设置'),
+        title: Text(l10n.settings),
         backgroundColor: palette.background,
         foregroundColor: palette.focusText,
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
-          const _SectionTitle('字体大小'),
+          _SectionTitle(l10n.interfaceLanguage),
+          DropdownButton<AppLanguage>(
+            value: settings.appLanguage,
+            isExpanded: true,
+            dropdownColor: palette.cardSurface,
+            style: TextStyle(fontSize: 17, color: palette.focusText),
+            iconEnabledColor: palette.focusText,
+            items: [
+              for (final language in AppLanguage.values)
+                DropdownMenuItem(
+                  value: language,
+                  child: Text(l10n.appLanguageName(language)),
+                ),
+            ],
+            onChanged: (language) {
+              if (language != null) controller.setAppLanguage(language);
+            },
+          ),
+          const SizedBox(height: 24),
+          _SectionTitle(l10n.fontSize),
           SegmentedButton<FontScale>(
             segments: [
               for (final scale in FontScale.values)
-                ButtonSegment(value: scale, label: Text(scale.label)),
+                ButtonSegment(
+                  value: scale,
+                  label: Text(l10n.fontScaleName(scale)),
+                ),
             ],
             selected: {settings.fontScale},
             onSelectionChanged: (s) => controller.setFontScale(s.single),
@@ -45,18 +69,18 @@ class SettingsPage extends ConsumerWidget {
             value: settings.boldText,
             onChanged: controller.setBoldText,
             title: Text(
-              '粗体',
+              l10n.bold,
               style: TextStyle(fontSize: 17, color: palette.focusText),
             ),
             subtitle: Text(
-              '历史记录、浮动字幕等所有字幕文字使用粗体',
+              l10n.boldHint,
               style: TextStyle(color: palette.historyText),
             ),
           ),
           const SizedBox(height: 4),
           _Preview(settings: settings),
           const SizedBox(height: 24),
-          const _SectionTitle('配色模式'),
+          _SectionTitle(l10n.colorMode),
           RadioGroup<ColorMode>(
             groupValue: settings.colorMode,
             onChanged: (mode) {
@@ -69,7 +93,7 @@ class SettingsPage extends ConsumerWidget {
                     value: mode,
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      mode.label,
+                      l10n.colorModeName(mode),
                       style: TextStyle(color: palette.focusText),
                     ),
                     secondary: _Swatch(
@@ -84,13 +108,12 @@ class SettingsPage extends ConsumerWidget {
           if (settings.colorMode == ColorMode.custom)
             _CustomColors(settings: settings, controller: controller),
           const SizedBox(height: 24),
-          const _SectionTitle('浮动窗'),
+          _SectionTitle(l10n.floatingWindow),
           const _FloatingCaptionSection(),
           const SizedBox(height: 24),
-          const _SectionTitle('识别模型'),
+          _SectionTitle(l10n.recognitionModel),
           Text(
-            '为每种语言指定使用的模型，打分为 10 分制；“自动”选择打分最高的模型。'
-            '修改后在下次点击“开始识别”时生效。',
+            l10n.recognitionModelHint,
             style: TextStyle(color: palette.historyText, height: 1.5),
           ),
           const SizedBox(height: 8),
@@ -101,7 +124,7 @@ class SettingsPage extends ConsumerWidget {
               onChanged: controller.setModelPreference,
             ),
             AsyncError(:final error) => Text(
-              '模型配置加载失败：$error',
+              l10n.modelConfigLoadFailed('$error'),
               style: TextStyle(color: palette.historyText),
             ),
             _ => const Center(child: CircularProgressIndicator()),
@@ -152,23 +175,27 @@ class _CustomColors extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = AppPalette.of(context);
+    final l10n = AppLocalizations.of(context);
     final ratio = contrastRatio(settings.customBackground, settings.customText);
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('背景色', style: TextStyle(fontSize: 16, color: palette.focusText)),
+          Text(
+            l10n.backgroundColor,
+            style: TextStyle(fontSize: 16, color: palette.focusText),
+          ),
           const SizedBox(height: 8),
           _ColorGrid(
             colors: _backgrounds,
             selected: settings.customBackground,
             onSelected: controller.setCustomBackground,
-            label: '背景',
+            label: l10n.backgroundSwatch,
           ),
           const SizedBox(height: 16),
           Text(
-            '文字颜色',
+            l10n.textColor,
             style: TextStyle(fontSize: 16, color: palette.focusText),
           ),
           const SizedBox(height: 8),
@@ -176,7 +203,7 @@ class _CustomColors extends StatelessWidget {
             colors: _texts,
             selected: settings.customText,
             onSelected: controller.setCustomText,
-            label: '文字',
+            label: l10n.textSwatch,
           ),
           if (ratio < 4.5)
             Padding(
@@ -190,8 +217,7 @@ class _CustomColors extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '对比度较低（${ratio.toStringAsFixed(1)}:1），字幕可能不易看清，'
-                      '建议不低于 4.5:1',
+                      l10n.lowContrast(ratio.toStringAsFixed(1)),
                       style: TextStyle(color: palette.historyText, height: 1.4),
                     ),
                   ),
@@ -215,7 +241,9 @@ class _ColorGrid extends StatelessWidget {
   final List<Color> colors;
   final Color selected;
   final ValueChanged<Color> onSelected;
-  final String label;
+
+  /// 色块的无障碍名称，参数为从 1 开始的序号。
+  final String Function(int index) label;
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +256,7 @@ class _ColorGrid extends StatelessWidget {
           Semantics(
             button: true,
             selected: color == selected,
-            label: '$label颜色 ${i + 1}',
+            label: label(i + 1),
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: () => onSelected(color),
@@ -270,25 +298,25 @@ class _FloatingCaptionSection extends ConsumerWidget {
       return;
     }
     final platform = ref.read(backgroundPlatformProvider);
+    final l10n = AppLocalizations.of(context);
     if (!await platform.canShowOverlay()) {
       if (!context.mounted) return;
       final go = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('需要悬浮窗权限'),
-          content: const Text(
-            '浮动字幕需要“显示在其他应用上层”权限。\n'
-            '接下来请在系统设置中找到本应用并允许，然后返回。',
-            style: TextStyle(fontSize: 17, height: 1.5),
+          title: Text(l10n.overlayPermissionTitle),
+          content: Text(
+            l10n.overlayPermissionBody,
+            style: const TextStyle(fontSize: 17, height: 1.5),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消'),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('去开启'),
+              child: Text(l10n.goEnable),
             ),
           ],
         ),
@@ -296,7 +324,7 @@ class _FloatingCaptionSection extends ConsumerWidget {
       if (go != true) return;
       await platform.openOverlaySettings();
       if (!await platform.canShowOverlay()) {
-        if (context.mounted) _toast(context, '未获得悬浮窗权限，浮动窗未开启');
+        if (context.mounted) _toast(context, l10n.overlayPermissionDenied);
         return;
       }
     }
@@ -313,7 +341,7 @@ class _FloatingCaptionSection extends ConsumerWidget {
       value: enabled,
       onChanged: (on) => _onChanged(context, ref, on),
       title: Text(
-        '显示浮动窗',
+        AppLocalizations.of(context).showFloatingWindow,
         style: TextStyle(fontSize: 17, color: AppPalette.of(context).focusText),
       ),
     );
@@ -356,6 +384,7 @@ class _Preview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = AppPalette.forSettings(settings);
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -379,7 +408,7 @@ class _Preview extends StatelessWidget {
                   style: TextStyle(color: palette.timestamp),
                 ),
                 TextSpan(
-                  text: '你好，请问今天几点开会？',
+                  text: l10n.previewHistory,
                   style: TextStyle(color: palette.historyText),
                 ),
               ],
@@ -395,7 +424,7 @@ class _Preview extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              '下午三点见',
+              l10n.previewFocus,
               style: TextStyle(
                 fontSize: settings.fontScale.size,
                 height: 1.35,
@@ -427,7 +456,7 @@ class _Swatch extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        '字',
+        AppLocalizations.of(context).swatchSample,
         style: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -438,7 +467,9 @@ class _Swatch extends StatelessWidget {
   }
 }
 
-class _ModelPreferences extends StatelessWidget {
+/// 按语言选择识别模型（PRD 4.6）：先在下拉框中选语言，下方列出支持该语言的候选模型及其
+/// 支持的全部语言打分，点击模型即选中。
+class _ModelPreferences extends StatefulWidget {
   const _ModelPreferences({
     required this.config,
     required this.preferences,
@@ -450,36 +481,26 @@ class _ModelPreferences extends StatelessWidget {
   final void Function(String language, String? modelId) onChanged;
 
   @override
-  Widget build(BuildContext context) {
-    final palette = AppPalette.of(context);
-    // 只列出顶部栏可以勾选的语言。
+  State<_ModelPreferences> createState() => _ModelPreferencesState();
+}
+
+class _ModelPreferencesState extends State<_ModelPreferences> {
+  static const _autoValue = '';
+
+  String? _language;
+
+  ModelConfig get _config => widget.config;
+
+  /// 只列出顶部栏可以勾选的语言。
+  List<LanguageDef> get _languages {
     final selectable = AsrLanguage.values.map((l) => l.code).toSet();
-    final languages = [...config.languages]
+    return [..._config.languages]
       ..retainWhere((l) => selectable.contains(l.id))
       ..sort((a, b) => a.order.compareTo(b.order));
-
-    return Column(
-      children: [
-        for (final language in languages)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              language.name,
-              style: TextStyle(fontSize: 17, color: palette.focusText),
-            ),
-            subtitle: Text(
-              _currentLabel(language.id),
-              style: TextStyle(color: palette.historyText),
-            ),
-            trailing: Icon(Icons.chevron_right, color: palette.historyText),
-            onTap: () => _choose(context, language),
-          ),
-      ],
-    );
   }
 
   List<AsrModelDef> _modelsFor(String language) => [
-    for (final m in config.asrModels)
+    for (final m in _config.asrModels)
       if (m.languages.any((s) => s.lang == language)) m,
   ]..sort((a, b) => _scoreOf(b, language).compareTo(_scoreOf(a, language)));
 
@@ -488,71 +509,105 @@ class _ModelPreferences extends StatelessWidget {
 
   /// 配置更新后已不存在或不再支持该语言的模型视为“自动”。
   String? _validPreference(String language) {
-    final id = preferences[language];
+    final id = widget.preferences[language];
     return _modelsFor(language).any((m) => m.id == id) ? id : null;
   }
 
-  String _currentLabel(String language) {
-    final id = _validPreference(language);
-    if (id == null) {
-      final auto = selectModel(config, {language});
-      return auto == null
-          ? '自动（无可用模型）'
-          : '自动：${auto.name}  ${_scoreOf(auto, language)} 分';
-    }
-    final model = config.asrModels.firstWhere((m) => m.id == id);
-    return '${model.name}  ${_scoreOf(model, language)} 分';
+  /// 模型支持的全部语言及打分，按语言顺序排列。
+  String _scoresOf(AppLocalizations l10n, AsrModelDef model) {
+    final names = {for (final l in _config.languages) l.id: l};
+    final sorted = [...model.languages]
+      ..sort(
+        (a, b) => (names[a.lang]?.order ?? 999).compareTo(
+          names[b.lang]?.order ?? 999,
+        ),
+      );
+    return [
+      for (final s in sorted)
+        '${l10n.languageName(s.lang, names[s.lang]?.name)} ${s.score}',
+    ].join(' · ');
   }
 
-  /// 弹窗列出支持该语言的候选模型、该语言的打分，以及每个模型支持的全部语言打分。
-  Future<void> _choose(BuildContext context, LanguageDef language) async {
-    final names = {for (final l in config.languages) l.id: l};
-    final candidates = _modelsFor(language.id);
-    const autoValue = '';
-    final picked = await showDialog<String>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: Text('为“${language.name}”选择模型'),
-        children: [
-          RadioGroup<String>(
-            groupValue: _validPreference(language.id) ?? autoValue,
-            onChanged: (v) => Navigator.pop(context, v),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const RadioListTile<String>(
-                  value: autoValue,
-                  title: Text('自动'),
-                  subtitle: Text('选打分最高的模型'),
-                ),
-                for (final model in candidates)
-                  RadioListTile<String>(
-                    value: model.id,
-                    isThreeLine: true,
-                    title: Text(
-                      '${model.name}    ${language.name} '
-                      '${_scoreOf(model, language.id)} 分',
-                    ),
-                    subtitle: Text(
-                      [
-                        for (final s
-                            in [...model.languages]..sort(
-                              (a, b) => (names[a.lang]?.order ?? 999).compareTo(
-                                names[b.lang]?.order ?? 999,
-                              ),
-                            ))
-                          '${names[s.lang]?.name ?? s.lang} ${s.score}',
-                      ].join(' · '),
-                      style: const TextStyle(height: 1.4),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  @override
+  Widget build(BuildContext context) {
+    final palette = AppPalette.of(context);
+    final l10n = AppLocalizations.of(context);
+    String nameOf(LanguageDef l) => l10n.languageName(l.id, l.name);
+    final languages = _languages;
+    if (languages.isEmpty) return const SizedBox.shrink();
+    final language = languages.firstWhere(
+      (l) => l.id == _language,
+      orElse: () => languages.first,
     );
-    if (picked == null) return;
-    onChanged(language.id, picked == autoValue ? null : picked);
+    final auto = selectModel(_config, {language.id});
+    final titleStyle = TextStyle(fontSize: 17, color: palette.focusText);
+    final subtitleStyle = TextStyle(color: palette.historyText, height: 1.4);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(l10n.language, style: titleStyle),
+            const SizedBox(width: 16),
+            DropdownButton<String>(
+              value: language.id,
+              dropdownColor: palette.cardSurface,
+              style: TextStyle(fontSize: 17, color: palette.focusText),
+              iconEnabledColor: palette.focusText,
+              items: [
+                for (final l in languages)
+                  DropdownMenuItem(value: l.id, child: Text(nameOf(l))),
+              ],
+              onChanged: (id) => setState(() => _language = id),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          l10n.chooseModelFor(nameOf(language)),
+          style: TextStyle(fontSize: 15, color: palette.historyText),
+        ),
+        RadioGroup<String>(
+          groupValue: _validPreference(language.id) ?? _autoValue,
+          onChanged: (v) {
+            if (v == null) return;
+            widget.onChanged(language.id, v == _autoValue ? null : v);
+          },
+          child: Column(
+            children: [
+              RadioListTile<String>(
+                value: _autoValue,
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.auto, style: titleStyle),
+                subtitle: Text(
+                  auto == null
+                      ? l10n.noModelAvailable
+                      : l10n.autoPicks(auto.name, _scoreOf(auto, language.id)),
+                  style: subtitleStyle,
+                ),
+              ),
+              for (final model in _modelsFor(language.id))
+                RadioListTile<String>(
+                  value: model.id,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    l10n.modelScoreTitle(
+                      model.name,
+                      nameOf(language),
+                      _scoreOf(model, language.id),
+                    ),
+                    style: titleStyle,
+                  ),
+                  subtitle: Text(
+                    l10n.supports(_scoresOf(l10n, model)),
+                    style: subtitleStyle,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

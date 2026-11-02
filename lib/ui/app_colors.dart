@@ -81,9 +81,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
         ColorMode.whiteOnBlack => whiteOnBlack,
         ColorMode.blackOnWhite => blackOnWhite,
         ColorMode.custom => AppPalette.custom(
-            background: settings.customBackground,
-            text: settings.customText,
-          ),
+          background: settings.customBackground,
+          text: settings.customText,
+        ),
       };
 
   static AppPalette of(BuildContext context) =>

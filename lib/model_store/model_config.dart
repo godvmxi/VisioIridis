@@ -56,11 +56,11 @@ class LanguageDef {
   });
 
   factory LanguageDef.fromJson(Map<String, dynamic> json) => LanguageDef(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        defaultEnabled: json['defaultEnabled'] as bool,
-        order: json['order'] as int,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    defaultEnabled: json['defaultEnabled'] as bool,
+    order: json['order'] as int,
+  );
 
   final String id;
   final String name;
@@ -76,10 +76,10 @@ class ModelDef {
   });
 
   factory ModelDef.fromJson(Map<String, dynamic> json) => ModelDef(
-        id: json['id'] as String,
-        version: json['version'] as String,
-        files: _list(json['files'], ModelFile.fromJson),
-      );
+    id: json['id'] as String,
+    version: json['version'] as String,
+    files: _list(json['files'], ModelFile.fromJson),
+  );
 
   final String id;
 
@@ -137,11 +137,11 @@ class ModelFile {
   });
 
   factory ModelFile.fromJson(Map<String, dynamic> json) => ModelFile(
-        name: json['name'] as String,
-        size: json['size'] as int,
-        sha256: (json['sha256'] as String).toLowerCase(),
-        urls: (json['urls'] as List).cast<String>(),
-      );
+    name: json['name'] as String,
+    size: json['size'] as int,
+    sha256: (json['sha256'] as String).toLowerCase(),
+    urls: (json['urls'] as List).cast<String>(),
+  );
 
   final String name;
   final int size;

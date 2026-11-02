@@ -124,22 +124,26 @@ class ModelRepository {
         part,
         file.size,
         isCancelled: isCancelled,
-        onProgress: (done, total) => onProgress?.call(PrepProgress(
-          phase: PrepPhase.downloading,
-          fileName: file.name,
-          done: done,
-          total: total,
-        )),
+        onProgress: (done, total) => onProgress?.call(
+          PrepProgress(
+            phase: PrepPhase.downloading,
+            fileName: file.name,
+            done: done,
+            total: total,
+          ),
+        ),
       );
       onProgress?.call(
-          PrepProgress(phase: PrepPhase.verifying, fileName: file.name));
+        PrepProgress(phase: PrepPhase.verifying, fileName: file.name),
+      );
       if (await _hash(part.path) != file.sha256) {
         await part.delete();
         throw ModelIntegrityException(file.name);
       }
       if (stores.isNotEmpty) {
         onProgress?.call(
-            PrepProgress(phase: PrepPhase.saving, fileName: file.name));
+          PrepProgress(phase: PrepPhase.saving, fileName: file.name),
+        );
         await stores.first.copyFromLocal(part, _relPath(model, file));
       }
       await part.rename(target.path);
@@ -165,10 +169,13 @@ class ModelRepository {
   ) async {
     final store = await _findStore(model, file);
     if (store == null) return false;
-    onProgress?.call(PrepProgress(phase: PrepPhase.copying, fileName: file.name));
+    onProgress?.call(
+      PrepProgress(phase: PrepPhase.copying, fileName: file.name),
+    );
     await store.copyToLocal(_relPath(model, file), part);
     onProgress?.call(
-        PrepProgress(phase: PrepPhase.verifying, fileName: file.name));
+      PrepProgress(phase: PrepPhase.verifying, fileName: file.name),
+    );
     if (await _hash(part.path) == file.sha256) return true;
     await part.delete();
     return false;

@@ -56,6 +56,9 @@ class MainActivity : FlutterActivity() {
                     result.success(false)
                     return
                 }
+                call.argument<String>("channel")?.let { SystemAudioCaptureService.channelName = it }
+                call.argument<String>("title")?.let { SystemAudioCaptureService.notificationTitle = it }
+                call.argument<String>("text")?.let { SystemAudioCaptureService.notificationText = it }
                 SystemAudioBus.onPermissionResult = { result.success(it) }
                 startActivity(
                     Intent(this, ProjectionRequestActivity::class.java)
@@ -95,7 +98,15 @@ class MainActivity : FlutterActivity() {
                         focusSize = call.argument<Double>("focusSize")!!.toFloat(),
                         historySize = call.argument<Double>("historySize")!!.toFloat(),
                         historyBold = call.argument<Boolean>("historyBold") ?: false,
-                    )
+                    ),
+                    CaptionOverlay.Labels(
+                        microphone = call.argument<String>("microphone")!!,
+                        speaker = call.argument<String>("speaker")!!,
+                        back = call.argument<String>("back")!!,
+                        exit = call.argument<String>("exit")!!,
+                        confirmExit = call.argument<String>("confirmExit")!!,
+                        cancel = call.argument<String>("cancel")!!,
+                    ),
                 )
                 result.success(null)
             }

@@ -1,7 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seevoice/asr/asr_engine.dart';
 import 'package:seevoice/asr/asr_language.dart';
+import 'package:seevoice/l10n/l10n.dart';
 import 'package:seevoice/state/asr_controller.dart';
 import 'package:seevoice/state/asr_state.dart';
 
@@ -12,12 +15,16 @@ late ProviderContainer container;
 
 AsrController controller() => container.read(asrControllerProvider.notifier);
 AsrEngineState get state => container.read(asrControllerProvider);
+final zh = lookupAppLocalizations(const Locale('zh'));
 
 void main() {
   setUp(() {
     engine = FakeAsrEngine();
     container = ProviderContainer(
-      overrides: [asrEngineProvider.overrideWithValue(engine)],
+      overrides: [
+        asrEngineProvider.overrideWithValue(engine),
+        appLocalizationsProvider.overrideWithValue(zh),
+      ],
     );
     container.listen(asrControllerProvider, (_, _) {});
   });
@@ -54,7 +61,7 @@ void main() {
   });
 
   test('start failure is reported as an error', () async {
-    engine.startError = Exception('需要麦克风权限才能识别');
+    engine.startError = const AsrStartException(AsrIssue.micPermissionDenied);
     await controller().startListening(testPreparedModel);
     expect(state.isListening, isFalse);
     expect(state.isLoading, isFalse);
@@ -66,11 +73,11 @@ void main() {
     await controller().startListening(testPreparedModel);
     engine.emit(const AsrFinal('第一句'));
     engine.emit(const AsrPartial('第二'));
-    engine.emit(const AsrError('录音中断'));
+    engine.emit(const AsrError(AsrIssue.recordingInterrupted, 'busy'));
     expect(state.isListening, isFalse);
     expect(state.currentPendingText, '');
     expect(state.history.single.text, '第一句');
-    expect(state.errorMessage, '录音中断');
+    expect(state.errorMessage, '录音中断：busy');
   });
 
   test('language change while listening is forwarded to the engine', () async {
@@ -94,7 +101,7 @@ void main() {
   test('event-only final shows the event label; silent BGM is dropped', () {
     engine.emit(const AsrFinal('', event: '<|Laughter|>'));
     engine.emit(const AsrFinal('', event: '<|BGM|>'));
-    expect(state.history.single.displayText, '😄 [笑声]');
+    expect(state.history.single.displayText(zh.eventName), '😄 [笑声]');
   });
 
   test('clearHistory empties history and pending text', () {
@@ -114,7 +121,7 @@ void main() {
       await controller().setAudioInput(speaker);
       expect(engine.lastInput, speaker);
       expect(state.audioInput, speaker);
-      expect(state.errorMessage, AsrController.speakerNotice);
+      expect(state.errorMessage, zh.speakerNotice);
       expect(state.isListening, isTrue);
 
       await controller().setAudioInput(mic);
@@ -126,7 +133,7 @@ void main() {
       await controller().setAudioInput(speaker);
       expect(engine.lastInput, isNull);
       expect(state.audioInput, speaker);
-      expect(state.errorMessage, AsrController.speakerNotice);
+      expect(state.errorMessage, zh.speakerNotice);
 
       await controller().startListening(testPreparedModel);
       expect(engine.lastInput, speaker);
@@ -135,7 +142,7 @@ void main() {
 
     test('failure keeps listening on the microphone with a notice', () async {
       await controller().startListening(testPreparedModel);
-      engine.inputError = Exception('未获得录制喇叭声音的授权');
+      engine.inputError = const AsrStartException(AsrIssue.speakerDenied);
       await controller().setAudioInput(speaker);
       expect(state.isListening, isTrue);
       expect(state.audioInput, mic);
@@ -145,10 +152,10 @@ void main() {
     test('engine fallback event switches back to the microphone', () async {
       await controller().startListening(testPreparedModel);
       await controller().setAudioInput(speaker);
-      engine.emit(const AsrInputChanged(mic, '已切回麦克风'));
+      engine.emit(const AsrInputChanged(mic, AsrIssue.speakerEnded));
       expect(state.audioInput, mic);
       expect(state.isListening, isTrue);
-      expect(state.errorMessage, '已切回麦克风');
+      expect(state.errorMessage, zh.speakerEnded);
     });
 
     test('stopping keeps the chosen source', () async {

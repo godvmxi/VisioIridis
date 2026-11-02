@@ -11,25 +11,39 @@ void main() {
 
   group('ModelConfig.parse', () {
     test('parses the builtin config', () {
-      expect(config.languages.map((l) => l.id), ['zh', 'yue', 'en', 'henan', 'ja', 'ko']);
+      expect(config.languages.map((l) => l.id), [
+        'zh',
+        'yue',
+        'en',
+        'henan',
+        'ja',
+        'ko',
+      ]);
       expect(config.vad.files.single.name, 'silero_vad.onnx');
-      expect(config.asrModels.map((m) => m.id),
-          ['sense-voice-small-int8', 'telespeech-ctc-int8']);
-      expect(config.asrModels.first.relativeDir,
-          'models/sense-voice-small-int8/2024-07-17');
+      expect(config.asrModels.map((m) => m.id), [
+        'sense-voice-small-int8',
+        'telespeech-ctc-int8',
+      ]);
+      expect(
+        config.asrModels.first.relativeDir,
+        'models/sense-voice-small-int8/2024-07-17',
+      );
     });
 
     test('rejects unsupported schema version', () {
       expect(
-        () => ModelConfig.parse(builtin.replaceFirst(
-            '"schemaVersion": 2', '"schemaVersion": 3')),
+        () => ModelConfig.parse(
+          builtin.replaceFirst('"schemaVersion": 2', '"schemaVersion": 3'),
+        ),
         throwsFormatException,
       );
     });
 
     test('rejects missing fields', () {
-      expect(() => ModelConfig.parse('{"schemaVersion": 2}'),
-          throwsFormatException);
+      expect(
+        () => ModelConfig.parse('{"schemaVersion": 2}'),
+        throwsFormatException,
+      );
     });
   });
 
@@ -55,18 +69,22 @@ void main() {
 
     test('a preferred model wins over a higher score', () {
       expect(
-        selectModel(config, {'zh'},
-                preferred: {'zh': 'telespeech-ctc-int8'})
-            ?.id,
+        selectModel(
+          config,
+          {'zh'},
+          preferred: {'zh': 'telespeech-ctc-int8'},
+        )?.id,
         'telespeech-ctc-int8',
       );
     });
 
     test('a preferred model that lacks a selected language is skipped', () {
       expect(
-        selectModel(config, {'zh', 'en'},
-                preferred: {'zh': 'telespeech-ctc-int8'})
-            ?.id,
+        selectModel(
+          config,
+          {'zh', 'en'},
+          preferred: {'zh': 'telespeech-ctc-int8'},
+        )?.id,
         'sense-voice-small-int8',
       );
     });
@@ -112,28 +130,33 @@ void main() {
     });
 
     test('prefers a cached remote config', () async {
-      File('${dir.path}/model_config.json').writeAsStringSync(builtin
-          .replaceFirst('"configVersion": 2', '"configVersion": 5'));
+      File('${dir.path}/model_config.json').writeAsStringSync(
+        builtin.replaceFirst('"configVersion": 2', '"configVersion": 5'),
+      );
       expect((await repo().load()).configVersion, 5);
     });
 
     test('ignores a cached config with unsupported schema', () async {
-      File('${dir.path}/model_config.json').writeAsStringSync(builtin
-          .replaceFirst('"schemaVersion": 2', '"schemaVersion": 9'));
+      File('${dir.path}/model_config.json').writeAsStringSync(
+        builtin.replaceFirst('"schemaVersion": 2', '"schemaVersion": 9'),
+      );
       expect((await repo().load()).configVersion, 2);
     });
 
     test('acceptRemote requires a newer configVersion', () {
-      final newer =
-          builtin.replaceFirst('"configVersion": 2', '"configVersion": 3');
+      final newer = builtin.replaceFirst(
+        '"configVersion": 2',
+        '"configVersion": 3',
+      );
       expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 3);
       expect(ConfigRepository.acceptRemote(config, builtin), isNull);
       expect(ConfigRepository.acceptRemote(config, 'not json'), isNull);
     });
 
     test('refresh skips non-https urls', () async {
-      final insecure = ModelConfig.parse(builtin.replaceFirst(
-          'https://example.com', 'http://example.com'));
+      final insecure = ModelConfig.parse(
+        builtin.replaceFirst('https://example.com', 'http://example.com'),
+      );
       expect(await repo().refresh(insecure), isNull);
     });
   });

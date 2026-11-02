@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/l10n.dart';
 import '../../state/asr_controller.dart';
 import '../../state/model_providers.dart';
 import '../app_colors.dart';
@@ -24,9 +25,11 @@ class ActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isListening =
-        ref.watch(asrControllerProvider.select((s) => s.isListening));
-    final preparing = ref.watch(modelPrepProvider) != null ||
+    final isListening = ref.watch(
+      asrControllerProvider.select((s) => s.isListening),
+    );
+    final preparing =
+        ref.watch(modelPrepProvider) != null ||
         ref.watch(asrControllerProvider.select((s) => s.isLoading));
 
     return SizedBox(
@@ -36,7 +39,9 @@ class ActionButton extends ConsumerWidget {
         style: FilledButton.styleFrom(
           backgroundColor: isListening ? AppColors.stop : AppColors.listening,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
           textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         onPressed: preparing ? null : () => _onPressed(context, ref),
@@ -44,7 +49,11 @@ class ActionButton extends ConsumerWidget {
           isListening ? Icons.stop_rounded : Icons.mic_rounded,
           size: 28,
         ),
-        label: Text(isListening ? '停止识别' : '开始识别'),
+        label: Text(
+          isListening
+              ? AppLocalizations.of(context).stopRecognition
+              : AppLocalizations.of(context).startRecognition,
+        ),
       ),
     );
   }
