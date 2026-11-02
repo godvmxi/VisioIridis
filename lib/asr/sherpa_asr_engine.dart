@@ -6,13 +6,15 @@ import 'package:record/record.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../model_store/model_selector.dart';
+import '../platform/keep_alive.dart';
+import '../platform/system_audio.dart';
 import 'asr_engine.dart';
 import 'asr_language.dart';
 import 'prepared_model.dart';
 import 'sherpa_worker.dart';
 
-/// 真实识别引擎：record 采集 16kHz 单声道 PCM，交给常驻的推理 Isolate
-/// （sherpa-onnx Silero-VAD + SenseVoice/TeleSpeech）处理。
+/// 真实识别引擎：采集 16kHz 单声道 PCM（麦克风或系统播放的声音），交给常驻的
+/// 推理 Isolate（sherpa-onnx Silero-VAD + SenseVoice/TeleSpeech）处理。
 class SherpaAsrEngine implements AsrEngine {
   final _events = StreamController<AsrEvent>.broadcast();
   final _recorder = AudioRecorder();
@@ -22,6 +24,7 @@ class SherpaAsrEngine implements AsrEngine {
   SendPort? _worker;
   PreparedModel? _loaded;
   StreamSubscription<Uint8List>? _audio;
+  AudioInput _input = AudioInput.microphone;
 
   @override
   Stream<AsrEvent> get events => _events.stream;
@@ -38,26 +41,88 @@ class SherpaAsrEngine implements AsrEngine {
       updateLanguages(languages);
     }
 
-    final stream = await _recorder.startStream(const RecordConfig(
-      encoder: AudioEncoder.pcm16bits,
-      sampleRate: 16000,
-      numChannels: 1,
-      noiseSuppress: true,
-    ));
-    _audio = stream.listen(
-      (chunk) => _worker?.send(chunk),
-      onError: (Object e) => _fail('录音中断：$e'),
-    );
+    await _startInput(AudioInput.microphone);
     await WakelockPlus.enable();
+    // Android 14+ 要求麦克风前台服务在 App 处于前台时启动，即此刻。
+    await KeepAlive.start();
   }
 
   @override
   Future<void> stop() async {
+    await _stopInput();
+    await WakelockPlus.disable();
+    await KeepAlive.stop();
+  }
+
+  @override
+  Future<void> setAudioInput(AudioInput input) async {
+    if (input == _input || _audio == null) return;
+    await _stopInput();
+    try {
+      await _startInput(input);
+    } catch (_) {
+      await _startInput(AudioInput.microphone);
+      rethrow;
+    }
+  }
+
+  /// 开始从 [input] 读取 PCM 并送入推理 Isolate。
+  Future<void> _startInput(AudioInput input) async {
+    final Stream<Uint8List> stream;
+    switch (input) {
+      case AudioInput.microphone:
+        stream = await _recorder.startStream(const RecordConfig(
+          encoder: AudioEncoder.pcm16bits,
+          sampleRate: 16000,
+          numChannels: 1,
+          noiseSuppress: true,
+        ));
+      case AudioInput.systemAudio:
+        // 先订阅再请求授权，避免漏掉授权后立即到来的数据。
+        stream = SystemAudioCapture.pcm;
+    }
+    _input = input;
+    _audio = stream.listen(
+      (chunk) => _worker?.send(chunk),
+      onError: (Object e) => _fail('录音中断：$e'),
+      onDone: input == AudioInput.systemAudio ? _onSystemAudioEnded : null,
+    );
+    if (input == AudioInput.systemAudio && !await SystemAudioCapture.start()) {
+      await _audio?.cancel();
+      _audio = null;
+      _input = AudioInput.microphone;
+      throw const AsrStartException('未获得录制喇叭声音的授权，已切回麦克风');
+    }
+  }
+
+  Future<void> _stopInput() async {
+    final input = _input;
     await _audio?.cancel();
     _audio = null;
-    await _recorder.stop();
+    _input = AudioInput.microphone;
+    switch (input) {
+      case AudioInput.microphone:
+        await _recorder.stop();
+      case AudioInput.systemAudio:
+        await SystemAudioCapture.stop();
+    }
+    // 换来源或停止时，把正在说的句子按句尾处理。
     _worker?.send(const WorkerFlush());
-    await WakelockPlus.disable();
+  }
+
+  /// 系统声音录制被用户或系统结束（如在通知栏停止）时自动回到麦克风。
+  Future<void> _onSystemAudioEnded() async {
+    if (_input != AudioInput.systemAudio || _audio == null) return;
+    _audio = null;
+    _input = AudioInput.microphone;
+    _worker?.send(const WorkerFlush());
+    try {
+      await _startInput(AudioInput.microphone);
+      _events.add(const AsrInputChanged(
+          AudioInput.microphone, '喇叭声音录制已结束，已切回麦克风'));
+    } catch (e) {
+      _fail('切回麦克风失败：$e');
+    }
   }
 
   @override

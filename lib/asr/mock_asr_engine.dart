@@ -48,6 +48,9 @@ class MockAsrEngine implements AsrEngine {
   void updateLanguages(Set<AsrLanguage> languages) {}
 
   @override
+  Future<void> setAudioInput(AudioInput input) async {}
+
+  @override
   void dispose() {
     _timer?.cancel();
     _controller.close();

@@ -1,12 +1,14 @@
 {
-  "schemaVersion": 1,
-  "configVersion": 1,
+  "schemaVersion": 2,
+  "configVersion": 2,
   "remoteConfigUrl": "https://example.com/visio-iridis/model_config.json",
   "languages": [
     { "id": "zh",    "name": "普通话", "defaultEnabled": true,  "order": 1 },
     { "id": "yue",   "name": "粤语",   "defaultEnabled": true,  "order": 2 },
     { "id": "en",    "name": "英语",   "defaultEnabled": true,  "order": 3 },
-    { "id": "henan", "name": "河南话", "defaultEnabled": false, "order": 4 }
+    { "id": "henan", "name": "河南话", "defaultEnabled": false, "order": 4 },
+    { "id": "ja",    "name": "日语",   "defaultEnabled": false, "order": 5 },
+    { "id": "ko",    "name": "韩语",   "defaultEnabled": false, "order": 6 }
   ],
   "vad": {
     "id": "silero-vad",
@@ -50,9 +52,11 @@
         }
       ],
       "languages": [
-        { "lang": "zh",  "weight": 100, "decodeParam": "zh" },
-        { "lang": "yue", "weight": 100, "decodeParam": "yue" },
-        { "lang": "en",  "weight": 90,  "decodeParam": "en" }
+        { "lang": "zh",  "score": 10, "decodeParam": "zh" },
+        { "lang": "yue", "score": 10, "decodeParam": "yue" },
+        { "lang": "en",  "score": 9,  "decodeParam": "en" },
+        { "lang": "ja",  "score": 8,  "decodeParam": "ja" },
+        { "lang": "ko",  "score": 8,  "decodeParam": "ko" }
       ],
       "autoDecodeParam": "auto"
     },
@@ -83,8 +87,8 @@
         }
       ],
       "languages": [
-        { "lang": "zh",    "weight": 70, "decodeParam": "" },
-        { "lang": "henan", "weight": 90, "decodeParam": "" }
+        { "lang": "zh",    "score": 7, "decodeParam": "" },
+        { "lang": "henan", "score": 9, "decodeParam": "" }
       ],
       "autoDecodeParam": ""
     }

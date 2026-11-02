@@ -3,7 +3,7 @@ import 'model_config.dart';
 /// PRD 4.5.3：在支持全部已勾选语言的模型中选择。
 ///
 /// [preferred] 为设置页中“语言 → 指定模型”的选择（PRD 4.6）。被越多已勾选语言
-/// 指定的模型越优先；指定次数相同时选权重之和最高的，再相同时选文件总大小更小的。
+/// 指定的模型越优先；指定次数相同时选打分之和最高的，再相同时选文件总大小更小的。
 /// 指定的模型不支持全部已勾选语言时不会被选中。没有任何模型支持时返回 null。
 AsrModelDef? selectModel(
   ModelConfig config,
@@ -13,11 +13,11 @@ AsrModelDef? selectModel(
   AsrModelDef? best;
   (int, int)? bestScore;
   for (final model in config.asrModels) {
-    final weights = {for (final s in model.languages) s.lang: s.weight};
-    if (!languages.every(weights.containsKey)) continue;
+    final scores = {for (final s in model.languages) s.lang: s.score};
+    if (!languages.every(scores.containsKey)) continue;
     final votes = languages.where((l) => preferred[l] == model.id).length;
-    final weight = languages.fold(0, (sum, lang) => sum + weights[lang]!);
-    final score = (votes, weight);
+    final total = languages.fold(0, (sum, lang) => sum + scores[lang]!);
+    final score = (votes, total);
     if (bestScore == null ||
         _compare(score, bestScore) > 0 ||
         (_compare(score, bestScore) == 0 &&

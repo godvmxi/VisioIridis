@@ -104,4 +104,58 @@ void main() {
     expect(state.history, isEmpty);
     expect(state.currentPendingText, '');
   });
+
+  group('audio input (PRD 4.8)', () {
+    const mic = AudioInput.microphone;
+    const speaker = AudioInput.systemAudio;
+
+    test('switches to speaker and back while listening', () async {
+      await controller().startListening(testPreparedModel);
+      await controller().setAudioInput(speaker);
+      expect(engine.lastInput, speaker);
+      expect(state.audioInput, speaker);
+      expect(state.errorMessage, AsrController.speakerNotice);
+      expect(state.isListening, isTrue);
+
+      await controller().setAudioInput(mic);
+      expect(engine.lastInput, mic);
+      expect(state.audioInput, mic);
+    });
+
+    test('choice made before listening applies on start', () async {
+      await controller().setAudioInput(speaker);
+      expect(engine.lastInput, isNull);
+      expect(state.audioInput, speaker);
+      expect(state.errorMessage, AsrController.speakerNotice);
+
+      await controller().startListening(testPreparedModel);
+      expect(engine.lastInput, speaker);
+      expect(state.isListening, isTrue);
+    });
+
+    test('failure keeps listening on the microphone with a notice', () async {
+      await controller().startListening(testPreparedModel);
+      engine.inputError = Exception('未获得录制喇叭声音的授权');
+      await controller().setAudioInput(speaker);
+      expect(state.isListening, isTrue);
+      expect(state.audioInput, mic);
+      expect(state.errorMessage, contains('授权'));
+    });
+
+    test('engine fallback event switches back to the microphone', () async {
+      await controller().startListening(testPreparedModel);
+      await controller().setAudioInput(speaker);
+      engine.emit(const AsrInputChanged(mic, '已切回麦克风'));
+      expect(state.audioInput, mic);
+      expect(state.isListening, isTrue);
+      expect(state.errorMessage, '已切回麦克风');
+    });
+
+    test('stopping keeps the chosen source', () async {
+      await controller().startListening(testPreparedModel);
+      await controller().setAudioInput(speaker);
+      await controller().stopListening();
+      expect(state.audioInput, speaker);
+    });
+  });
 }

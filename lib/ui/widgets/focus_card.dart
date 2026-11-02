@@ -28,6 +28,7 @@ class FocusCard extends ConsumerWidget {
     final isLoading =
         ref.watch(asrControllerProvider.select((s) => s.isLoading));
     final fontScale = ref.watch(settingsProvider.select((s) => s.fontScale));
+    final weight = ref.watch(settingsProvider.select((s) => s.textWeight));
     final palette = AppPalette.of(context);
     final currentKey = ValueKey(segment);
 
@@ -38,7 +39,7 @@ class FocusCard extends ConsumerWidget {
       // 约容纳 3 行最新字幕，随字号缩放。
       constraints: BoxConstraints(
         minHeight: 120,
-        maxHeight: fontScale.focus * 1.35 * 3 + 24,
+        maxHeight: fontScale.size * 1.35 * 3 + 24,
       ),
       decoration: BoxDecoration(
         color: palette.cardSurface,
@@ -86,7 +87,8 @@ class FocusCard extends ConsumerWidget {
                 child: _CardText(
                   text: text,
                   placeholder: isLoading ? '正在加载识别模型...' : '等待语音输入...',
-                  fontSize: fontScale.focus,
+                  fontSize: fontScale.size,
+                  placeholderWeight: weight,
                 ),
               ),
             ),
@@ -184,11 +186,13 @@ class _CardText extends StatelessWidget {
     required this.text,
     required this.placeholder,
     required this.fontSize,
+    required this.placeholderWeight,
   });
 
   final String text;
   final String placeholder;
   final double fontSize;
+  final FontWeight placeholderWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +201,11 @@ class _CardText extends StatelessWidget {
       return Text(
         placeholder,
         style: TextStyle(
-            fontSize: fontSize * 0.75, color: palette.idle, height: 1.35),
+          fontSize: fontSize,
+          color: palette.idle,
+          height: 1.35,
+          fontWeight: placeholderWeight,
+        ),
       );
     }
     // reverse: 文字超出卡片高度时始终显示最后几行。

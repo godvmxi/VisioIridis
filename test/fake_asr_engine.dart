@@ -31,6 +31,8 @@ class FakeAsrEngine implements AsrEngine {
   bool started = false;
   Object? startError;
   Set<AsrLanguage>? lastLanguages;
+  AudioInput? lastInput;
+  Object? inputError;
 
   void emit(AsrEvent event) => _controller.add(event);
 
@@ -49,6 +51,12 @@ class FakeAsrEngine implements AsrEngine {
 
   @override
   void updateLanguages(Set<AsrLanguage> languages) => lastLanguages = languages;
+
+  @override
+  Future<void> setAudioInput(AudioInput input) async {
+    if (inputError != null) throw inputError!;
+    lastInput = input;
+  }
 
   @override
   void dispose() => _controller.close();

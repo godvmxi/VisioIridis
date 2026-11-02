@@ -23,44 +23,67 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.idle,
   });
 
-  /// PRD 第 4 章的默认配色。
+  // 每种模式下所有文字使用同一颜色（PRD 4.6）；时间戳、占位提示等次要文字
+  // 用同色降低不透明度区分层级。
+
+  /// 默认配色。
   static const yellowOnBlack = AppPalette(
     brightness: Brightness.dark,
     background: Color(0xFF000000),
-    historyText: Color(0xFFB0B0B0),
-    timestamp: Color(0xFF666666),
+    historyText: Color(0xFFFFE600),
+    timestamp: Color(0x99FFE600),
     cardSurface: Color(0xFF1E1E1E),
     cardBorder: Color(0xFF333333),
     focusText: Color(0xFFFFE600),
-    idle: Color(0xFF666666),
+    idle: Color(0x80FFE600),
   );
 
   static const whiteOnBlack = AppPalette(
     brightness: Brightness.dark,
     background: Color(0xFF000000),
-    historyText: Color(0xFFB0B0B0),
-    timestamp: Color(0xFF666666),
+    historyText: Color(0xFFFFFFFF),
+    timestamp: Color(0x99FFFFFF),
     cardSurface: Color(0xFF1E1E1E),
     cardBorder: Color(0xFF333333),
     focusText: Color(0xFFFFFFFF),
-    idle: Color(0xFF666666),
+    idle: Color(0x80FFFFFF),
   );
 
   static const blackOnWhite = AppPalette(
     brightness: Brightness.light,
     background: Color(0xFFFFFFFF),
-    historyText: Color(0xFF424242),
-    timestamp: Color(0xFF8A8A8A),
+    historyText: Color(0xFF000000),
+    timestamp: Color(0x99000000),
     cardSurface: Color(0xFFF2F2F2),
     cardBorder: Color(0xFFD0D0D0),
     focusText: Color(0xFF000000),
-    idle: Color(0xFF9E9E9E),
+    idle: Color(0x80000000),
   );
 
-  static AppPalette forMode(ColorMode mode) => switch (mode) {
+  /// 由背景色与文字颜色推导完整配色，用于自定义模式。
+  factory AppPalette.custom({required Color background, required Color text}) {
+    final dark = background.computeLuminance() < 0.5;
+    return AppPalette(
+      brightness: dark ? Brightness.dark : Brightness.light,
+      background: background,
+      historyText: text,
+      timestamp: text.withValues(alpha: 0.6),
+      cardSurface: Color.lerp(background, text, 0.08)!,
+      cardBorder: Color.lerp(background, text, 0.22)!,
+      focusText: text,
+      idle: text.withValues(alpha: 0.5),
+    );
+  }
+
+  static AppPalette forSettings(AppSettings settings) =>
+      switch (settings.colorMode) {
         ColorMode.yellowOnBlack => yellowOnBlack,
         ColorMode.whiteOnBlack => whiteOnBlack,
         ColorMode.blackOnWhite => blackOnWhite,
+        ColorMode.custom => AppPalette.custom(
+            background: settings.customBackground,
+            text: settings.customText,
+          ),
       };
 
   static AppPalette of(BuildContext context) =>
@@ -81,4 +104,12 @@ class AppPalette extends ThemeExtension<AppPalette> {
   @override
   AppPalette lerp(AppPalette? other, double t) =>
       other == null || t < 0.5 ? this : other;
+}
+
+/// WCAG 对比度（1–21）。正文建议不低于 4.5。
+double contrastRatio(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  final (hi, lo) = la > lb ? (la, lb) : (lb, la);
+  return (hi + 0.05) / (lo + 0.05);
 }

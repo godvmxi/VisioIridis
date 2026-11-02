@@ -1,29 +1,30 @@
 import 'dart:convert';
 
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 字号档位（PRD 4.6）：最新卡片字号与历史区字号。
+/// 字号档位（PRD 4.6）：每档一个字号，最新卡片、历史记录与浮动窗口统一使用。
 /// 枚举名会被持久化，调整档位时保留已有名称。
 enum FontScale {
-  standard('标准', focus: 28, history: 18),
-  large('大', focus: 36, history: 22),
-  huge('特大', focus: 44, history: 26),
-  extraHuge('超大', focus: 52, history: 30),
-  giant('巨大', focus: 60, history: 34);
+  standard('标准', 24),
+  large('大', 30),
+  huge('特大', 36),
+  extraHuge('超大', 44),
+  giant('巨大', 52);
 
-  const FontScale(this.label, {required this.focus, required this.history});
+  const FontScale(this.label, this.size);
 
   final String label;
-  final double focus;
-  final double history;
+  final double size;
 }
 
 /// 配色模式（PRD 4.6）。
 enum ColorMode {
   yellowOnBlack('黄字黑底'),
   whiteOnBlack('白字黑底'),
-  blackOnWhite('黑字白底');
+  blackOnWhite('黑字白底'),
+  custom('自定义');
 
   const ColorMode(this.label);
 
@@ -35,6 +36,10 @@ class AppSettings {
     this.fontScale = FontScale.large,
     this.colorMode = ColorMode.yellowOnBlack,
     this.modelPreferences = const {},
+    this.floatingCaption = false,
+    this.boldText = false,
+    this.customBackground = const Color(0xFF0D1B2A),
+    this.customText = const Color(0xFF00E5FF),
   });
 
   final FontScale fontScale;
@@ -43,15 +48,36 @@ class AppSettings {
   /// 语言 id → 指定的模型 id；没有条目表示“自动”（按权重选择）。
   final Map<String, String> modelPreferences;
 
+  /// App 切到后台时显示浮动字幕窗口（PRD 4.7）。
+  final bool floatingCaption;
+
+  /// 历史记录、时间戳、浮动字幕等所有字幕文字使用粗体；最新卡片始终为粗体。
+  final bool boldText;
+
+  /// 自定义配色（[ColorMode.custom]）的背景色与文字颜色。
+  final Color customBackground;
+  final Color customText;
+
+  /// 历史等非最新卡片文字的字重。
+  FontWeight get textWeight => boldText ? FontWeight.bold : FontWeight.normal;
+
   AppSettings copyWith({
     FontScale? fontScale,
     ColorMode? colorMode,
     Map<String, String>? modelPreferences,
+    bool? floatingCaption,
+    bool? boldText,
+    Color? customBackground,
+    Color? customText,
   }) {
     return AppSettings(
       fontScale: fontScale ?? this.fontScale,
       colorMode: colorMode ?? this.colorMode,
       modelPreferences: modelPreferences ?? this.modelPreferences,
+      floatingCaption: floatingCaption ?? this.floatingCaption,
+      boldText: boldText ?? this.boldText,
+      customBackground: customBackground ?? this.customBackground,
+      customText: customText ?? this.customText,
     );
   }
 }
@@ -68,6 +94,10 @@ class SettingsController extends Notifier<AppSettings> {
   static const _fontKey = 'settings.fontScale';
   static const _colorKey = 'settings.colorMode';
   static const _modelsKey = 'settings.modelPreferences';
+  static const _floatingKey = 'settings.floatingCaption';
+  static const _boldKey = 'settings.boldText';
+  static const _customBackgroundKey = 'settings.customBackground';
+  static const _customTextKey = 'settings.customText';
 
   SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 
@@ -80,7 +110,35 @@ class SettingsController extends Notifier<AppSettings> {
       colorMode: _byName(ColorMode.values, prefs.getString(_colorKey)) ??
           ColorMode.yellowOnBlack,
       modelPreferences: _decodeMap(prefs.getString(_modelsKey)),
+      floatingCaption: prefs.getBool(_floatingKey) ?? false,
+      boldText: prefs.getBool(_boldKey) ?? false,
+      customBackground: _color(prefs.getInt(_customBackgroundKey)) ??
+          const AppSettings().customBackground,
+      customText: _color(prefs.getInt(_customTextKey)) ??
+          const AppSettings().customText,
     );
+  }
+
+  void setCustomBackground(Color value) {
+    state = state.copyWith(customBackground: value);
+    _prefs.setInt(_customBackgroundKey, value.toARGB32());
+  }
+
+  void setCustomText(Color value) {
+    state = state.copyWith(customText: value);
+    _prefs.setInt(_customTextKey, value.toARGB32());
+  }
+
+  static Color? _color(int? argb) => argb == null ? null : Color(argb);
+
+  void setBoldText(bool value) {
+    state = state.copyWith(boldText: value);
+    _prefs.setBool(_boldKey, value);
+  }
+
+  void setFloatingCaption(bool value) {
+    state = state.copyWith(floatingCaption: value);
+    _prefs.setBool(_floatingKey, value);
   }
 
   void setFontScale(FontScale value) {

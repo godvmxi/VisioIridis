@@ -12,7 +12,8 @@ class ModelConfig {
   });
 
   /// 当前 App 支持的配置格式版本。
-  static const supportedSchemaVersion = 1;
+  /// 2：语言支持由 0–100 的 weight 改为 0–10 的 score 打分。
+  static const supportedSchemaVersion = 2;
 
   final int schemaVersion;
   final int configVersion;
@@ -153,21 +154,21 @@ class ModelFile {
 class LanguageSupport {
   const LanguageSupport({
     required this.lang,
-    required this.weight,
+    required this.score,
     required this.decodeParam,
   });
 
   factory LanguageSupport.fromJson(Map<String, dynamic> json) =>
       LanguageSupport(
         lang: json['lang'] as String,
-        weight: json['weight'] as int,
+        score: json['score'] as int,
         decodeParam: json['decodeParam'] as String,
       );
 
   final String lang;
 
-  /// 0–100，越高越优先。
-  final int weight;
+  /// 识别质量打分，0–10 分，越高越优先（PRD 4.5.2）。
+  final int score;
 
   /// 空串表示该模型不支持指定语言。
   final String decodeParam;

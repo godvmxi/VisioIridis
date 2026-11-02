@@ -40,6 +40,10 @@ class AsrController extends Notifier<AsrEngineState> {
       await _engine.start(model, state.enabledLanguages);
       if (!ref.mounted) return;
       state = state.copyWith(isListening: true, isLoading: false);
+      // 开始前已选择“喇叭”时，启动后立即切到系统播放的声音。
+      if (state.audioInput == AudioInput.systemAudio) {
+        await _applyAudioInput(AudioInput.systemAudio);
+      }
     } catch (e) {
       if (!ref.mounted) return;
       state = state.withError('$e');
@@ -51,6 +55,46 @@ class AsrController extends Notifier<AsrEngineState> {
     await _engine.stop();
     if (!ref.mounted) return;
     state = state.copyWith(isListening: false, currentPendingText: '');
+  }
+
+  bool _switchingInput = false;
+
+  /// 切换到喇叭时提示的系统限制（PRD 4.8）。
+  static const speakerNotice =
+      '因系统限制，喇叭模式只能识别播放器等应用播放的声音，无法识别电话和语音/视频通话的声音';
+
+  /// “声音来源”：麦克风或喇叭（系统播放的声音，PRD 4.8）。
+  /// 未在识别时只记录选择，下次开始识别时生效；识别中立即切换。
+  Future<void> setAudioInput(AudioInput input) async {
+    if (state.audioInput == input || _switchingInput) return;
+    if (!state.isListening) {
+      state = state.copyWith(audioInput: input);
+      if (input == AudioInput.systemAudio) {
+        state = state.withNotice(speakerNotice);
+      }
+      return;
+    }
+    await _applyAudioInput(input);
+  }
+
+  /// 切换失败时引擎已回到麦克风，识别继续，只给出提示。
+  Future<void> _applyAudioInput(AudioInput input) async {
+    _switchingInput = true;
+    try {
+      await _engine.setAudioInput(input);
+      if (!ref.mounted) return;
+      state = state.copyWith(audioInput: input, currentPendingText: '');
+      if (input == AudioInput.systemAudio) {
+        state = state.withNotice(speakerNotice);
+      }
+    } catch (e) {
+      if (!ref.mounted) return;
+      state = state
+          .copyWith(audioInput: AudioInput.microphone, currentPendingText: '')
+          .withNotice('$e');
+    } finally {
+      _switchingInput = false;
+    }
   }
 
   /// 切换某语言的勾选。若会导致三者全部取消则拒绝并返回 false（PRD 4.1 防空保护）。
@@ -83,6 +127,10 @@ class AsrController extends Notifier<AsrEngineState> {
         _commit(event);
       case AsrError(:final message):
         state = state.withError(message);
+      case AsrInputChanged(:final input, :final reason):
+        state = state
+            .copyWith(audioInput: input, currentPendingText: '')
+            .withNotice(reason);
     }
   }
 

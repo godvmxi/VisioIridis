@@ -29,6 +29,17 @@ class AsrFinal extends AsrEvent {
   final String event;
 }
 
+/// 识别的声音来源（PRD 4.8）。
+enum AudioInput { microphone, systemAudio }
+
+/// 声音来源被引擎自动切换（如系统声音录制被用户结束后回到麦克风）。
+class AsrInputChanged extends AsrEvent {
+  const AsrInputChanged(this.input, this.reason);
+
+  final AudioInput input;
+  final String reason;
+}
+
 /// 识别过程中的错误（如麦克风被占用），收到后识别已停止。
 class AsrError extends AsrEvent {
   const AsrError(this.message);
@@ -48,6 +59,9 @@ abstract class AsrEngine {
 
   /// 识别中切换语言勾选时调用，下一句开始生效。
   void updateLanguages(Set<AsrLanguage> languages);
+
+  /// 识别中切换声音来源；当前句按句尾处理。切换失败时回到麦克风并抛出异常。
+  Future<void> setAudioInput(AudioInput input);
 
   void dispose();
 }

@@ -1,3 +1,4 @@
+import '../asr/asr_engine.dart';
 import '../asr/asr_language.dart';
 import '../models/subtitle_item.dart';
 
@@ -16,6 +17,7 @@ class AsrEngineState {
     this.isLoading = false,
     this.errorMessage,
     this.errorId = 0,
+    this.audioInput = AudioInput.microphone,
   });
 
   final bool isListening;
@@ -26,6 +28,9 @@ class AsrEngineState {
   /// 最近一次错误；[errorId] 每次出错加 1，界面据此弹出提示。
   final String? errorMessage;
   final int errorId;
+
+  /// 当前识别的声音来源（PRD 4.8）。
+  final AudioInput audioInput;
   final Set<AsrLanguage> enabledLanguages;
 
   /// 最新卡片上的临时结果。
@@ -46,6 +51,7 @@ class AsrEngineState {
     int? pendingSegment,
     List<SubtitleItem>? history,
     bool? isLoading,
+    AudioInput? audioInput,
   }) {
     return AsrEngineState(
       isListening: isListening ?? this.isListening,
@@ -56,8 +62,22 @@ class AsrEngineState {
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       errorId: errorId,
+      audioInput: audioInput ?? this.audioInput,
     );
   }
+
+  /// 提示一条消息，不改变识别状态。
+  AsrEngineState withNotice(String message) => AsrEngineState(
+        isListening: isListening,
+        enabledLanguages: enabledLanguages,
+        currentPendingText: currentPendingText,
+        pendingSegment: pendingSegment,
+        history: history,
+        isLoading: isLoading,
+        errorMessage: message,
+        errorId: errorId + 1,
+        audioInput: audioInput,
+      );
 
   AsrEngineState withError(String message) => AsrEngineState(
         enabledLanguages: enabledLanguages,

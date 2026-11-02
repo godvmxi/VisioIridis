@@ -71,7 +71,8 @@ class _HistoryListState extends ConsumerState<HistoryList> {
   Widget build(BuildContext context) {
     final history = ref.watch(asrControllerProvider.select((s) => s.history));
     final fontSize =
-        ref.watch(settingsProvider.select((s) => s.fontScale.history));
+        ref.watch(settingsProvider.select((s) => s.fontScale.size));
+    final weight = ref.watch(settingsProvider.select((s) => s.textWeight));
 
     ref.listen(asrControllerProvider.select((s) => s.history.length),
         (previous, next) {
@@ -98,7 +99,8 @@ class _HistoryListState extends ConsumerState<HistoryList> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: history.length,
             itemBuilder: (context, index) =>
-                _HistoryEntry(item: history[index], fontSize: fontSize),
+                _HistoryEntry(
+                    item: history[index], fontSize: fontSize, weight: weight),
           ),
         ),
         Positioned(
@@ -127,10 +129,15 @@ class _HistoryListState extends ConsumerState<HistoryList> {
 }
 
 class _HistoryEntry extends StatelessWidget {
-  const _HistoryEntry({required this.item, required this.fontSize});
+  const _HistoryEntry({
+    required this.item,
+    required this.fontSize,
+    required this.weight,
+  });
 
   final SubtitleItem item;
   final double fontSize;
+  final FontWeight weight;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +146,7 @@ class _HistoryEntry extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Text.rich(
         TextSpan(
-          style: TextStyle(fontSize: fontSize, height: 1.5),
+          style: TextStyle(fontSize: fontSize, height: 1.5, fontWeight: weight),
           children: [
             TextSpan(
               text: '${item.formattedTime} ',

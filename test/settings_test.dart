@@ -1,3 +1,4 @@
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seevoice/state/settings.dart';
@@ -20,6 +21,7 @@ void main() {
     expect(settings.fontScale, FontScale.large);
     expect(settings.colorMode, ColorMode.yellowOnBlack);
     expect(settings.modelPreferences, isEmpty);
+    expect(settings.boldText, isFalse);
   });
 
   test('changes are persisted and reloaded', () async {
@@ -28,6 +30,7 @@ void main() {
     controller.setFontScale(FontScale.giant);
     controller.setColorMode(ColorMode.blackOnWhite);
     controller.setModelPreference('zh', 'telespeech-ctc-int8');
+    controller.setBoldText(true);
 
     final prefs = container.read(sharedPreferencesProvider);
     final reloaded = ProviderContainer(
@@ -38,6 +41,8 @@ void main() {
     expect(settings.fontScale, FontScale.giant);
     expect(settings.colorMode, ColorMode.blackOnWhite);
     expect(settings.modelPreferences, {'zh': 'telespeech-ctc-int8'});
+    expect(settings.boldText, isTrue);
+    expect(settings.textWeight, FontWeight.bold);
   });
 
   test('clearing a model preference returns to automatic', () async {
