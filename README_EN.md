@@ -84,6 +84,8 @@ The current release targets Android only. iOS support is planned once the Androi
 
 Together: **Visio Iridis** — Vision of the Rainbow. Like a rainbow bridge, it spans the gulf between sound and sight, placing what is spoken directly before the eyes.
 
+Special thanks to **LT** for giving this name its soul.
+
 ---
 
 ## Notes for Users in Mainland China
