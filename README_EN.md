@@ -76,6 +76,18 @@ The current release targets Android only. iOS support is planned once the Androi
 
 ---
 
+## About This Project
+
+Visio Iridis is a **non-profit, free and open-source** app. Its only purpose is to make everyday conversation a little easier for people who are deaf or hard of hearing.
+
+The inspiration came from an old friend who introduced me to shooting sports — a man with severe hearing loss who showed me, through his own joy and energy, that not being able to hear doesn't stop you from living fully. This app is built for people like him.
+
+Special thanks to **Larry, LT, Tom, and Swan** for their encouragement and early testing support.
+
+---
+
 ## Contributing
 
 Issues and pull requests are welcome. If you are deaf or hard of hearing and have feedback on usability, please open an issue — lived experience is the most valuable input this project can receive.
+
+We are also looking for beta testers who speak languages other than Mandarin, Cantonese, and English, to help validate multilingual recognition quality. If you are interested, leave a comment in an issue or reach out by email.
