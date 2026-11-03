@@ -35,13 +35,13 @@ jobs:
       - name: Rename artifacts
         run: |
           TAG=${GITHUB_REF_NAME}
-          cp build/app/outputs/flutter-apk/app-release.apk seevoice-${TAG}.apk
-          cp build/app/outputs/bundle/release/app-release.aab seevoice-${TAG}.aab
+          cp build/app/outputs/flutter-apk/app-release.apk VisioIridis-${TAG}.apk
+          cp build/app/outputs/bundle/release/app-release.aab VisioIridis-${TAG}.aab
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            seevoice-${{ github.ref_name }}.apk
-            seevoice-${{ github.ref_name }}.aab
+            VisioIridis-${{ github.ref_name }}.apk
+            VisioIridis-${{ github.ref_name }}.aab
           generate_release_notes: true
