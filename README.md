@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/godvmxi/VisioIridis)](https://github.com/godvmxi/VisioIridis/releases)
 [![Platform](https://img.shields.io/badge/platform-Android-green)](https://github.com/godvmxi/VisioIridis/releases)
 
-[English README →](README_EN.md)
+[English →](README_EN.md) | [繁體中文 →](README_TW.md)
 
 ---
 
@@ -73,6 +73,30 @@ Android 与 iOS 系统不向第三方应用开放通话音频或 VoIP 音频的�
 - Flutter（Android）
 - [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) — 本地语音识别引擎
 - Riverpod — 状态管理
+
+---
+
+## 大陆用户说明
+
+受网络环境限制，大陆用户在使用时可能遇到以下问题，以下是当前的解决方案和计划。
+
+### 模型下载
+
+App 内置了双下载源，**优先尝试 HuggingFace，自动切换 hf-mirror.com 镜像**，大多数情况下无需任何操作即可完成下载。若两者均无法访问，可通过以下方式手动解决：
+
+- 开启代理/VPN 后重试
+- 后续版本计划增加 ModelScope（魔搭）作为第三下载源
+
+### APK 下载
+
+GitHub Releases 在大陆访问可能较慢。备选方案：
+
+- 使用 [ghproxy](https://ghproxy.link) 等 GitHub 代理加速下载
+- 后续计划在国内平台（如 Gitee / 蒲公英）同步发布
+
+### 远程配置更新
+
+App 每 24 小时检查一次远程配置（用于推送新模型版本）。若无法访问，App 会继续使用本地缓存配置，**不影响正常使用**。
 
 ---
 

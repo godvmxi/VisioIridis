@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/godvmxi/VisioIridis)](https://github.com/godvmxi/VisioIridis/releases)
 [![Platform](https://img.shields.io/badge/platform-Android-green)](https://github.com/godvmxi/VisioIridis/releases)
 
-[中文说明 →](README.md)
+[简体中文 →](README.md) | [繁體中文 →](README_TW.md)
 
 ---
 
@@ -73,6 +73,30 @@ The current release targets Android only. iOS support is planned once the Androi
 - Flutter (Android)
 - [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) — on-device speech recognition engine
 - Riverpod — state management
+
+---
+
+## Notes for Users in Mainland China
+
+Due to network restrictions, users in mainland China may encounter difficulties in the following areas. Here is the current status and planned improvements.
+
+### Model Downloads
+
+The app ships with **two download sources**: it tries HuggingFace first and automatically falls back to **hf-mirror.com**, a mainland-accessible mirror. This means most users should be able to download models without any extra steps. If both sources fail, the options are:
+
+- Enable a VPN/proxy and retry
+- A third source — [ModelScope (魔搭)](https://modelscope.cn) — is planned for a future release
+
+### APK Download
+
+GitHub Releases can be slow or unreliable from mainland China. Alternatives:
+
+- Use a GitHub proxy such as [ghproxy](https://ghproxy.link) to accelerate the download
+- Releases on a domestic platform (Gitee / pgyer) are planned
+
+### Remote Config Updates
+
+The app checks for a remote config update every 24 hours (used to push new model versions). If the remote URL is unreachable, the app silently falls back to its local cached config — **normal use is not affected**.
 
 ---
 
