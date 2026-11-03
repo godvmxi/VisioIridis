@@ -18,6 +18,7 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final controller = ref.read(settingsProvider.notifier);
+    final platform = ref.watch(backgroundPlatformProvider);
     final config = ref.watch(modelConfigProvider);
     final palette = AppPalette.of(context);
     final l10n = AppLocalizations.of(context);
@@ -107,9 +108,13 @@ class SettingsPage extends ConsumerWidget {
           ),
           if (settings.colorMode == ColorMode.custom)
             _CustomColors(settings: settings, controller: controller),
-          const SizedBox(height: 24),
-          _SectionTitle(l10n.floatingWindow),
-          const _FloatingCaptionSection(),
+          // 平台不支持画在其他 App 之上时整块隐藏：留一个点下去必然失败的
+          // 开关，对用户是误导（PRD 4.7）。
+          if (platform.supportsOverlay) ...[
+            const SizedBox(height: 24),
+            _SectionTitle(l10n.floatingWindow),
+            const _FloatingCaptionSection(),
+          ],
           const SizedBox(height: 24),
           _SectionTitle(l10n.recognitionModel),
           Text(
