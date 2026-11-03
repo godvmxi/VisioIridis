@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seevoice/asr/asr_engine.dart';
 import 'package:seevoice/asr/prepared_model.dart';
+import 'package:seevoice/l10n/l10n.dart';
 import 'package:seevoice/main.dart';
 import 'package:seevoice/model_store/model_config.dart';
 import 'package:seevoice/platform/background_platform.dart';
@@ -507,6 +508,33 @@ void main() {
       findsNothing,
     );
   });
+
+  for (final language in ['ja', 'ko', 'fr', 'de']) {
+    testWidgets('$language interface lays out on a phone screen', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.75;
+      addTearDown(tester.view.reset);
+      await pumpApp(tester, prefsValues: {'settings.appLanguage': language});
+      await tester.pumpAndSettle();
+      final l10n = lookupAppLocalizations(Locale(language));
+      expect(find.text(l10n.startRecognition), findsOneWidget);
+
+      // 测试字体每个字都是方块，比真机宽；顶部栏放不下时可横向滑动。
+      await tester.ensureVisible(find.byType(ActionChip));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(ActionChip));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.recognitionLanguage), findsWidgets);
+      await tester.tap(find.text(l10n.done));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip(l10n.settings));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.interfaceLanguage), findsOneWidget);
+    });
+  }
 
   testWidgets('settings model chooser starts at the ticked language', (
     tester,

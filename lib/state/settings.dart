@@ -22,7 +22,7 @@ enum FontScale {
 enum ColorMode { yellowOnBlack, whiteOnBlack, blackOnWhite, custom }
 
 /// 界面语言（PRD 4.6）。[system] 跟随系统语言。
-enum AppLanguage { system, zhHans, zhHant, en }
+enum AppLanguage { system, zhHans, zhHant, en, ja, ko, fr, de }
 
 class AppSettings {
   const AppSettings({

@@ -15,8 +15,17 @@ const _traditionalChinese = Locale.fromSubtags(
 );
 const _english = Locale('en');
 
-/// 把界面语言设置解析为 App 支持的三种语言之一（PRD 4.6）。
-/// 跟随系统时：中文按繁简区分（Hant 或港澳台地区为繁体），其他语言用英语。
+/// 除中文外直接按语言代码对应的界面语言。
+const _otherLocales = {
+  'en': _english,
+  'ja': Locale('ja'),
+  'ko': Locale('ko'),
+  'fr': Locale('fr'),
+  'de': Locale('de'),
+};
+
+/// 把界面语言设置解析为 App 支持的界面语言之一（PRD 4.6）。
+/// 跟随系统时：中文按繁简区分（Hant 或港澳台地区为繁体），未翻译的语言用英语。
 Locale resolveAppLocale(AppLanguage language, Locale system) {
   switch (language) {
     case AppLanguage.zhHans:
@@ -24,9 +33,15 @@ Locale resolveAppLocale(AppLanguage language, Locale system) {
     case AppLanguage.zhHant:
       return _traditionalChinese;
     case AppLanguage.en:
-      return _english;
+    case AppLanguage.ja:
+    case AppLanguage.ko:
+    case AppLanguage.fr:
+    case AppLanguage.de:
+      return _otherLocales[language.name]!;
     case AppLanguage.system:
-      if (system.languageCode != 'zh') return _english;
+      if (system.languageCode != 'zh') {
+        return _otherLocales[system.languageCode] ?? _english;
+      }
       const traditionalRegions = {'HK', 'TW', 'MO'};
       final traditional =
           system.scriptCode == 'Hant' ||
@@ -87,6 +102,10 @@ extension AppStrings on AppLocalizations {
     AppLanguage.zhHans => '简体中文',
     AppLanguage.zhHant => '繁體中文',
     AppLanguage.en => 'English',
+    AppLanguage.ja => '日本語',
+    AppLanguage.ko => '한국어',
+    AppLanguage.fr => 'Français',
+    AppLanguage.de => 'Deutsch',
   };
 
   String asrIssue(AsrIssue issue, [String detail = '']) => switch (issue) {

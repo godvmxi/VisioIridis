@@ -15,6 +15,9 @@ void main() {
     expect(resolveAppLocale(AppLanguage.zhHans, system), hans);
     expect(resolveAppLocale(AppLanguage.zhHant, system), hant);
     expect(resolveAppLocale(AppLanguage.en, system), en);
+    expect(resolveAppLocale(AppLanguage.ja, system), const Locale('ja'));
+    expect(resolveAppLocale(AppLanguage.ko, system), const Locale('ko'));
+    expect(resolveAppLocale(AppLanguage.de, system), const Locale('de'));
   });
 
   test('following the system picks simplified or traditional Chinese', () {
@@ -29,12 +32,34 @@ void main() {
       hant,
     );
     expect(follow(const Locale('en', 'US')), en);
-    expect(follow(const Locale('ja', 'JP')), en);
+    expect(follow(const Locale('ja', 'JP')), const Locale('ja'));
+    expect(follow(const Locale('ko', 'KR')), const Locale('ko'));
+    expect(follow(const Locale('fr', 'CA')), const Locale('fr'));
+    expect(follow(const Locale('de', 'AT')), const Locale('de'));
+    // 未翻译的系统语言用英语。
+    expect(follow(const Locale('es', 'ES')), en);
   });
 
   test('every language has the app title in its own script', () {
     expect(lookupAppLocalizations(hans).appTitle, '伊利斯之视');
     expect(lookupAppLocalizations(hant).appTitle, '伊利斯之視');
     expect(lookupAppLocalizations(en).appTitle, 'Visio Iridis');
+  });
+
+  test('every display language has a translation', () {
+    for (final language in AppLanguage.values) {
+      final locale = resolveAppLocale(language, const Locale('en'));
+      expect(
+        AppLocalizations.supportedLocales.map((l) => l.languageCode),
+        contains(locale.languageCode),
+      );
+    }
+    expect(lookupAppLocalizations(const Locale('ja')).settings, '設定');
+    expect(lookupAppLocalizations(const Locale('ko')).settings, '설정');
+    expect(lookupAppLocalizations(const Locale('fr')).settings, 'Paramètres');
+    expect(
+      lookupAppLocalizations(const Locale('de')).settings,
+      'Einstellungen',
+    );
   });
 }
