@@ -11,8 +11,13 @@ class ConfigRepository {
     required this.storageDir,
     HttpClient? client,
     DateTime Function()? now,
+    /// 覆盖配置中的 remoteConfigUrl（用于按地区选择 GitHub / Gitee）。
+    this.remoteConfigUrlOverride,
+    /// stamp 文件后缀，用于区分不同地区的检查时间（避免跨地区的 24h 冷却竞争）。
+    String stampSuffix = '',
   }) : _client = client ?? HttpClient(),
-       _now = now ?? DateTime.now;
+       _now = now ?? DateTime.now,
+       _stampSuffix = stampSuffix;
 
   static const checkInterval = Duration(hours: 24);
   static const timeout = Duration(seconds: 5);
@@ -20,13 +25,17 @@ class ConfigRepository {
   /// 读取内置默认配置（assets/config/model_config.json）。
   final Future<String> Function() loadBuiltin;
 
-  /// 保存“最近可用配置”的应用私有目录。
+  /// 保存”最近可用配置”的应用私有目录。
   final Directory storageDir;
   final HttpClient _client;
   final DateTime Function() _now;
+  final String? remoteConfigUrlOverride;
+  final String _stampSuffix;
 
-  File get _cachedFile => File('${storageDir.path}/model_config.json');
-  File get _stampFile => File('${storageDir.path}/model_config.checked');
+  File get _cachedFile =>
+      File('${storageDir.path}/model_config$_stampSuffix.json');
+  File get _stampFile =>
+      File('${storageDir.path}/model_config.checked$_stampSuffix');
 
   /// 最近可用的远程配置优先，否则用内置默认配置。
   Future<ModelConfig> load() async {
@@ -42,16 +51,22 @@ class ConfigRepository {
 
   /// 检查远程配置。只有比 [current] 新且格式受支持时才保存并返回，
   /// 任何失败都静默返回 null。保存的配置在下次 [load] 时生效。
+  ///
+  /// stamp 只在 HTTP 请求成功后写入，失败不占用冷却时间。
   Future<ModelConfig?> refresh(ModelConfig current) async {
     try {
       if (await _stampFile.exists()) {
         final last = DateTime.parse(await _stampFile.readAsString());
         if (_now().difference(last) < checkInterval) return null;
       }
-      final uri = Uri.tryParse(current.remoteConfigUrl);
+      final uri = Uri.tryParse(
+        remoteConfigUrlOverride ?? current.remoteConfigUrl,
+      );
       if (uri == null || uri.scheme != 'https') return null;
 
       final body = await _get(uri).timeout(timeout);
+
+      // stamp 写在 HTTP 成功之后，失败不消耗冷却时间
       await storageDir.create(recursive: true);
       await _stampFile.writeAsString(_now().toIso8601String());
 

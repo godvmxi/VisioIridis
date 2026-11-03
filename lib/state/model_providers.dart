@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -8,23 +6,38 @@ import '../model_store/config_repository.dart';
 import '../model_store/downloader.dart';
 import '../model_store/model_config.dart';
 import '../model_store/model_repository.dart';
+import 'region_detector.dart';
+import 'settings.dart';
 
-/// 当前生效的模型配置。远程更新在后台检查，下次启动生效（PRD 4.5.1）。
+/// 当前生效的模型配置。远程检查由 configUpdateProvider 负责（PRD 4.5.1、4.5.6）。
 final modelConfigProvider = FutureProvider<ModelConfig>((ref) async {
+  // 读缓存区域（首次探测前为 unknown，视作国际版）
+  final region = switch (ref.watch(regionProvider)) {
+    AsyncData(:final value) => value,
+    _ => RegionResult.unknown,
+  };
+  final isCN = region == RegionResult.mainland;
+
   final repo = ConfigRepository(
-    loadBuiltin: () => rootBundle.loadString('assets/config/model_config.json'),
+    loadBuiltin: () => rootBundle.loadString(
+      isCN
+          ? 'assets/config/model_config_cn.json'
+          : 'assets/config/model_config.json',
+    ),
     storageDir: await getApplicationSupportDirectory(),
+    stampSuffix: isCN ? '_cn' : '_global',
   );
-  final config = await repo.load();
-  unawaited(repo.refresh(config));
-  return config;
+  return repo.load();
 });
 
 final modelCacheProvider = FutureProvider<ModelCache>(
   (ref) async => ModelCache(await getApplicationCacheDirectory()),
 );
 
-final downloaderProvider = Provider<Downloader>((ref) => HttpDownloader());
+final downloaderProvider = Provider<Downloader>((ref) {
+  final token = ref.watch(hfTokenProvider);
+  return HttpDownloader(hfToken: token);
+});
 
 /// 正在准备的模型及进度；为 null 表示当前没有准备任务。
 class PrepState {

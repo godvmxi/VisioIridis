@@ -31,6 +31,8 @@ class SettingsPage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        // ignore: deprecated_member_use
+        cacheExtent: 5000,
         children: [
           _SectionTitle(l10n.interfaceLanguage),
           DropdownButton<AppLanguage>(
@@ -81,32 +83,50 @@ class SettingsPage extends ConsumerWidget {
           _Preview(settings: settings),
           const SizedBox(height: 24),
           _SectionTitle(l10n.colorMode),
-          RadioGroup<ColorMode>(
-            groupValue: settings.colorMode,
-            onChanged: (mode) {
-              if (mode != null) controller.setColorMode(mode);
-            },
-            child: Column(
-              children: [
-                for (final mode in ColorMode.values)
-                  RadioListTile<ColorMode>(
-                    value: mode,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l10n.colorModeName(mode),
-                      style: TextStyle(color: palette.focusText),
-                    ),
-                    secondary: _Swatch(
-                      palette: AppPalette.forSettings(
-                        settings.copyWith(colorMode: mode),
-                      ),
+          Column(
+            children: [
+              for (final mode in ColorMode.values)
+                RadioListTile<ColorMode>(
+                  value: mode,
+                  groupValue: settings.colorMode,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (m) {
+                    if (m != null) controller.setColorMode(m);
+                  },
+                  title: Text(
+                    l10n.colorModeName(mode),
+                    style: TextStyle(color: palette.focusText),
+                  ),
+                  secondary: _Swatch(
+                    palette: AppPalette.forSettings(
+                      settings.copyWith(colorMode: mode),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
           if (settings.colorMode == ColorMode.custom)
             _CustomColors(settings: settings, controller: controller),
+          const SizedBox(height: 24),
+          _SectionTitle(l10n.forceSplit),
+          Text(
+            l10n.forceSplitHint,
+            style: TextStyle(color: palette.historyText, height: 1.5),
+          ),
+          const SizedBox(height: 8),
+          SegmentedButton<int>(
+            segments: [
+              ButtonSegment(value: 0, label: Text(l10n.forceSplitOff)),
+              const ButtonSegment(value: 1, label: Text('1s')),
+              const ButtonSegment(value: 2, label: Text('2s')),
+              const ButtonSegment(value: 3, label: Text('3s')),
+              const ButtonSegment(value: 5, label: Text('5s')),
+            ],
+            selected: {settings.forceSplitSeconds},
+            onSelectionChanged: (s) =>
+                controller.setForceSplitSeconds(s.single),
+            showSelectedIcon: false,
+          ),
           const SizedBox(height: 24),
           _SectionTitle(l10n.floatingWindow),
           const _FloatingCaptionSection(),
@@ -568,44 +588,47 @@ class _ModelPreferencesState extends State<_ModelPreferences> {
           l10n.chooseModelFor(nameOf(language)),
           style: TextStyle(fontSize: 15, color: palette.historyText),
         ),
-        RadioGroup<String>(
-          groupValue: _validPreference(language.id) ?? _autoValue,
-          onChanged: (v) {
-            if (v == null) return;
-            widget.onChanged(language.id, v == _autoValue ? null : v);
-          },
-          child: Column(
-            children: [
+        Column(
+          children: [
+            RadioListTile<String>(
+              value: _autoValue,
+              groupValue: _validPreference(language.id) ?? _autoValue,
+              contentPadding: EdgeInsets.zero,
+              onChanged: (v) {
+                if (v == null) return;
+                widget.onChanged(language.id, null);
+              },
+              title: Text(l10n.auto, style: titleStyle),
+              subtitle: Text(
+                auto == null
+                    ? l10n.noModelAvailable
+                    : l10n.autoPicks(auto.name, _scoreOf(auto, language.id)),
+                style: subtitleStyle,
+              ),
+            ),
+            for (final model in _modelsFor(language.id))
               RadioListTile<String>(
-                value: _autoValue,
+                value: model.id,
+                groupValue: _validPreference(language.id) ?? _autoValue,
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.auto, style: titleStyle),
+                onChanged: (v) {
+                  if (v == null) return;
+                  widget.onChanged(language.id, v);
+                },
+                title: Text(
+                  l10n.modelScoreTitle(
+                    model.name,
+                    nameOf(language),
+                    _scoreOf(model, language.id),
+                  ),
+                  style: titleStyle,
+                ),
                 subtitle: Text(
-                  auto == null
-                      ? l10n.noModelAvailable
-                      : l10n.autoPicks(auto.name, _scoreOf(auto, language.id)),
+                  l10n.supports(_scoresOf(l10n, model)),
                   style: subtitleStyle,
                 ),
               ),
-              for (final model in _modelsFor(language.id))
-                RadioListTile<String>(
-                  value: model.id,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    l10n.modelScoreTitle(
-                      model.name,
-                      nameOf(language),
-                      _scoreOf(model, language.id),
-                    ),
-                    style: titleStyle,
-                  ),
-                  subtitle: Text(
-                    l10n.supports(_scoresOf(l10n, model)),
-                    style: subtitleStyle,
-                  ),
-                ),
-            ],
-          ),
+          ],
         ),
       ],
     );

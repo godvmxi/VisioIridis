@@ -18,11 +18,17 @@ void main() {
         'henan',
         'ja',
         'ko',
+        'chuan',
+        'wu',
       ]);
       expect(config.vad.files.single.name, 'silero_vad.onnx');
       expect(config.asrModels.map((m) => m.id), [
         'sense-voice-small-int8',
         'telespeech-ctc-int8',
+        'paraformer-yue-trilingual-int8',
+        'wenetspeech-yue-wenet-ctc-int8',
+        'paraformer-chuan-int8',
+        'wenetspeech-wu-wenet-ctc-int8',
       ]);
       expect(
         config.asrModels.first.relativeDir,
@@ -126,12 +132,12 @@ void main() {
         ConfigRepository(loadBuiltin: () async => builtin, storageDir: dir);
 
     test('falls back to builtin when nothing is cached', () async {
-      expect((await repo().load()).configVersion, 2);
+      expect((await repo().load()).configVersion, 4);
     });
 
     test('prefers a cached remote config', () async {
       File('${dir.path}/model_config.json').writeAsStringSync(
-        builtin.replaceFirst('"configVersion": 2', '"configVersion": 5'),
+        builtin.replaceFirst('"configVersion": 4', '"configVersion": 5'),
       );
       expect((await repo().load()).configVersion, 5);
     });
@@ -140,15 +146,15 @@ void main() {
       File('${dir.path}/model_config.json').writeAsStringSync(
         builtin.replaceFirst('"schemaVersion": 2', '"schemaVersion": 9'),
       );
-      expect((await repo().load()).configVersion, 2);
+      expect((await repo().load()).configVersion, 4);
     });
 
     test('acceptRemote requires a newer configVersion', () {
       final newer = builtin.replaceFirst(
-        '"configVersion": 2',
-        '"configVersion": 3',
+        '"configVersion": 4',
+        '"configVersion": 5',
       );
-      expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 3);
+      expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 5);
       expect(ConfigRepository.acceptRemote(config, builtin), isNull);
       expect(ConfigRepository.acceptRemote(config, 'not json'), isNull);
     });

@@ -34,12 +34,13 @@ class AppSettings {
     this.customBackground = const Color(0xFF0D1B2A),
     this.customText = const Color(0xFF00E5FF),
     this.appLanguage = AppLanguage.system,
+    this.forceSplitSeconds = 2,
   });
 
   final FontScale fontScale;
   final ColorMode colorMode;
 
-  /// 语言 id → 指定的模型 id；没有条目表示“自动”（按权重选择）。
+  /// 语言 id → 指定的模型 id；没有条目表示”自动”（按权重选择）。
   final Map<String, String> modelPreferences;
 
   /// App 切到后台时显示浮动字幕窗口（PRD 4.7）。
@@ -54,6 +55,9 @@ class AppSettings {
 
   final AppLanguage appLanguage;
 
+  /// 语音开始后超过此秒数仍无定稿结果时强制切断；0 表示关闭。
+  final int forceSplitSeconds;
+
   /// 历史等非最新卡片文字的字重。
   FontWeight get textWeight => boldText ? FontWeight.bold : FontWeight.normal;
 
@@ -66,6 +70,7 @@ class AppSettings {
     Color? customBackground,
     Color? customText,
     AppLanguage? appLanguage,
+    int? forceSplitSeconds,
   }) {
     return AppSettings(
       fontScale: fontScale ?? this.fontScale,
@@ -76,6 +81,7 @@ class AppSettings {
       customBackground: customBackground ?? this.customBackground,
       customText: customText ?? this.customText,
       appLanguage: appLanguage ?? this.appLanguage,
+      forceSplitSeconds: forceSplitSeconds ?? this.forceSplitSeconds,
     );
   }
 }
@@ -98,6 +104,7 @@ class SettingsController extends Notifier<AppSettings> {
   static const _customBackgroundKey = 'settings.customBackground';
   static const _customTextKey = 'settings.customText';
   static const _appLanguageKey = 'settings.appLanguage';
+  static const _forceSplitKey = 'settings.forceSplitSeconds';
 
   SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 
@@ -123,6 +130,7 @@ class SettingsController extends Notifier<AppSettings> {
       appLanguage:
           _byName(AppLanguage.values, prefs.getString(_appLanguageKey)) ??
           AppLanguage.system,
+      forceSplitSeconds: prefs.getInt(_forceSplitKey) ?? 2,
     );
   }
 
@@ -163,7 +171,12 @@ class SettingsController extends Notifier<AppSettings> {
     _prefs.setString(_colorKey, value.name);
   }
 
-  /// [modelId] 为 null 表示该语言恢复“自动”。
+  void setForceSplitSeconds(int value) {
+    state = state.copyWith(forceSplitSeconds: value);
+    _prefs.setInt(_forceSplitKey, value);
+  }
+
+  /// [modelId] 为 null 表示该语言恢复”自动”。
   void setModelPreference(String language, String? modelId) {
     final prefs = {...state.modelPreferences};
     if (modelId == null) {
@@ -190,4 +203,34 @@ class SettingsController extends Notifier<AppSettings> {
       return const {};
     }
   }
+}
+
+// ── HuggingFace access token（单独存储，不归入 AppSettings）──────────────
+
+final hfTokenProvider = NotifierProvider<HfTokenController, String?>(
+  HfTokenController.new,
+);
+
+class HfTokenController extends Notifier<String?> {
+  static const _key = 'credentials.hfToken';
+
+  SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
+
+  @override
+  String? build() {
+    final raw = ref.watch(sharedPreferencesProvider).getString(_key);
+    return (raw?.isEmpty ?? true) ? null : raw;
+  }
+
+  void set(String? token) {
+    final v = (token?.trim().isEmpty ?? true) ? null : token!.trim();
+    state = v;
+    if (v == null) {
+      _prefs.remove(_key);
+    } else {
+      _prefs.setString(_key, v);
+    }
+  }
+
+  void clear() => set(null);
 }

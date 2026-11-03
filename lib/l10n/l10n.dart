@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../asr/asr_engine.dart';
+import '../state/region_detector.dart';
 import '../state/settings.dart';
 import 'app_localizations.dart';
 
@@ -98,5 +99,11 @@ extension AppStrings on AppLocalizations {
     'applause' => eventApplause,
     'cry' => eventCry,
     _ => null,
+  };
+
+  String regionName(RegionResult region) => switch (region) {
+    RegionResult.mainland => regionMainland,
+    RegionResult.overseas => regionOverseas,
+    RegionResult.unknown => regionUnknown,
   };
 }

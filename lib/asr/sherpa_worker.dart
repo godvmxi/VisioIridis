@@ -165,6 +165,24 @@ class _SherpaPipeline {
           numThreads: 2,
           debug: false,
         );
+      case 'paraformer':
+        model = sherpa.OfflineModelConfig(
+          paraformer: sherpa.OfflineParaformerModelConfig(
+            model: _init.modelPath,
+          ),
+          tokens: _init.tokensPath,
+          numThreads: 2,
+          debug: false,
+        );
+      case 'wenet_ctc':
+        model = sherpa.OfflineModelConfig(
+          wenetCtc: sherpa.OfflineWenetCtcModelConfig(
+            model: _init.modelPath,
+          ),
+          tokens: _init.tokensPath,
+          numThreads: 2,
+          debug: false,
+        );
       default:
         throw UnsupportedError('不支持的模型类型: ${_init.modelType}');
     }

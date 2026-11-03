@@ -22,6 +22,9 @@
   "backgroundSwatch": "Background color {index}",
   "textSwatch": "Text color {index}",
   "lowContrast": "Low contrast ({ratio}:1). Captions may be hard to read; 4.5:1 or higher is recommended.",
+  "forceSplit": "Force split",
+  "forceSplitHint": "Force a sentence boundary after this long without a result. Useful when background noise prevents silence detection. Set to \"Off\" to rely on voice detection alone.",
+  "forceSplitOff": "Off",
   "floatingWindow": "Floating window",
   "showFloatingWindow": "Show floating window",
   "overlayPermissionTitle": "Permission needed",
@@ -101,5 +104,52 @@
   "notificationTitle": "Live captions on",
   "notificationText": "Tap to open the app",
   "systemAudioNotificationChannel": "System audio captions",
-  "systemAudioNotificationTitle": "Captioning audio played on this device"
+  "systemAudioNotificationTitle": "Captioning audio played on this device",
+  "regionMainland": "Mainland China",
+  "regionOverseas": "International",
+  "regionUnknown": "Unknown",
+  "configUpdateTitle": "Model config update available",
+  "configUpdateBody": "Region: {region}\nConfig: v{currentVersion} → v{newVersion}\n\nA new config has been saved in the background. It may include updated recognition models. Apply now and check for model downloads?",
+  "@configUpdateBody": {
+    "placeholders": {
+      "region": { "type": "String" },
+      "currentVersion": { "type": "int" },
+      "newVersion": { "type": "int" }
+    }
+  },
+  "configUpdateLater": "Later",
+  "configUpdateNow": "Apply now",
+  "configUpdated": "Config updated — tap \"Start\" to check for and download new models",
+
+  "onboardingWelcomeTitle": "Welcome to Visio Iridis",
+  "onboardingWelcomeBody": "Visio Iridis is an offline real-time caption tool designed for people with hearing loss. Everything runs locally on your device.\n\nLet's set up the permissions you'll need.",
+  "onboardingMicTitle": "Microphone",
+  "onboardingMicBody": "Speech recognition needs microphone access. Speaker mode (capturing system audio) also requires it.",
+  "onboardingMicButton": "Allow microphone",
+  "onboardingNotifTitle": "Notifications",
+  "onboardingNotifBody": "A persistent notification keeps the app running while captioning. Android 13 and above requires manual permission.",
+  "onboardingNotifButton": "Allow notifications",
+  "onboardingOverlayTitle": "Floating window",
+  "onboardingOverlayBody": "See captions in a floating window while using other apps. This must be enabled in system settings.",
+  "onboardingOverlayButton": "Open overlay settings",
+  "onboardingBatteryTitle": "Background activity",
+  "onboardingBatteryBody": "To prevent the system from interrupting recognition, add this app to the battery optimization whitelist in system settings.",
+  "onboardingBatteryButton": "Disable battery limits",
+  "onboardingRegionTitle": "Detect your region",
+  "onboardingRegionBody": "Checking your network environment to choose the best source for model config updates and downloads.",
+  "onboardingRegionDetecting": "Detecting…",
+  "onboardingRegionResult": "Detected: {region}",
+  "@onboardingRegionResult": {
+    "placeholders": {
+      "region": { "type": "String" }
+    }
+  },
+  "onboardingRegionMainlandHint": "Model config and downloads will use Gitee",
+  "onboardingRegionOverseasHint": "Model config and downloads will use GitHub",
+  "onboardingRegionUnknownHint": "Region unclear — detection will continue in the background",
+  "onboardingDone": "Get started",
+  "onboardingSkip": "Skip",
+  "onboardingGranted": "Granted",
+  "onboardingOpenedSettings": "Settings opened — come back when you're done",
+  "onboardingNext": "Next"
 }

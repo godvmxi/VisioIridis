@@ -88,5 +88,8 @@ abstract class AsrEngine {
   /// 识别中切换声音来源；当前句按句尾处理。切换失败时回到麦克风并抛出异常。
   Future<void> setAudioInput(AudioInput input);
 
+  /// 更新强制切断超时（秒），0 表示关闭。可在识别前或识别中调用。
+  void updateForceSplitSeconds(int seconds);
+
   void dispose();
 }

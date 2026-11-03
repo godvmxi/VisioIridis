@@ -10,6 +10,7 @@ import '../asr/tag_formatter.dart';
 import '../l10n/l10n.dart';
 import '../models/subtitle_item.dart';
 import 'asr_state.dart';
+import 'settings.dart';
 
 /// 当前使用的识别引擎。
 final asrEngineProvider = Provider<AsrEngine>((ref) {
@@ -31,6 +32,11 @@ class AsrController extends Notifier<AsrEngineState> {
     _engine = ref.watch(asrEngineProvider);
     final sub = _engine.events.listen(_onEvent);
     ref.onDispose(sub.cancel);
+    ref.listen<int>(
+      settingsProvider.select((s) => s.forceSplitSeconds),
+      (_, seconds) => _engine.updateForceSplitSeconds(seconds),
+      fireImmediately: true,
+    );
     return const AsrEngineState();
   }
 

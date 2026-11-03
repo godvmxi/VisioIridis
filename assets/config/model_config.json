@@ -1,14 +1,16 @@
 {
   "schemaVersion": 2,
-  "configVersion": 2,
-  "remoteConfigUrl": "https://example.com/visio-iridis/model_config.json",
+  "configVersion": 4,
+  "remoteConfigUrl": "https://raw.githubusercontent.com/godvmxi/VisioIridisConfig/refs/heads/master/model_config.json",
   "languages": [
     { "id": "zh",    "name": "普通话", "defaultEnabled": true,  "order": 1 },
     { "id": "yue",   "name": "粤语",   "defaultEnabled": true,  "order": 2 },
     { "id": "en",    "name": "英语",   "defaultEnabled": true,  "order": 3 },
     { "id": "henan", "name": "河南话", "defaultEnabled": false, "order": 4 },
     { "id": "ja",    "name": "日语",   "defaultEnabled": false, "order": 5 },
-    { "id": "ko",    "name": "韩语",   "defaultEnabled": false, "order": 6 }
+    { "id": "ko",    "name": "韩语",   "defaultEnabled": false, "order": 6 },
+    { "id": "chuan", "name": "四川话", "defaultEnabled": false, "order": 7 },
+    { "id": "wu",    "name": "吴语",   "defaultEnabled": false, "order": 8 }
   ],
   "vad": {
     "id": "silero-vad",
@@ -89,6 +91,145 @@
       "languages": [
         { "lang": "zh",    "score": 7, "decodeParam": "" },
         { "lang": "henan", "score": 9, "decodeParam": "" }
+      ],
+      "autoDecodeParam": ""
+    },
+    {
+      "id": "paraformer-yue-trilingual-int8",
+      "name": "Paraformer Trilingual",
+      "type": "paraformer",
+      "version": "2024-03-09",
+      "license": "Apache 2.0",
+      "files": [
+        {
+          "name": "model.int8.onnx",
+          "size": 244684152,
+          "sha256": "eb3cdd288f535cf73258f491cdd7d68ad5a00aee135c0bba4c0884ea8d926144",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-paraformer-trilingual-zh-cantonese-en/resolve/main/model.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-paraformer-trilingual-zh-cantonese-en/resolve/main/model.int8.onnx"
+          ]
+        },
+        {
+          "name": "tokens.txt",
+          "size": 118931,
+          "sha256": "8e4593d7a2eb2404ff82976b5494265e9a06283ca4d5e8605bf7b4fed557a492",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-paraformer-trilingual-zh-cantonese-en/resolve/main/tokens.txt",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-paraformer-trilingual-zh-cantonese-en/resolve/main/tokens.txt"
+          ]
+        },
+        {
+          "name": "am.mvn",
+          "size": 11203,
+          "sha256": "29b3c740a2c0cfc6b308126d31d7f265fa2be74f3bb095cd2f143ea970896ae5",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-paraformer-trilingual-zh-cantonese-en/resolve/main/am.mvn",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-paraformer-trilingual-zh-cantonese-en/resolve/main/am.mvn"
+          ]
+        }
+      ],
+      "languages": [
+        { "lang": "yue", "score": 9, "decodeParam": "" },
+        { "lang": "zh",  "score": 7, "decodeParam": "" },
+        { "lang": "en",  "score": 6, "decodeParam": "" }
+      ],
+      "autoDecodeParam": ""
+    },
+    {
+      "id": "wenetspeech-yue-wenet-ctc-int8",
+      "name": "WenetSpeech-Yue",
+      "type": "wenet_ctc",
+      "version": "2025-09-10",
+      "license": "Apache 2.0",
+      "files": [
+        {
+          "name": "model.int8.onnx",
+          "size": 134698500,
+          "sha256": "201bfd9e12ec4ac9ee3b23c5e071d9fa2381a8b21df317e2e08a170d6f1f55d3",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-wenetspeech-yue-u2pp-conformer-ctc-zh-en-cantonese-int8-2025-09-10/resolve/main/model.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-wenetspeech-yue-u2pp-conformer-ctc-zh-en-cantonese-int8-2025-09-10/resolve/main/model.int8.onnx"
+          ]
+        },
+        {
+          "name": "tokens.txt",
+          "size": 85361,
+          "sha256": "c7750677a1183606d2fd6f16d792e06e70d9843dba8a0c6e23a9dec78e06977a",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-wenetspeech-yue-u2pp-conformer-ctc-zh-en-cantonese-int8-2025-09-10/resolve/main/tokens.txt",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-wenetspeech-yue-u2pp-conformer-ctc-zh-en-cantonese-int8-2025-09-10/resolve/main/tokens.txt"
+          ]
+        }
+      ],
+      "languages": [
+        { "lang": "yue", "score": 10, "decodeParam": "" },
+        { "lang": "zh",  "score": 5,  "decodeParam": "" },
+        { "lang": "en",  "score": 5,  "decodeParam": "" }
+      ],
+      "autoDecodeParam": ""
+    },
+    {
+      "id": "paraformer-chuan-int8",
+      "name": "Paraformer-Chuan",
+      "type": "paraformer",
+      "version": "2025-10-07",
+      "license": "Apache 2.0",
+      "files": [
+        {
+          "name": "model.int8.onnx",
+          "size": 238429929,
+          "sha256": "53813ee1d41722cc6370a571c887e6d0b391d25b8312cf714a31af85ea603812",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-paraformer-zh-int8-2025-10-07/resolve/main/model.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-paraformer-zh-int8-2025-10-07/resolve/main/model.int8.onnx"
+          ]
+        },
+        {
+          "name": "tokens.txt",
+          "size": 75756,
+          "sha256": "59aba8873a2ed1e122c25fee421e25f283b63290efbde85c1f01a853d83cb6e6",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-paraformer-zh-int8-2025-10-07/resolve/main/tokens.txt",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-paraformer-zh-int8-2025-10-07/resolve/main/tokens.txt"
+          ]
+        }
+      ],
+      "languages": [
+        { "lang": "chuan", "score": 10, "decodeParam": "" },
+        { "lang": "zh",    "score": 5,  "decodeParam": "" }
+      ],
+      "autoDecodeParam": ""
+    },
+    {
+      "id": "wenetspeech-wu-wenet-ctc-int8",
+      "name": "WenetSpeech-Wu",
+      "type": "wenet_ctc",
+      "version": "2026-02-03",
+      "license": "Apache 2.0",
+      "files": [
+        {
+          "name": "model.int8.onnx",
+          "size": 133299736,
+          "sha256": "9de8678c491a35616647bb6f47aa433d4399efdf7901f6dcc305792e003410ed",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/model.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/model.int8.onnx"
+          ]
+        },
+        {
+          "name": "tokens.txt",
+          "size": 52303,
+          "sha256": "7c74b54485b599842bf7a70c1c59d020f7dfb02a49036c211b4baf74d2c84fa9",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/tokens.txt",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/tokens.txt"
+          ]
+        }
+      ],
+      "languages": [
+        { "lang": "wu", "score": 10, "decodeParam": "" },
+        { "lang": "zh", "score": 5,  "decodeParam": "" }
       ],
       "autoDecodeParam": ""
     }

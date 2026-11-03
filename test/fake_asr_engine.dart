@@ -59,5 +59,8 @@ class FakeAsrEngine implements AsrEngine {
   }
 
   @override
+  void updateForceSplitSeconds(int seconds) {}
+
+  @override
   void dispose() => _controller.close();
 }

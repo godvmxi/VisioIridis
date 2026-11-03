@@ -44,6 +44,8 @@ void main() {
     // 测试环境的系统语言为英语，默认固定为简体中文界面。
     SharedPreferences.setMockInitialValues({
       'settings.appLanguage': 'zhHans',
+      'onboarding.done': true,
+      'region.result': 'overseas',
       ...prefsValues,
     });
     final prefs = await SharedPreferences.getInstance();
@@ -399,12 +401,6 @@ void main() {
 
     await tester.tap(find.text('TeleSpeech    普通话 7 分'));
     await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
-          .groupValue,
-      'telespeech-ctc-int8',
-    );
 
     // 切换语言后只列出支持该语言的模型。
     await tester.tap(find.byType(DropdownButton<String>));

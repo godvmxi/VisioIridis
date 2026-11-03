@@ -231,6 +231,24 @@ abstract class AppLocalizations {
   /// **'对比度较低（{ratio}:1），字幕可能不易看清，建议不低于 4.5:1'**
   String lowContrast(String ratio);
 
+  /// No description provided for @forceSplit.
+  ///
+  /// In zh, this message translates to:
+  /// **'强制切断'**
+  String get forceSplit;
+
+  /// No description provided for @forceSplitHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音开始后超过设定时间仍无结果时，强制完成本句。适用于背景噪音导致无法检测到停顿的情况。设为「关」则完全依赖语音检测。'**
+  String get forceSplitHint;
+
+  /// No description provided for @forceSplitOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'关'**
+  String get forceSplitOff;
+
   /// No description provided for @floatingWindow.
   ///
   /// In zh, this message translates to:
@@ -710,6 +728,210 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'正在识别系统播放的声音'**
   String get systemAudioNotificationTitle;
+
+  /// No description provided for @regionMainland.
+  ///
+  /// In zh, this message translates to:
+  /// **'中国大陆'**
+  String get regionMainland;
+
+  /// No description provided for @regionOverseas.
+  ///
+  /// In zh, this message translates to:
+  /// **'境外'**
+  String get regionOverseas;
+
+  /// No description provided for @regionUnknown.
+  ///
+  /// In zh, this message translates to:
+  /// **'未知'**
+  String get regionUnknown;
+
+  /// No description provided for @configUpdateTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现模型配置更新'**
+  String get configUpdateTitle;
+
+  /// No description provided for @configUpdateBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前地区：{region}\n当前配置版本：v{currentVersion} → v{newVersion}\n\n配置已在后台更新，可能包含新版本识别模型，是否立即生效并检查模型下载？'**
+  String configUpdateBody(String region, int currentVersion, int newVersion);
+
+  /// No description provided for @configUpdateLater.
+  ///
+  /// In zh, this message translates to:
+  /// **'稍后'**
+  String get configUpdateLater;
+
+  /// No description provided for @configUpdateNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'立即生效'**
+  String get configUpdateNow;
+
+  /// No description provided for @configUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'配置已更新，点击「开始识别」以检查并下载新模型'**
+  String get configUpdated;
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'欢迎使用伊利斯之视'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'伊利斯之视是专为听障人士设计的离线实时字幕工具，所有识别均在本设备完成，无需联网。\n\n接下来将帮您完成必要的权限配置。'**
+  String get onboardingWelcomeBody;
+
+  /// No description provided for @onboardingMicTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'麦克风权限'**
+  String get onboardingMicTitle;
+
+  /// No description provided for @onboardingMicBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'实时语音识别需要使用麦克风。若使用喇叭模式识别系统播放的声音，也需要先授权麦克风。'**
+  String get onboardingMicBody;
+
+  /// No description provided for @onboardingMicButton.
+  ///
+  /// In zh, this message translates to:
+  /// **'授权麦克风'**
+  String get onboardingMicButton;
+
+  /// No description provided for @onboardingNotifTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'通知权限'**
+  String get onboardingNotifTitle;
+
+  /// No description provided for @onboardingNotifBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'识别进行中时会显示持续通知，防止系统将应用移入后台而中断识别。Android 13 及以上需手动授权。'**
+  String get onboardingNotifBody;
+
+  /// No description provided for @onboardingNotifButton.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许通知'**
+  String get onboardingNotifButton;
+
+  /// No description provided for @onboardingOverlayTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'悬浮窗权限'**
+  String get onboardingOverlayTitle;
+
+  /// No description provided for @onboardingOverlayBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'切换到其他应用时，可通过悬浮窗继续查看字幕。此权限需在系统设置中手动开启。'**
+  String get onboardingOverlayBody;
+
+  /// No description provided for @onboardingOverlayButton.
+  ///
+  /// In zh, this message translates to:
+  /// **'去开启悬浮窗'**
+  String get onboardingOverlayButton;
+
+  /// No description provided for @onboardingBatteryTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'后台运行'**
+  String get onboardingBatteryTitle;
+
+  /// No description provided for @onboardingBatteryBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'为防止系统在后台中断识别，建议将本应用加入电池优化白名单。此设置需在系统设置中手动完成。'**
+  String get onboardingBatteryBody;
+
+  /// No description provided for @onboardingBatteryButton.
+  ///
+  /// In zh, this message translates to:
+  /// **'去关闭电量限制'**
+  String get onboardingBatteryButton;
+
+  /// No description provided for @onboardingRegionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'检测所在地区'**
+  String get onboardingRegionTitle;
+
+  /// No description provided for @onboardingRegionBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检测网络环境，以确定模型配置更新地址和模型下载来源。'**
+  String get onboardingRegionBody;
+
+  /// No description provided for @onboardingRegionDetecting.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检测中…'**
+  String get onboardingRegionDetecting;
+
+  /// No description provided for @onboardingRegionResult.
+  ///
+  /// In zh, this message translates to:
+  /// **'检测完成：{region}'**
+  String onboardingRegionResult(String region);
+
+  /// No description provided for @onboardingRegionMainlandHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'将从 Gitee 获取模型配置和下载地址'**
+  String get onboardingRegionMainlandHint;
+
+  /// No description provided for @onboardingRegionOverseasHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'将从 GitHub 获取模型配置和下载地址'**
+  String get onboardingRegionOverseasHint;
+
+  /// No description provided for @onboardingRegionUnknownHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法判断所在地区，后台将继续自动检测'**
+  String get onboardingRegionUnknownHint;
+
+  /// No description provided for @onboardingDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始使用'**
+  String get onboardingDone;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In zh, this message translates to:
+  /// **'跳过'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingGranted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已授权'**
+  String get onboardingGranted;
+
+  /// No description provided for @onboardingOpenedSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'已打开系统设置，完成后返回本应用'**
+  String get onboardingOpenedSettings;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一步'**
+  String get onboardingNext;
 }
 
 class _AppLocalizationsDelegate

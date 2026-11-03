@@ -43,6 +43,9 @@
       }
     }
   },
+  "forceSplit": "强制切断",
+  "forceSplitHint": "语音开始后超过设定时间仍无结果时，强制完成本句。适用于背景噪音导致无法检测到停顿的情况。设为「关」则完全依赖语音检测。",
+  "forceSplitOff": "关",
   "floatingWindow": "浮动窗",
   "showFloatingWindow": "显示浮动窗",
   "overlayPermissionTitle": "需要悬浮窗权限",
@@ -259,5 +262,52 @@
   "notificationTitle": "实时字幕识别中",
   "notificationText": "点击返回 App",
   "systemAudioNotificationChannel": "系统声音字幕",
-  "systemAudioNotificationTitle": "正在识别系统播放的声音"
+  "systemAudioNotificationTitle": "正在识别系统播放的声音",
+  "regionMainland": "中国大陆",
+  "regionOverseas": "境外",
+  "regionUnknown": "未知",
+  "configUpdateTitle": "发现模型配置更新",
+  "configUpdateBody": "当前地区：{region}\n当前配置版本：v{currentVersion} → v{newVersion}\n\n配置已在后台更新，可能包含新版本识别模型，是否立即生效并检查模型下载？",
+  "@configUpdateBody": {
+    "placeholders": {
+      "region": { "type": "String" },
+      "currentVersion": { "type": "int" },
+      "newVersion": { "type": "int" }
+    }
+  },
+  "configUpdateLater": "稍后",
+  "configUpdateNow": "立即生效",
+  "configUpdated": "配置已更新，点击「开始识别」以检查并下载新模型",
+
+  "onboardingWelcomeTitle": "欢迎使用伊利斯之视",
+  "onboardingWelcomeBody": "伊利斯之视是专为听障人士设计的离线实时字幕工具，所有识别均在本设备完成，无需联网。\n\n接下来将帮您完成必要的权限配置。",
+  "onboardingMicTitle": "麦克风权限",
+  "onboardingMicBody": "实时语音识别需要使用麦克风。若使用喇叭模式识别系统播放的声音，也需要先授权麦克风。",
+  "onboardingMicButton": "授权麦克风",
+  "onboardingNotifTitle": "通知权限",
+  "onboardingNotifBody": "识别进行中时会显示持续通知，防止系统将应用移入后台而中断识别。Android 13 及以上需手动授权。",
+  "onboardingNotifButton": "允许通知",
+  "onboardingOverlayTitle": "悬浮窗权限",
+  "onboardingOverlayBody": "切换到其他应用时，可通过悬浮窗继续查看字幕。此权限需在系统设置中手动开启。",
+  "onboardingOverlayButton": "去开启悬浮窗",
+  "onboardingBatteryTitle": "后台运行",
+  "onboardingBatteryBody": "为防止系统在后台中断识别，建议将本应用加入电池优化白名单。此设置需在系统设置中手动完成。",
+  "onboardingBatteryButton": "去关闭电量限制",
+  "onboardingRegionTitle": "检测所在地区",
+  "onboardingRegionBody": "正在检测网络环境，以确定模型配置更新地址和模型下载来源。",
+  "onboardingRegionDetecting": "正在检测中…",
+  "onboardingRegionResult": "检测完成：{region}",
+  "@onboardingRegionResult": {
+    "placeholders": {
+      "region": { "type": "String" }
+    }
+  },
+  "onboardingRegionMainlandHint": "将从 Gitee 获取模型配置和下载地址",
+  "onboardingRegionOverseasHint": "将从 GitHub 获取模型配置和下载地址",
+  "onboardingRegionUnknownHint": "无法判断所在地区，后台将继续自动检测",
+  "onboardingDone": "开始使用",
+  "onboardingSkip": "跳过",
+  "onboardingGranted": "已授权",
+  "onboardingOpenedSettings": "已打开系统设置，完成后返回本应用",
+  "onboardingNext": "下一步"
 }

@@ -69,6 +69,8 @@ flutter:
 
   assets:
     - assets/config/model_config.json
+    - assets/config/model_config_cn.json
+    - assets/config/hf.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:
