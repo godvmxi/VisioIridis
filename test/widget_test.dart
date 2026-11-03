@@ -202,12 +202,13 @@ void main() {
 
     const yellow = Color(0xFFFFE600);
     expect(styleOf(tester, '第一句')?.color, yellow);
-    final time = tester
-        .widget<RichText>(find.textContaining('第一句', findRichText: true))
-        .text
-        .toPlainText()
-        .substring(0, 8);
-    expect(styleOf(tester, time)?.color?.toARGB32(), 0x99FFE600);
+    final icon = tester.widget<Icon>(
+      find.descendant(
+        of: find.textContaining('第一句', findRichText: true),
+        matching: find.byIcon(Icons.mic_rounded),
+      ),
+    );
+    expect(icon.color?.toARGB32(), 0x99FFE600);
     expect(styleOf(tester, '普通话 +2')?.color, yellow);
   });
 
