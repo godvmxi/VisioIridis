@@ -5,6 +5,8 @@
 [![Release](https://img.shields.io/github/v/release/godvmxi/VisioIridis)](https://github.com/godvmxi/VisioIridis/releases)
 [![Platform](https://img.shields.io/badge/platform-Android-green)](https://github.com/godvmxi/VisioIridis/releases)
 
+[English README →](README_EN.md)
+
 ---
 
 ## 简介
