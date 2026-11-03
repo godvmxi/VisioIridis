@@ -76,6 +76,16 @@ The current release targets Android only. iOS support is planned once the Androi
 
 ---
 
+## The Name
+
+**Iris** is the goddess of the rainbow in Greek mythology, and the divine messenger of the Olympians — she moved between the gods and mortals, carrying voice and word across the divide.
+
+**Visio** is Latin for "sight" or "that which is seen."
+
+Together: **Visio Iridis** — Vision of the Rainbow. Like a rainbow bridge, it spans the gulf between sound and sight, placing what is spoken directly before the eyes.
+
+---
+
 ## Notes for Users in Mainland China
 
 Due to network restrictions, users in mainland China may encounter difficulties in the following areas. Here is the current status and planned improvements.
