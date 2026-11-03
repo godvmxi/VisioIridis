@@ -7,8 +7,10 @@ import 'package:seevoice/asr/asr_language.dart';
 import 'package:seevoice/l10n/l10n.dart';
 import 'package:seevoice/state/asr_controller.dart';
 import 'package:seevoice/state/asr_state.dart';
+import 'package:seevoice/state/script_converter.dart';
 
 import 'fake_asr_engine.dart';
+import 'fake_script_converter.dart';
 
 late FakeAsrEngine engine;
 late ProviderContainer container;
@@ -24,6 +26,7 @@ void main() {
       overrides: [
         asrEngineProvider.overrideWithValue(engine),
         appLocalizationsProvider.overrideWithValue(zh),
+        chineseScriptProvider.overrideWithValue(null),
       ],
     );
     container.listen(asrControllerProvider, (_, _) {});
@@ -34,8 +37,12 @@ void main() {
     engine.dispose();
   });
 
-  test('starts with all languages and auto', () {
-    expect(state.enabledLanguages, AsrLanguage.values.toSet());
+  test('starts with mandarin, cantonese and english on auto', () {
+    expect(state.enabledLanguages, {
+      AsrLanguage.mandarin,
+      AsrLanguage.cantonese,
+      AsrLanguage.english,
+    });
     expect(state.languageParam, 'auto');
   });
 
@@ -163,6 +170,53 @@ void main() {
       await controller().setAudioInput(speaker);
       await controller().stopListening();
       expect(state.audioInput, speaker);
+    });
+  });
+
+  group('Chinese script conversion', () {
+    ProviderContainer withScript(ChineseScript script) {
+      final c = ProviderContainer(
+        overrides: [
+          asrEngineProvider.overrideWithValue(engine),
+          appLocalizationsProvider.overrideWithValue(zh),
+          chineseScriptProvider.overrideWithValue(script),
+          scriptConverterProvider.overrideWithValue(FakeScriptConverter()),
+        ],
+      );
+      c.listen(asrControllerProvider, (_, _) {});
+      addTearDown(c.dispose);
+      return c;
+    }
+
+    test('traditional interface converts partial and final text', () async {
+      final c = withScript(ChineseScript.traditional);
+      engine.emit(const AsrPartial('开会'));
+      await pumpEventQueue();
+      expect(c.read(asrControllerProvider).currentPendingText, '開會');
+
+      engine.emit(const AsrFinal('我说话', lang: '<|zh|>'));
+      await pumpEventQueue();
+      final item = c.read(asrControllerProvider).history.single;
+      expect(item.text, '我說話');
+      expect(item.lang, 'zh');
+    });
+
+    test('simplified interface converts traditional output', () async {
+      final c = withScript(ChineseScript.simplified);
+      engine.emit(const AsrFinal('開會'));
+      await pumpEventQueue();
+      expect(c.read(asrControllerProvider).history.single.text, '开会');
+    });
+
+    test('events keep their order while converting', () async {
+      final c = withScript(ChineseScript.traditional);
+      engine.emit(const AsrFinal('一'));
+      engine.emit(const AsrFinal('二'));
+      engine.emit(const AsrPartial('三'));
+      await pumpEventQueue();
+      final s = c.read(asrControllerProvider);
+      expect(s.history.map((i) => i.text), ['一', '二']);
+      expect(s.currentPendingText, '三');
     });
   });
 }

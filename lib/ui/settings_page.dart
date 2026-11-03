@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../asr/asr_engine.dart';
 import '../asr/asr_language.dart';
 import '../l10n/l10n.dart';
 import '../model_store/model_config.dart';
 import '../model_store/model_selector.dart';
 import '../platform/background_platform.dart';
+import '../state/asr_controller.dart';
 import '../state/model_providers.dart';
 import '../state/settings.dart';
 import 'app_colors.dart';
+import 'widgets/history_list.dart';
 
 /// 设置页：界面语言、字体大小、配色模式、按语言选择识别模型（PRD 4.6）。
 class SettingsPage extends ConsumerWidget {
@@ -24,111 +27,131 @@ class SettingsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: palette.background,
-      appBar: AppBar(
-        title: Text(l10n.settings),
-        backgroundColor: palette.background,
-        foregroundColor: palette.focusText,
-      ),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          _SectionTitle(l10n.interfaceLanguage),
-          DropdownButton<AppLanguage>(
-            value: settings.appLanguage,
-            isExpanded: true,
-            dropdownColor: palette.cardSurface,
-            style: TextStyle(fontSize: 17, color: palette.focusText),
-            iconEnabledColor: palette.focusText,
-            items: [
-              for (final language in AppLanguage.values)
-                DropdownMenuItem(
-                  value: language,
-                  child: Text(l10n.appLanguageName(language)),
-                ),
-            ],
-            onChanged: (language) {
-              if (language != null) controller.setAppLanguage(language);
-            },
-          ),
-          const SizedBox(height: 24),
-          _SectionTitle(l10n.fontSize),
-          SegmentedButton<FontScale>(
-            segments: [
-              for (final scale in FontScale.values)
-                ButtonSegment(
-                  value: scale,
-                  label: Text(l10n.fontScaleName(scale)),
-                ),
-            ],
-            selected: {settings.fontScale},
-            onSelectionChanged: (s) => controller.setFontScale(s.single),
-            showSelectedIcon: false,
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: settings.boldText,
-            onChanged: controller.setBoldText,
-            title: Text(
-              l10n.bold,
-              style: TextStyle(fontSize: 17, color: palette.focusText),
-            ),
-            subtitle: Text(
-              l10n.boldHint,
-              style: TextStyle(color: palette.historyText),
-            ),
-          ),
-          const SizedBox(height: 4),
-          _Preview(settings: settings),
-          const SizedBox(height: 24),
-          _SectionTitle(l10n.colorMode),
-          RadioGroup<ColorMode>(
-            groupValue: settings.colorMode,
-            onChanged: (mode) {
-              if (mode != null) controller.setColorMode(mode);
-            },
-            child: Column(
-              children: [
-                for (final mode in ColorMode.values)
-                  RadioListTile<ColorMode>(
-                    value: mode,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l10n.colorModeName(mode),
-                      style: TextStyle(color: palette.focusText),
+          _Section(
+            title: l10n.interfaceLanguage,
+            icon: Icons.translate_rounded,
+            children: [
+              DropdownButton<AppLanguage>(
+                value: settings.appLanguage,
+                isExpanded: true,
+                dropdownColor: palette.cardSurface,
+                style: TextStyle(fontSize: 17, color: palette.focusText),
+                iconEnabledColor: palette.focusText,
+                items: [
+                  for (final language in AppLanguage.values)
+                    DropdownMenuItem(
+                      value: language,
+                      child: Text(l10n.appLanguageName(language)),
                     ),
-                    secondary: _Swatch(
-                      palette: AppPalette.forSettings(
-                        settings.copyWith(colorMode: mode),
+                ],
+                onChanged: (language) {
+                  if (language != null) controller.setAppLanguage(language);
+                },
+              ),
+            ],
+          ),
+          _Section(
+            title: l10n.fontSize,
+            icon: Icons.format_size_rounded,
+            children: [
+              SegmentedButton<FontScale>(
+                segments: [
+                  for (final scale in FontScale.values)
+                    ButtonSegment(
+                      value: scale,
+                      label: Text(l10n.fontScaleName(scale)),
+                    ),
+                ],
+                selected: {settings.fontScale},
+                onSelectionChanged: (s) => controller.setFontScale(s.single),
+                showSelectedIcon: false,
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: settings.boldText,
+                onChanged: controller.setBoldText,
+                title: Text(
+                  l10n.bold,
+                  style: TextStyle(fontSize: 17, color: palette.focusText),
+                ),
+                subtitle: Text(
+                  l10n.boldHint,
+                  style: TextStyle(color: palette.historyText),
+                ),
+              ),
+              const SizedBox(height: 4),
+              _Preview(settings: settings),
+            ],
+          ),
+          _Section(
+            title: l10n.colorMode,
+            icon: Icons.palette_outlined,
+            children: [
+              RadioGroup<ColorMode>(
+                groupValue: settings.colorMode,
+                onChanged: (mode) {
+                  if (mode != null) controller.setColorMode(mode);
+                },
+                child: Column(
+                  children: [
+                    for (final mode in ColorMode.values)
+                      RadioListTile<ColorMode>(
+                        value: mode,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          l10n.colorModeName(mode),
+                          style: TextStyle(color: palette.focusText),
+                        ),
+                        secondary: _Swatch(
+                          palette: AppPalette.forSettings(
+                            settings.copyWith(colorMode: mode),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
+                  ],
+                ),
+              ),
+              if (settings.colorMode == ColorMode.custom)
+                _CustomColors(settings: settings, controller: controller),
+            ],
           ),
-          if (settings.colorMode == ColorMode.custom)
-            _CustomColors(settings: settings, controller: controller),
-          const SizedBox(height: 24),
-          _SectionTitle(l10n.floatingWindow),
-          const _FloatingCaptionSection(),
-          const SizedBox(height: 24),
-          _SectionTitle(l10n.recognitionModel),
-          Text(
-            l10n.recognitionModelHint,
-            style: TextStyle(color: palette.historyText, height: 1.5),
+          _Section(
+            title: l10n.floatingWindow,
+            icon: Icons.picture_in_picture_alt_outlined,
+            children: const [_FloatingCaptionSection()],
           ),
-          const SizedBox(height: 8),
-          switch (config) {
-            AsyncData(:final value) => _ModelPreferences(
-              config: value,
-              preferences: settings.modelPreferences,
-              onChanged: controller.setModelPreference,
-            ),
-            AsyncError(:final error) => Text(
-              l10n.modelConfigLoadFailed('$error'),
-              style: TextStyle(color: palette.historyText),
-            ),
-            _ => const Center(child: CircularProgressIndicator()),
-          },
+          _Section(
+            title: l10n.recognitionModel,
+            icon: Icons.graphic_eq_rounded,
+            children: [
+              Text(
+                l10n.recognitionModelHint,
+                style: TextStyle(color: palette.historyText, height: 1.5),
+              ),
+              const SizedBox(height: 8),
+              switch (config) {
+                AsyncData(:final value) => _ModelPreferences(
+                  config: value,
+                  preferences: settings.modelPreferences,
+                  enabledLanguages: ref
+                      .read(asrControllerProvider)
+                      .enabledLanguages
+                      .map((l) => l.code)
+                      .toSet(),
+                  onChanged: controller.setModelPreference,
+                ),
+                AsyncError(:final error) => Text(
+                  l10n.modelConfigLoadFailed('$error'),
+                  style: TextStyle(color: palette.historyText),
+                ),
+                _ => const Center(child: CircularProgressIndicator()),
+              },
+            ],
+          ),
         ],
       ),
     );
@@ -354,21 +377,51 @@ void _toast(BuildContext context, String message) {
     ..showSnackBar(SnackBar(content: Text(message)));
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
+/// M3 分组卡片：带图标的标题 + 该分组的设置项。
+class _Section extends StatelessWidget {
+  const _Section({
+    required this.title,
+    required this.icon,
+    required this.children,
+  });
 
-  final String text;
+  final String title;
+  final IconData icon;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
+    final palette = AppPalette.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: AppPalette.of(context).focusText,
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    Icon(icon, size: 22, color: palette.focusText),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: palette.focusText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ...children,
+            ],
+          ),
         ),
       ),
     );
@@ -385,8 +438,9 @@ class _Preview extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = AppPalette.forSettings(settings);
     final l10n = AppLocalizations.of(context);
+    final size = settings.fontScale.size;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: palette.background,
         border: Border.all(color: palette.cardBorder),
@@ -395,38 +449,33 @@ class _Preview extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text.rich(
-            TextSpan(
-              style: TextStyle(
-                fontSize: settings.fontScale.size,
-                height: 1.5,
-                fontWeight: settings.textWeight,
-              ),
-              children: [
-                TextSpan(
-                  text: '[10:30] ',
-                  style: TextStyle(color: palette.timestamp),
-                ),
-                TextSpan(
-                  text: l10n.previewHistory,
-                  style: TextStyle(color: palette.historyText),
-                ),
-              ],
-            ),
+          ChatBubble(
+            text: l10n.previewHistory,
+            source: AudioInput.systemAudio,
+            palette: palette,
+            fontSize: size,
+            weight: settings.textWeight,
           ),
-          const SizedBox(height: 12),
+          ChatBubble(
+            text: l10n.previewFocus,
+            source: AudioInput.microphone,
+            palette: palette,
+            fontSize: size,
+            weight: settings.textWeight,
+          ),
+          const SizedBox(height: 6),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: palette.cardSurface,
               border: Border.all(color: palette.cardBorder),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
               l10n.previewFocus,
               style: TextStyle(
-                fontSize: settings.fontScale.size,
+                fontSize: size,
                 height: 1.35,
                 fontWeight: FontWeight.bold,
                 color: palette.focusText,
@@ -473,11 +522,15 @@ class _ModelPreferences extends StatefulWidget {
   const _ModelPreferences({
     required this.config,
     required this.preferences,
+    required this.enabledLanguages,
     required this.onChanged,
   });
 
   final ModelConfig config;
   final Map<String, String> preferences;
+
+  /// 顶部栏已勾选的语言；默认展示其中排在最前的一种。
+  final Set<String> enabledLanguages;
   final void Function(String language, String? modelId) onChanged;
 
   @override
@@ -537,7 +590,10 @@ class _ModelPreferencesState extends State<_ModelPreferences> {
     if (languages.isEmpty) return const SizedBox.shrink();
     final language = languages.firstWhere(
       (l) => l.id == _language,
-      orElse: () => languages.first,
+      orElse: () => languages.firstWhere(
+        (l) => widget.enabledLanguages.contains(l.id),
+        orElse: () => languages.first,
+      ),
     );
     final auto = selectModel(_config, {language.id});
     final titleStyle = TextStyle(fontSize: 17, color: palette.focusText);
@@ -550,16 +606,19 @@ class _ModelPreferencesState extends State<_ModelPreferences> {
           children: [
             Text(l10n.language, style: titleStyle),
             const SizedBox(width: 16),
-            DropdownButton<String>(
-              value: language.id,
-              dropdownColor: palette.cardSurface,
-              style: TextStyle(fontSize: 17, color: palette.focusText),
-              iconEnabledColor: palette.focusText,
-              items: [
-                for (final l in languages)
-                  DropdownMenuItem(value: l.id, child: Text(nameOf(l))),
-              ],
-              onChanged: (id) => setState(() => _language = id),
+            Expanded(
+              child: DropdownButton<String>(
+                value: language.id,
+                isExpanded: true,
+                dropdownColor: palette.cardSurface,
+                style: TextStyle(fontSize: 17, color: palette.focusText),
+                iconEnabledColor: palette.focusText,
+                items: [
+                  for (final l in languages)
+                    DropdownMenuItem(value: l.id, child: Text(nameOf(l))),
+                ],
+                onChanged: (id) => setState(() => _language = id),
+              ),
             ),
           ],
         ),

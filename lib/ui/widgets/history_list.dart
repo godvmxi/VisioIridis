@@ -148,29 +148,96 @@ class _HistoryEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = AppPalette.of(context);
-    final icon = item.audioInput == AudioInput.systemAudio
-        ? Icons.volume_up_rounded
-        : Icons.mic_rounded;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Text.rich(
-        TextSpan(
-          style: TextStyle(fontSize: fontSize, height: 1.5, fontWeight: weight),
-          children: [
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: Icon(icon, size: fontSize * 0.85, color: palette.timestamp),
-              ),
-            ),
-            TextSpan(
-              text: item.displayText(AppLocalizations.of(context).eventName),
-              style: TextStyle(color: palette.historyText),
-            ),
-          ],
+    return ChatBubble(
+      text: item.displayText(AppLocalizations.of(context).eventName),
+      source: item.audioInput,
+      palette: AppPalette.of(context),
+      fontSize: fontSize,
+      weight: weight,
+    );
+  }
+}
+
+/// 微信式聊天气泡：喇叭来源靠左、麦克风来源靠右，头像位置显示来源图标。
+class ChatBubble extends StatelessWidget {
+  const ChatBubble({
+    super.key,
+    required this.text,
+    required this.source,
+    required this.palette,
+    required this.fontSize,
+    required this.weight,
+  });
+
+  final String text;
+  final AudioInput source;
+
+  /// 显式传入，设置页预览可以使用尚未生效的配色。
+  final AppPalette palette;
+  final double fontSize;
+  final FontWeight weight;
+
+  static const _avatarSize = 40.0;
+  static const _radius = Radius.circular(20);
+  static const _tail = Radius.circular(4);
+
+  @override
+  Widget build(BuildContext context) {
+    final incoming = source == AudioInput.systemAudio;
+    final avatar = Container(
+      width: _avatarSize,
+      height: _avatarSize,
+      decoration: BoxDecoration(color: palette.avatar, shape: BoxShape.circle),
+      child: Icon(
+        incoming ? Icons.volume_up_rounded : Icons.mic_rounded,
+        size: 22,
+        color: palette.historyText,
+      ),
+    );
+    final bubble = Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: incoming ? palette.bubbleIncoming : palette.bubbleOutgoing,
+          // 靠头像一侧的上角收小，形成指向头像的“尾巴”。
+          borderRadius: BorderRadius.only(
+            topLeft: incoming ? _tail : _radius,
+            topRight: incoming ? _radius : _tail,
+            bottomLeft: _radius,
+            bottomRight: _radius,
+          ),
         ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            height: 1.4,
+            fontWeight: weight,
+            color: palette.historyText,
+          ),
+        ),
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: incoming
+            ? MainAxisAlignment.start
+            : MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: incoming
+            ? [
+                avatar,
+                const SizedBox(width: 10),
+                bubble,
+                const SizedBox(width: 50),
+              ]
+            : [
+                const SizedBox(width: 50),
+                bubble,
+                const SizedBox(width: 10),
+                avatar,
+              ],
       ),
     );
   }

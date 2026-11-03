@@ -16,6 +16,8 @@ class WorkerInit {
     required this.vadModelPath,
     required this.modelType,
     required this.modelPath,
+    this.encoderPath = '',
+    this.decoderPath = '',
     required this.tokensPath,
     required this.decodeParam,
     required this.allowedLanguages,
@@ -24,9 +26,13 @@ class WorkerInit {
   final SendPort replyTo;
   final String vadModelPath;
 
-  /// 模型配置中的 type："sense_voice" / "telespeech_ctc"
+  /// 模型配置中的 type："sense_voice" / "telespeech_ctc" / "dolphin_ctc" / "whisper"
   final String modelType;
   final String modelPath;
+
+  /// 编码器-解码器模型（whisper）使用，其余类型为空串。
+  final String encoderPath;
+  final String decoderPath;
   final String tokensPath;
   final String? decodeParam;
   final Set<String> allowedLanguages;
@@ -162,6 +168,27 @@ class _SherpaPipeline {
           telespeechCtc: _init.modelPath,
           tokens: _init.tokensPath,
           modelType: 'telespeech_ctc',
+          numThreads: 2,
+          debug: false,
+        );
+      case 'dolphin_ctc':
+        model = sherpa.OfflineModelConfig(
+          dolphin: sherpa.OfflineDolphinModelConfig(model: _init.modelPath),
+          tokens: _init.tokensPath,
+          numThreads: 2,
+          debug: false,
+        );
+      case 'whisper':
+        model = sherpa.OfflineModelConfig(
+          whisper: sherpa.OfflineWhisperModelConfig(
+            encoder: _init.encoderPath,
+            decoder: _init.decoderPath,
+            // 空串为自动检测语言。
+            language: language ?? '',
+            task: 'transcribe',
+          ),
+          tokens: _init.tokensPath,
+          modelType: 'whisper',
           numThreads: 2,
           debug: false,
         );

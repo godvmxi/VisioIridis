@@ -17,18 +17,17 @@ import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import kotlin.math.abs
 
 /**
  * App 在后台时显示的半透明浮动字幕窗口（PRD 4.7）。
  *
- * 顶部为拖动条（上下拖动移动窗口）、“麦克风 | 喇叭”声音来源选择（PRD 4.8）、“返回”与“退出”按钮；
- * 点击“退出”后顶部改为“确定退出？”确认栏，[CONFIRM_SECONDS] 秒内无操作自动恢复，识别不中断；
- * 下方为可上下滑动的字幕区：
- * 历史记录在上、当前识别在最底部，内容贴底排列，窗口能容纳几条历史就显示几条。
- * 用户向上滑动查看历史时暂停自动跟随，滑回底部后恢复。
+ * 顶部依次为最左侧的“退出”按钮、拖动条（上下拖动移动窗口）、“麦克风 | 喇叭”声音来源选择
+ * （PRD 4.8）与“返回”按钮；点击“退出”后顶部改为“确定退出？”确认栏，[CONFIRM_SECONDS] 秒内
+ * 无操作自动恢复，识别不中断。
+ * 中间为历史记录，不可滑动：只显示最近 [HISTORY_MAX] 条并贴底排列，放不下时裁掉较早的部分。
+ * 最底部固定显示当前识别，最多 [CURRENT_MAX_LINES] 行，超出时显示最后几行。
  */
 class CaptionOverlay(
     private val context: Context,
@@ -39,7 +38,6 @@ class CaptionOverlay(
 ) {
     private val windowManager = context.getSystemService(WindowManager::class.java)
     private var root: View? = null
-    private var scroll: ScrollView? = null
     private var historyBox: LinearLayout? = null
     private var currentView: TextView? = null
     private var micOption: TextView? = null
@@ -47,6 +45,7 @@ class CaptionOverlay(
     private var style: Style? = null
     private var labels: Labels? = null
     private var controls: View? = null
+    private var exitButton: View? = null
     private var confirmBar: View? = null
     private var cancelButton: TextView? = null
     private val handler = Handler(Looper.getMainLooper())
@@ -63,9 +62,6 @@ class CaptionOverlay(
         }
     }
     private var shownHistory: List<String> = emptyList()
-
-    /** 是否停在底部；为 true 时新内容到来自动滚到底。 */
-    private var followBottom = true
 
     data class Style(
         val heightFraction: Double,
@@ -99,37 +95,30 @@ class CaptionOverlay(
 
         val header = buildHeader(style, labels)
 
-        val history = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
+        // 贴底排列：内容超出高度时裁掉顶部较早的记录。
+        val history = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.BOTTOM
+        }
         val current = TextView(context).apply {
             setTextColor(style.focusColor)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, style.focusSize)
             setTypeface(typeface, Typeface.BOLD)
             setLineSpacing(0f, 1.2f)
-            visibility = View.GONE
-        }
-        val content = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.BOTTOM
-            addView(history)
-            addView(current)
-        }
-        val scrollView = ScrollView(context).apply {
-            isFillViewport = true
-            isVerticalScrollBarEnabled = true
-            overScrollMode = View.OVER_SCROLL_NEVER
-            addView(content)
-            setOnScrollChangeListener { v, _, _, _, _ ->
-                followBottom = !v.canScrollVertically(1)
-            }
+            // 无内容时也保留一行高度，避免每句开始/结束时历史区高度跳动。
+            minLines = 1
+            maxLines = CURRENT_MAX_LINES
+            setPadding(0, dp(8), 0, 0)
         }
 
         val column = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             addView(header)
             addView(
-                scrollView,
+                history,
                 LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
             )
+            addView(current)
         }
         val frame = FrameLayout(context).apply {
             background = GradientDrawable().apply {
@@ -157,36 +146,37 @@ class CaptionOverlay(
         windowManager.addView(frame, lp)
 
         root = frame
-        scroll = scrollView
         historyBox = history
         currentView = current
         shownHistory = emptyList()
-        followBottom = true
     }
 
     /** [history] 旧的在前；[systemAudio] 为当前是否识别系统声音。 */
     fun update(current: String, partial: Boolean, history: List<String>, systemAudio: Boolean) {
-        val follow = followBottom
         renderSource(systemAudio)
         if (history != shownHistory) setHistory(history)
         currentView?.apply {
             text = current
             alpha = if (partial) 0.7f else 1f
-            visibility = if (current.isEmpty()) View.GONE else View.VISIBLE
+            // 超过最大行数时滚到最后一行，始终显示最新的文字。
+            post {
+                val layout = layout ?: return@post
+                val visible = height - totalPaddingTop - totalPaddingBottom
+                scrollTo(0, (layout.height - visible).coerceAtLeast(0))
+            }
         }
-        if (follow) scroll?.post { scroll?.fullScroll(View.FOCUS_DOWN) }
     }
 
     fun hide() {
         handler.removeCallbacks(tick)
         root?.let { windowManager.removeView(it) }
         root = null
-        scroll = null
         historyBox = null
         currentView = null
         micOption = null
         speakerOption = null
         controls = null
+        exitButton = null
         confirmBar = null
         cancelButton = null
         shownHistory = emptyList()
@@ -197,6 +187,7 @@ class CaptionOverlay(
         countdown = CONFIRM_SECONDS
         cancelButton?.text = cancelLabel()
         controls?.visibility = View.GONE
+        exitButton?.visibility = View.GONE
         confirmBar?.visibility = View.VISIBLE
         handler.removeCallbacks(tick)
         handler.postDelayed(tick, 1000)
@@ -207,6 +198,7 @@ class CaptionOverlay(
         handler.removeCallbacks(tick)
         confirmBar?.visibility = View.GONE
         controls?.visibility = View.VISIBLE
+        exitButton?.visibility = View.VISIBLE
     }
 
     private fun cancelLabel() = "${labels?.cancel} ($countdown)"
@@ -215,7 +207,7 @@ class CaptionOverlay(
         val box = historyBox ?: return
         val style = style ?: return
         box.removeAllViews()
-        for (line in history) {
+        for (line in history.takeLast(HISTORY_MAX)) {
             box.addView(TextView(context).apply {
                 text = line
                 setTextColor(style.historyColor)
@@ -266,7 +258,7 @@ class CaptionOverlay(
             text = labels.exit
             setTextColor(style.historyColor)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-            setPadding(dp(12), dp(6), 0, dp(6))
+            setPadding(0, dp(6), dp(12), dp(6))
             setOnClickListener { askExit() }
         }
         val normal = LinearLayout(context).apply {
@@ -274,7 +266,6 @@ class CaptionOverlay(
             gravity = Gravity.CENTER_VERTICAL
             addView(source)
             addView(back)
-            addView(exit)
         }
 
         val question = TextView(context).apply {
@@ -313,6 +304,7 @@ class CaptionOverlay(
             addView(cancel)
         }
         controls = normal
+        exitButton = exit
         confirmBar = confirmRow
         cancelButton = cancel
 
@@ -320,6 +312,7 @@ class CaptionOverlay(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             minimumHeight = dp(32)
+            addView(exit)
             addView(grip)
             addView(View(context), LinearLayout.LayoutParams(0, 1, 1f))
             addView(normal)
@@ -380,6 +373,12 @@ class CaptionOverlay(
     private companion object {
         /** 退出确认栏无操作时自动恢复的秒数。 */
         const val CONFIRM_SECONDS = 5
+
+        /** 底部当前识别最多显示的行数。 */
+        const val CURRENT_MAX_LINES = 3
+
+        /** 历史区最多显示的条数。 */
+        const val HISTORY_MAX = 5
     }
 
     private fun dp(value: Int): Int = TypedValue.applyDimension(

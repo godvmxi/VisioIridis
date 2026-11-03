@@ -1,14 +1,21 @@
 {
   "schemaVersion": 2,
-  "configVersion": 2,
+  "configVersion": 3,
   "remoteConfigUrl": "https://example.com/visio-iridis/model_config.json",
   "languages": [
-    { "id": "zh",    "name": "普通话", "defaultEnabled": true,  "order": 1 },
-    { "id": "yue",   "name": "粤语",   "defaultEnabled": true,  "order": 2 },
-    { "id": "en",    "name": "英语",   "defaultEnabled": true,  "order": 3 },
-    { "id": "henan", "name": "河南话", "defaultEnabled": false, "order": 4 },
-    { "id": "ja",    "name": "日语",   "defaultEnabled": false, "order": 5 },
-    { "id": "ko",    "name": "韩语",   "defaultEnabled": false, "order": 6 }
+    { "id": "zh",       "name": "普通话", "defaultEnabled": true,  "order": 1 },
+    { "id": "yue",      "name": "粤语",   "defaultEnabled": true,  "order": 2 },
+    { "id": "en",       "name": "英语",   "defaultEnabled": true,  "order": 3 },
+    { "id": "fr",       "name": "法语",   "defaultEnabled": false, "order": 4 },
+    { "id": "de",       "name": "德语",   "defaultEnabled": false, "order": 5 },
+    { "id": "henan",    "name": "河南话", "defaultEnabled": false, "order": 6 },
+    { "id": "sichuan",  "name": "四川话", "defaultEnabled": false, "order": 7 },
+    { "id": "dongbei",  "name": "东北话", "defaultEnabled": false, "order": 8 },
+    { "id": "shandong", "name": "山东话", "defaultEnabled": false, "order": 9 },
+    { "id": "shanghai", "name": "上海话", "defaultEnabled": false, "order": 10 },
+    { "id": "minnan",   "name": "闽南语", "defaultEnabled": false, "order": 11 },
+    { "id": "ja",       "name": "日语",   "defaultEnabled": false, "order": 12 },
+    { "id": "ko",       "name": "韩语",   "defaultEnabled": false, "order": 13 }
   ],
   "vad": {
     "id": "silero-vad",
@@ -87,8 +94,96 @@
         }
       ],
       "languages": [
-        { "lang": "zh",    "score": 7, "decodeParam": "" },
-        { "lang": "henan", "score": 9, "decodeParam": "" }
+        { "lang": "zh",       "score": 7, "decodeParam": "" },
+        { "lang": "henan",    "score": 9, "decodeParam": "" },
+        { "lang": "sichuan",  "score": 8, "decodeParam": "" },
+        { "lang": "dongbei",  "score": 8, "decodeParam": "" },
+        { "lang": "shandong", "score": 8, "decodeParam": "" }
+      ],
+      "autoDecodeParam": ""
+    },
+    {
+      "id": "dolphin-base-ctc-int8",
+      "name": "Dolphin Base",
+      "type": "dolphin_ctc",
+      "version": "2025-04-02",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "name": "model.int8.onnx",
+          "size": 103729802,
+          "sha256": "a3aa46c97f3f60f135ff949793cb05fabe7a0b3c484dc2e3cc699d354ee11b76",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-dolphin-base-ctc-multi-lang-int8-2025-04-02/resolve/main/model.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-dolphin-base-ctc-multi-lang-int8-2025-04-02/resolve/main/model.int8.onnx"
+          ]
+        },
+        {
+          "name": "tokens.txt",
+          "size": 504662,
+          "sha256": "c3788261a51df1899ea4b210b552cd42139204de72c0ad60f6cebb199078872e",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-dolphin-base-ctc-multi-lang-int8-2025-04-02/resolve/main/tokens.txt",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-dolphin-base-ctc-multi-lang-int8-2025-04-02/resolve/main/tokens.txt"
+          ]
+        }
+      ],
+      "languages": [
+        { "lang": "zh",       "score": 8, "decodeParam": "" },
+        { "lang": "yue",      "score": 7, "decodeParam": "" },
+        { "lang": "henan",    "score": 7, "decodeParam": "" },
+        { "lang": "sichuan",  "score": 8, "decodeParam": "" },
+        { "lang": "dongbei",  "score": 7, "decodeParam": "" },
+        { "lang": "shandong", "score": 7, "decodeParam": "" },
+        { "lang": "shanghai", "score": 8, "decodeParam": "" },
+        { "lang": "minnan",   "score": 7, "decodeParam": "" },
+        { "lang": "ja",       "score": 6, "decodeParam": "" },
+        { "lang": "ko",       "score": 6, "decodeParam": "" }
+      ],
+      "autoDecodeParam": ""
+    },
+    {
+      "id": "whisper-small-int8",
+      "name": "Whisper Small",
+      "type": "whisper",
+      "version": "1",
+      "license": "MIT",
+      "files": [
+        {
+          "name": "encoder.int8.onnx",
+          "size": 112442483,
+          "sha256": "4cbe7b22fa9026b843b60a68640c747de05bafb1a11b57edc0e66c232d9f33a9",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-encoder.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-encoder.int8.onnx"
+          ]
+        },
+        {
+          "name": "decoder.int8.onnx",
+          "size": 262226114,
+          "sha256": "acad50b5c782696e91b55914cc5ab4f756f1532f76e22aa6fc615f39fb69a8ee",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-decoder.int8.onnx",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-decoder.int8.onnx"
+          ]
+        },
+        {
+          "name": "tokens.txt",
+          "size": 816730,
+          "sha256": "b34b360dbb493e781e479794586d661700670d65564001f23024971d1f2fa126",
+          "urls": [
+            "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-tokens.txt",
+            "https://hf-mirror.com/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-tokens.txt"
+          ]
+        }
+      ],
+      "languages": [
+        { "lang": "en", "score": 8, "decodeParam": "en" },
+        { "lang": "fr", "score": 8, "decodeParam": "fr" },
+        { "lang": "de", "score": 8, "decodeParam": "de" },
+        { "lang": "zh", "score": 6, "decodeParam": "zh" },
+        { "lang": "ja", "score": 7, "decodeParam": "ja" },
+        { "lang": "ko", "score": 7, "decodeParam": "ko" }
       ],
       "autoDecodeParam": ""
     }

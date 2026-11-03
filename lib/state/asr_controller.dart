@@ -10,6 +10,7 @@ import '../asr/tag_formatter.dart';
 import '../l10n/l10n.dart';
 import '../models/subtitle_item.dart';
 import 'asr_state.dart';
+import 'script_converter.dart';
 
 /// 当前使用的识别引擎。
 final asrEngineProvider = Provider<AsrEngine>((ref) {
@@ -25,6 +26,10 @@ final asrControllerProvider = NotifierProvider<AsrController, AsrEngineState>(
 class AsrController extends Notifier<AsrEngineState> {
   late AsrEngine _engine;
   int _nextId = 0;
+
+  /// 等待繁简转换的事件按到达顺序依次处理；[_converting] 为排队中的事件数。
+  Future<void> _queue = Future.value();
+  int _converting = 0;
 
   @override
   AsrEngineState build() {
@@ -124,6 +129,43 @@ class AsrController extends Notifier<AsrEngineState> {
   }
 
   void _onEvent(AsrEvent event) {
+    final script = ref.read(chineseScriptProvider);
+    // 无需转换且没有排队的事件时同步处理，避免多一帧延迟。
+    if (script == null && _converting == 0) {
+      _apply(event);
+      return;
+    }
+    _converting++;
+    _queue = _queue.then((_) async {
+      try {
+        final converted = await _convert(event, script);
+        if (ref.mounted) _apply(converted);
+      } finally {
+        _converting--;
+      }
+    });
+  }
+
+  /// 把识别文字转换为界面语言对应的字形（简体 / 繁体）。
+  Future<AsrEvent> _convert(AsrEvent event, ChineseScript? script) async {
+    if (script == null) return event;
+    final converter = ref.read(scriptConverterProvider);
+    return switch (event) {
+      AsrPartial(:final text) => AsrPartial(
+        await converter.convert(text, script),
+      ),
+      AsrFinal(:final text, :final lang, :final emotion, event: final tag) =>
+        AsrFinal(
+          await converter.convert(text, script),
+          lang: lang,
+          emotion: emotion,
+          event: tag,
+        ),
+      _ => event,
+    };
+  }
+
+  void _apply(AsrEvent event) {
     switch (event) {
       case AsrPartial(:final text):
         state = state.copyWith(

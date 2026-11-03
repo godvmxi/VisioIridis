@@ -209,6 +209,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get notSupportedByModel => '当前模型不支持，不会识别';
+
+  @override
   String get keepOneLanguage => '至少保留一种识别语言';
 
   @override
@@ -323,6 +326,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get langHenan => '河南话';
+
+  @override
+  String get langFr => '法语';
+
+  @override
+  String get langDe => '德语';
+
+  @override
+  String get langSichuan => '四川话';
+
+  @override
+  String get langDongbei => '东北话';
+
+  @override
+  String get langShandong => '山东话';
+
+  @override
+  String get langShanghai => '上海话';
+
+  @override
+  String get langMinnan => '闽南语';
 
   @override
   String get langJa => '日语';
@@ -562,6 +586,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String get notSupportedByModel => '目前模型不支援，不會辨識';
+
+  @override
   String get keepOneLanguage => '至少保留一種辨識語言';
 
   @override
@@ -676,6 +703,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get langHenan => '河南話';
+
+  @override
+  String get langFr => '法語';
+
+  @override
+  String get langDe => '德語';
+
+  @override
+  String get langSichuan => '四川話';
+
+  @override
+  String get langDongbei => '東北話';
+
+  @override
+  String get langShandong => '山東話';
+
+  @override
+  String get langShanghai => '上海話';
+
+  @override
+  String get langMinnan => '閩南語';
 
   @override
   String get langJa => '日語';

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../asr/asr_engine.dart';
 import '../../asr/asr_language.dart';
 import '../../l10n/l10n.dart';
+import '../../model_store/model_selector.dart';
 import '../../state/asr_controller.dart';
 import '../../state/current_model.dart';
 import '../../state/model_providers.dart';
@@ -171,6 +172,9 @@ class _LanguageDialogState extends ConsumerState<_LanguageDialog> {
         ]..sort(
           (a, b) => (names[a]?.order ?? 999).compareTo(names[b]?.order ?? 999),
         );
+    final unsupported = model == null
+        ? const <String>{}
+        : unsupportedLanguages(model, {for (final l in enabled) l.code});
 
     return AlertDialog(
       title: Text(l10n.recognitionLanguage),
@@ -194,6 +198,16 @@ class _LanguageDialogState extends ConsumerState<_LanguageDialog> {
                   l10n.languageName(language.code),
                   style: const TextStyle(fontSize: 18),
                 ),
+                // 设置页为其他语言指定的模型可能不支持这里勾选的语言。
+                subtitle: unsupported.contains(language.code)
+                    ? Text(
+                        l10n.notSupportedByModel,
+                        style: const TextStyle(
+                          color: Color(0xFFFF5252),
+                          fontSize: 14,
+                        ),
+                      )
+                    : null,
               ),
             if (_rejected)
               Text(
@@ -237,7 +251,7 @@ class _ClearConfirmSheet extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -1,8 +1,17 @@
-/// 可选识别语言，code 为 SenseVoice 的 language 参数值。
+/// 可选识别语言，code 为模型配置中的语言 id（普通话、粤语、英语等与 SenseVoice 的
+/// language 参数值相同）。
 enum AsrLanguage {
   mandarin('zh'),
   cantonese('yue'),
-  english('en');
+  english('en'),
+  french('fr'),
+  german('de'),
+  henan('henan'),
+  sichuan('sichuan'),
+  dongbei('dongbei'),
+  shandong('shandong'),
+  shanghai('shanghai'),
+  minnan('minnan');
 
   const AsrLanguage(this.code);
 

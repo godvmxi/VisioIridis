@@ -43,6 +43,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  flutter_open_chinese_convert: 1.0.0
 
 dev_dependencies:
   flutter_test:

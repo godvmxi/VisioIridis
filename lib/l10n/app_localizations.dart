@@ -453,6 +453,12 @@ abstract class AppLocalizations {
   /// **'当前模型：{model}'**
   String currentModel(String model);
 
+  /// No description provided for @notSupportedByModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前模型不支持，不会识别'**
+  String get notSupportedByModel;
+
   /// No description provided for @keepOneLanguage.
   ///
   /// In zh, this message translates to:
@@ -644,6 +650,48 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'河南话'**
   String get langHenan;
+
+  /// No description provided for @langFr.
+  ///
+  /// In zh, this message translates to:
+  /// **'法语'**
+  String get langFr;
+
+  /// No description provided for @langDe.
+  ///
+  /// In zh, this message translates to:
+  /// **'德语'**
+  String get langDe;
+
+  /// No description provided for @langSichuan.
+  ///
+  /// In zh, this message translates to:
+  /// **'四川话'**
+  String get langSichuan;
+
+  /// No description provided for @langDongbei.
+  ///
+  /// In zh, this message translates to:
+  /// **'东北话'**
+  String get langDongbei;
+
+  /// No description provided for @langShandong.
+  ///
+  /// In zh, this message translates to:
+  /// **'山东话'**
+  String get langShandong;
+
+  /// No description provided for @langShanghai.
+  ///
+  /// In zh, this message translates to:
+  /// **'上海话'**
+  String get langShanghai;
+
+  /// No description provided for @langMinnan.
+  ///
+  /// In zh, this message translates to:
+  /// **'闽南语'**
+  String get langMinnan;
 
   /// No description provided for @langJa.
   ///

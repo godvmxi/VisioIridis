@@ -15,7 +15,14 @@ void main() {
         'zh',
         'yue',
         'en',
+        'fr',
+        'de',
         'henan',
+        'sichuan',
+        'dongbei',
+        'shandong',
+        'shanghai',
+        'minnan',
         'ja',
         'ko',
       ]);
@@ -23,6 +30,8 @@ void main() {
       expect(config.asrModels.map((m) => m.id), [
         'sense-voice-small-int8',
         'telespeech-ctc-int8',
+        'dolphin-base-ctc-int8',
+        'whisper-small-int8',
       ]);
       expect(
         config.asrModels.first.relativeDir,
@@ -63,8 +72,25 @@ void main() {
       expect(pick({'zh', 'henan'}), 'telespeech-ctc-int8');
     });
 
+    test('cantonese with a dialect uses Dolphin', () {
+      expect(pick({'yue', 'henan'}), 'dolphin-base-ctc-int8');
+      expect(pick({'shanghai'}), 'dolphin-base-ctc-int8');
+      expect(pick({'zh', 'minnan'}), 'dolphin-base-ctc-int8');
+    });
+
+    test('french and german use Whisper', () {
+      expect(pick({'fr'}), 'whisper-small-int8');
+      expect(pick({'de'}), 'whisper-small-int8');
+      expect(pick({'en', 'fr', 'de'}), 'whisper-small-int8');
+    });
+
+    test('english alone still prefers SenseVoice', () {
+      expect(pick({'en'}), 'sense-voice-small-int8');
+    });
+
     test('unsupported combination returns null', () {
-      expect(pick({'yue', 'henan'}), isNull);
+      expect(pick({'yue', 'fr'}), isNull);
+      expect(pick({'de', 'sichuan'}), isNull);
     });
 
     test('a preferred model wins over a higher score', () {
@@ -78,15 +104,14 @@ void main() {
       );
     });
 
-    test('a preferred model that lacks a selected language is skipped', () {
-      expect(
-        selectModel(
-          config,
-          {'zh', 'en'},
-          preferred: {'zh': 'telespeech-ctc-int8'},
-        )?.id,
-        'sense-voice-small-int8',
-      );
+    test('a preferred model wins even if it lacks another language', () {
+      final model = selectModel(
+        config,
+        {'zh', 'en'},
+        preferred: {'zh': 'telespeech-ctc-int8'},
+      )!;
+      expect(model.id, 'telespeech-ctc-int8');
+      expect(unsupportedLanguages(model, {'zh', 'en'}), {'en'});
     });
 
     test('unknown preferred ids are ignored', () {
@@ -99,7 +124,10 @@ void main() {
 
   group('decodeParamFor', () {
     final senseVoice = config.asrModels.first;
-    final teleSpeech = config.asrModels.last;
+    AsrModelDef model(String id) =>
+        config.asrModels.firstWhere((m) => m.id == id);
+    final teleSpeech = model('telespeech-ctc-int8');
+    final whisper = model('whisper-small-int8');
 
     test('single language uses its param, several use auto', () {
       expect(decodeParamFor(senseVoice, {'en'}), 'en');
@@ -108,6 +136,11 @@ void main() {
 
     test('a language the model does not support means none', () {
       expect(decodeParamFor(teleSpeech, {'en'}), isNull);
+    });
+
+    test('whisper forces a single language and auto-detects several', () {
+      expect(decodeParamFor(whisper, {'fr'}), 'fr');
+      expect(decodeParamFor(whisper, {'fr', 'de'}), isNull);
     });
 
     test('empty param means none', () {
@@ -126,12 +159,12 @@ void main() {
         ConfigRepository(loadBuiltin: () async => builtin, storageDir: dir);
 
     test('falls back to builtin when nothing is cached', () async {
-      expect((await repo().load()).configVersion, 2);
+      expect((await repo().load()).configVersion, 3);
     });
 
     test('prefers a cached remote config', () async {
       File('${dir.path}/model_config.json').writeAsStringSync(
-        builtin.replaceFirst('"configVersion": 2', '"configVersion": 5'),
+        builtin.replaceFirst('"configVersion": 3', '"configVersion": 5'),
       );
       expect((await repo().load()).configVersion, 5);
     });
@@ -140,15 +173,15 @@ void main() {
       File('${dir.path}/model_config.json').writeAsStringSync(
         builtin.replaceFirst('"schemaVersion": 2', '"schemaVersion": 9'),
       );
-      expect((await repo().load()).configVersion, 2);
+      expect((await repo().load()).configVersion, 3);
     });
 
     test('acceptRemote requires a newer configVersion', () {
       final newer = builtin.replaceFirst(
-        '"configVersion": 2',
         '"configVersion": 3',
+        '"configVersion": 4',
       );
-      expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 3);
+      expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 4);
       expect(ConfigRepository.acceptRemote(config, builtin), isNull);
       expect(ConfigRepository.acceptRemote(config, 'not json'), isNull);
     });

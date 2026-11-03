@@ -10,13 +10,16 @@ import 'package:seevoice/model_store/model_config.dart';
 import 'package:seevoice/platform/background_platform.dart';
 import 'package:seevoice/state/asr_controller.dart';
 import 'package:seevoice/state/model_providers.dart';
+import 'package:seevoice/state/script_converter.dart';
 import 'package:seevoice/state/settings.dart';
 import 'package:seevoice/ui/app_colors.dart';
 import 'package:seevoice/ui/model_preparer.dart';
+import 'package:seevoice/ui/widgets/history_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_asr_engine.dart';
 import 'fake_background_platform.dart';
+import 'fake_script_converter.dart';
 
 /// 跳过模型下载，直接视为模型已就绪。
 class ReadyModelPreparer implements ModelPreparer {
@@ -54,6 +57,7 @@ void main() {
           modelPreparerProvider.overrideWithValue(ReadyModelPreparer()),
           sharedPreferencesProvider.overrideWithValue(prefs),
           backgroundPlatformProvider.overrideWithValue(platform),
+          scriptConverterProvider.overrideWithValue(FakeScriptConverter()),
           modelConfigProvider.overrideWith(
             (ref) => ModelConfig.parse(
               File('assets/config/model_config.json').readAsStringSync(),
@@ -159,7 +163,8 @@ void main() {
     await tester.tap(find.text('黑字白底'));
     await tester.pumpAndSettle();
 
-    final preview = tester.widget<Text>(find.text('下午三点见'));
+    // 预览中依次是麦克风气泡与最新卡片，取最新卡片。
+    final preview = tester.widget<Text>(find.text('下午三点见').last);
     expect(preview.style?.fontSize, FontScale.giant.size);
     expect(preview.style?.color, AppPalette.blackOnWhite.focusText);
 
@@ -204,12 +209,55 @@ void main() {
     expect(styleOf(tester, '第一句')?.color, yellow);
     final icon = tester.widget<Icon>(
       find.descendant(
-        of: find.textContaining('第一句', findRichText: true),
+        of: find.byType(ChatBubble),
         matching: find.byIcon(Icons.mic_rounded),
       ),
     );
-    expect(icon.color?.toARGB32(), 0x99FFE600);
+    expect(icon.color, yellow);
     expect(styleOf(tester, '普通话 +2')?.color, yellow);
+  });
+
+  testWidgets('chat bubbles: speaker on the left, microphone on the right', (
+    tester,
+  ) async {
+    Future<(double, double)> layout(AudioInput source) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ChatBubble(
+              text: '气泡',
+              source: source,
+              palette: AppPalette.yellowOnBlack,
+              fontSize: 20,
+              weight: FontWeight.normal,
+            ),
+          ),
+        ),
+      );
+      final icon = source == AudioInput.systemAudio
+          ? Icons.volume_up_rounded
+          : Icons.mic_rounded;
+      return (
+        tester.getCenter(find.byIcon(icon)).dx,
+        tester.getCenter(find.text('气泡')).dx,
+      );
+    }
+
+    final (speakerIcon, speakerText) = await layout(AudioInput.systemAudio);
+    expect(speakerIcon, lessThan(speakerText));
+    final (micIcon, micText) = await layout(AudioInput.microphone);
+    expect(micIcon, greaterThan(micText));
+    final width = tester.view.physicalSize.width / tester.view.devicePixelRatio;
+    expect(micIcon, greaterThan(width / 2));
+  });
+
+  testWidgets('captions follow the interface script (OpenCC)', (tester) async {
+    await pumpApp(tester, prefsValues: {'settings.appLanguage': 'zhHant'});
+    engine.emit(const AsrFinal('开会'));
+    engine.emit(const AsrPartial('说话'));
+    await tester.pumpAndSettle();
+    expect(find.text('開會'), findsOneWidget);
+    expect(find.text('說話'), findsOneWidget);
   });
 
   testWidgets('bold setting makes history text bold', (tester) async {
@@ -306,7 +354,13 @@ void main() {
     expect(find.text('Display language'), findsOneWidget);
     expect(find.text('Font size'), findsOneWidget);
     expect(find.text('Model for Mandarin'), findsOneWidget);
-    expect(find.text('Supports: Mandarin 7 · Henan dialect 9'), findsOneWidget);
+    expect(
+      find.text(
+        'Supports: Mandarin 7 · Henan dialect 9 · Sichuanese 8 · '
+        'Northeastern Mandarin 8 · Shandong dialect 8',
+      ),
+      findsOneWidget,
+    );
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('settings.appLanguage'), 'en');
 
@@ -395,7 +449,10 @@ void main() {
     expect(find.text('选打分最高的模型：SenseVoice Small  10 分'), findsOneWidget);
     expect(find.text('SenseVoice Small    普通话 10 分'), findsOneWidget);
     expect(find.text('TeleSpeech    普通话 7 分'), findsOneWidget);
-    expect(find.text('支持：普通话 7 · 河南话 9'), findsOneWidget);
+    expect(
+      find.text('支持：普通话 7 · 河南话 9 · 四川话 8 · 东北话 8 · 山东话 8'),
+      findsOneWidget,
+    );
     expect(find.text('支持：普通话 10 · 粤语 10 · 英语 9 · 日语 8 · 韩语 8'), findsOneWidget);
 
     await tester.tap(find.text('TeleSpeech    普通话 7 分'));
@@ -421,6 +478,52 @@ void main() {
       prefs.getString('settings.modelPreferences'),
       contains('telespeech-ctc-int8'),
     );
+  });
+
+  testWidgets('model chosen in settings shows in the language dialog', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 3600);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await pumpApp(tester);
+    await tester.tap(find.byTooltip('设置'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('TeleSpeech    普通话 7 分'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    // 勾选了普通话、粤语、英语；TeleSpeech 不支持后两者，仍按用户的选择使用它。
+    await tester.tap(find.text('普通话 +2'));
+    await tester.pumpAndSettle();
+    expect(find.text('当前模型：TeleSpeech'), findsOneWidget);
+    expect(find.text('当前模型不支持，不会识别'), findsNWidgets(2));
+    expect(
+      find.descendant(
+        of: find.widgetWithText(CheckboxListTile, '普通话'),
+        matching: find.text('当前模型不支持，不会识别'),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('settings model chooser starts at the ticked language', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 3600);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await pumpApp(tester);
+    await tester.tap(find.text('普通话 +2'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(CheckboxListTile, '普通话'));
+    await tester.pump();
+    await tester.tap(find.text('完成'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('设置'));
+    await tester.pumpAndSettle();
+    expect(find.text('为“粤语”选择模型'), findsOneWidget);
   });
 
   group('floating caption (PRD 4.7)', () {

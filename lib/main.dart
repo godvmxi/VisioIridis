@@ -8,6 +8,7 @@ import 'platform/keep_alive.dart';
 import 'platform/system_audio.dart';
 import 'state/settings.dart';
 import 'ui/app_colors.dart';
+import 'ui/app_theme.dart';
 import 'ui/floating_caption_host.dart';
 import 'ui/home_page.dart';
 
@@ -53,27 +54,7 @@ class SeeVoiceApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        // 让语言胶囊、开关、对话框等系统控件的文字与选中色也跟随配色模式。
-        colorScheme:
-            ColorScheme.fromSeed(
-              seedColor: AppColors.listening,
-              brightness: palette.brightness,
-            ).copyWith(
-              primary: palette.focusText,
-              onPrimary: palette.background,
-              surface: palette.background,
-              onSurface: palette.focusText,
-              onSurfaceVariant: palette.historyText,
-              secondaryContainer: palette.cardBorder,
-              onSecondaryContainer: palette.focusText,
-              surfaceContainerHigh: palette.cardSurface,
-              surfaceContainerHighest: palette.cardSurface,
-              outline: palette.cardBorder,
-            ),
-        scaffoldBackgroundColor: palette.background,
-        extensions: [palette],
-      ),
+      theme: buildTheme(palette),
       home: const FloatingCaptionHost(child: HomePage()),
     );
   }

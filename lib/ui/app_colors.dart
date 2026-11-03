@@ -98,6 +98,15 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color focusText;
   final Color idle;
 
+  /// 喇叭来源（左侧）的聊天气泡底色。
+  Color get bubbleIncoming => cardSurface;
+
+  /// 麦克风来源（右侧）的聊天气泡底色：比左侧略偏文字色，便于区分两侧。
+  Color get bubbleOutgoing => Color.lerp(background, focusText, 0.16)!;
+
+  /// 气泡旁圆形图标（类似聊天头像）的底色。
+  Color get avatar => cardBorder;
+
   @override
   AppPalette copyWith() => this;
 

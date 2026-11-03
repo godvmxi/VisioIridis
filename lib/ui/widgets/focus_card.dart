@@ -49,7 +49,7 @@ class FocusCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: palette.cardSurface,
         border: Border.all(color: palette.cardBorder),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -117,7 +117,7 @@ class _CardFrame extends StatelessWidget {
       decoration: BoxDecoration(
         color: palette.cardSurface,
         border: Border.all(color: palette.cardBorder),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: child,
     );

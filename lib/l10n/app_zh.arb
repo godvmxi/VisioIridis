@@ -138,6 +138,7 @@
       }
     }
   },
+  "notSupportedByModel": "当前模型不支持，不会识别",
   "keepOneLanguage": "至少保留一种识别语言",
   "alsoAutoDetect": "还可自动识别",
   "alsoAutoDetectHint": "勾选多种语言（自动识别）时可识别这些语言。",
@@ -249,6 +250,13 @@
   "langYue": "粤语",
   "langEn": "英语",
   "langHenan": "河南话",
+  "langFr": "法语",
+  "langDe": "德语",
+  "langSichuan": "四川话",
+  "langDongbei": "东北话",
+  "langShandong": "山东话",
+  "langShanghai": "上海话",
+  "langMinnan": "闽南语",
   "langJa": "日语",
   "langKo": "韩语",
   "overlayBack": "返回",

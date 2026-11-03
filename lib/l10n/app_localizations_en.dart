@@ -211,6 +211,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get notSupportedByModel => 'Not supported by the current model';
+
+  @override
   String get keepOneLanguage => 'Keep at least one language';
 
   @override
@@ -328,6 +331,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get langHenan => 'Henan dialect';
+
+  @override
+  String get langFr => 'French';
+
+  @override
+  String get langDe => 'German';
+
+  @override
+  String get langSichuan => 'Sichuanese';
+
+  @override
+  String get langDongbei => 'Northeastern Mandarin';
+
+  @override
+  String get langShandong => 'Shandong dialect';
+
+  @override
+  String get langShanghai => 'Shanghainese';
+
+  @override
+  String get langMinnan => 'Hokkien (Minnan)';
 
   @override
   String get langJa => 'Japanese';

@@ -181,6 +181,8 @@ class SherpaAsrEngine implements AsrEngine {
         vadModelPath: model.vadModelPath,
         modelType: model.asrModel.type,
         modelPath: model.modelPath,
+        encoderPath: model.encoderPath,
+        decoderPath: model.decoderPath,
         tokensPath: model.tokensPath,
         decodeParam: decodeParamFor(model.asrModel, codes),
         allowedLanguages: codes,
