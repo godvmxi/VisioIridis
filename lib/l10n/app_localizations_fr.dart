@@ -83,6 +83,16 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get forceSplit => 'Découpage forcé';
+
+  @override
+  String get forceSplitHint =>
+      'Force une fin de phrase après ce délai sans résultat. Utile quand le bruit ambiant empêche de détecter les silences. Choisissez « Désactivé » pour vous fier uniquement à la détection vocale.';
+
+  @override
+  String get forceSplitOff => 'Désactivé';
+
+  @override
   String get floatingWindow => 'Fenêtre flottante';
 
   @override
@@ -351,7 +361,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get langShandong => 'Dialecte du Shandong';
 
   @override
-  String get langShanghai => 'Shanghaïen';
+  String get langWu => 'Wu (shanghaïen)';
 
   @override
   String get langMinnan => 'Hokkien (minnan)';
@@ -390,4 +400,122 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get systemAudioNotificationTitle =>
       'Sous-titrage du son joué sur cet appareil';
+
+  @override
+  String get regionMainland => 'Chine continentale';
+
+  @override
+  String get regionOverseas => 'International';
+
+  @override
+  String get regionUnknown => 'Inconnue';
+
+  @override
+  String get configUpdateTitle => 'Mise à jour de la configuration des modèles';
+
+  @override
+  String configUpdateBody(String region, int currentVersion, int newVersion) {
+    return 'Région : $region\nConfiguration : v$currentVersion → v$newVersion\n\nUne nouvelle configuration a été enregistrée en arrière-plan. Elle peut inclure des modèles de reconnaissance mis à jour. L\'appliquer maintenant et vérifier les téléchargements de modèles ?';
+  }
+
+  @override
+  String get configUpdateLater => 'Plus tard';
+
+  @override
+  String get configUpdateNow => 'Appliquer';
+
+  @override
+  String get configUpdated =>
+      'Configuration mise à jour : appuyez sur « Démarrer » pour vérifier et télécharger les nouveaux modèles';
+
+  @override
+  String get onboardingWelcomeTitle => 'Bienvenue dans Visio Iridis';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Visio Iridis est un outil de sous-titrage en temps réel hors ligne conçu pour les personnes malentendantes. Tout fonctionne localement sur votre appareil.\n\nCommençons par configurer les autorisations nécessaires.';
+
+  @override
+  String get onboardingMicTitle => 'Micro';
+
+  @override
+  String get onboardingMicBody =>
+      'La reconnaissance vocale a besoin d\'accéder au micro. Le mode Haut-parleur (capture du son système) en a aussi besoin.';
+
+  @override
+  String get onboardingMicButton => 'Autoriser le micro';
+
+  @override
+  String get onboardingNotifTitle => 'Notifications';
+
+  @override
+  String get onboardingNotifBody =>
+      'Une notification permanente maintient l\'appli active pendant le sous-titrage. Sur Android 13 et versions ultérieures, l\'autorisation doit être accordée manuellement.';
+
+  @override
+  String get onboardingNotifButton => 'Autoriser les notifications';
+
+  @override
+  String get onboardingOverlayTitle => 'Fenêtre flottante';
+
+  @override
+  String get onboardingOverlayBody =>
+      'Affichez les sous-titres dans une fenêtre flottante pendant que vous utilisez d\'autres applis. À activer dans les paramètres du système.';
+
+  @override
+  String get onboardingOverlayButton =>
+      'Ouvrir les paramètres de superposition';
+
+  @override
+  String get onboardingBatteryTitle => 'Activité en arrière-plan';
+
+  @override
+  String get onboardingBatteryBody =>
+      'Pour éviter que le système n\'interrompe la reconnaissance, excluez cette appli de l\'optimisation de la batterie dans les paramètres du système.';
+
+  @override
+  String get onboardingBatteryButton => 'Lever les limites de batterie';
+
+  @override
+  String get onboardingRegionTitle => 'Détection de la région';
+
+  @override
+  String get onboardingRegionBody =>
+      'Vérification de votre réseau pour choisir la meilleure source de mises à jour de configuration et de téléchargement des modèles.';
+
+  @override
+  String get onboardingRegionDetecting => 'Détection…';
+
+  @override
+  String onboardingRegionResult(String region) {
+    return 'Région détectée : $region';
+  }
+
+  @override
+  String get onboardingRegionMainlandHint =>
+      'La configuration et les téléchargements utiliseront Gitee';
+
+  @override
+  String get onboardingRegionOverseasHint =>
+      'La configuration et les téléchargements utiliseront GitHub';
+
+  @override
+  String get onboardingRegionUnknownHint =>
+      'Région incertaine : la détection se poursuivra en arrière-plan';
+
+  @override
+  String get onboardingDone => 'Commencer';
+
+  @override
+  String get onboardingSkip => 'Passer';
+
+  @override
+  String get onboardingGranted => 'Autorisé';
+
+  @override
+  String get onboardingOpenedSettings =>
+      'Paramètres ouverts : revenez une fois terminé';
+
+  @override
+  String get onboardingNext => 'Suivant';
 }

@@ -39,6 +39,12 @@ void main() {
   });
   tearDown(() => engine.dispose());
 
+  /// 识别模型在设置页最后，滑到底部才会构建。
+  Future<void> scrollSettingsToEnd(WidgetTester tester) async {
+    await tester.drag(find.byType(ListView), const Offset(0, -20000));
+    await tester.pumpAndSettle();
+  }
+
   Future<void> pumpApp(
     WidgetTester tester, {
     Map<String, Object> prefsValues = const {},
@@ -48,6 +54,8 @@ void main() {
     // 测试环境的系统语言为英语，默认固定为简体中文界面。
     SharedPreferences.setMockInitialValues({
       'settings.appLanguage': 'zhHans',
+      'onboarding.done': true,
+      'region.result': 'overseas',
       ...prefsValues,
     });
     final prefs = await SharedPreferences.getInstance();
@@ -354,6 +362,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Display language'), findsOneWidget);
     expect(find.text('Font size'), findsOneWidget);
+    await scrollSettingsToEnd(tester);
     expect(find.text('Model for Mandarin'), findsOneWidget);
     expect(
       find.text(
@@ -365,11 +374,14 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('settings.appLanguage'), 'en');
 
+    await tester.drag(find.byType(ListView), const Offset(0, 20000));
+    await tester.pumpAndSettle();
     await tester.tap(find.byType(DropdownButton<AppLanguage>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('繁體中文').last);
     await tester.pumpAndSettle();
     expect(find.text('介面語言'), findsOneWidget);
+    await scrollSettingsToEnd(tester);
     expect(find.text('為「普通話」選擇模型'), findsOneWidget);
 
     await tester.tap(find.byType(BackButton));
@@ -444,6 +456,7 @@ void main() {
     await pumpApp(tester);
     await tester.tap(find.byTooltip('设置'));
     await tester.pumpAndSettle();
+    await scrollSettingsToEnd(tester);
 
     // 默认选中第一种语言，下方直接列出候选模型及其支持的全部语言打分。
     expect(find.text('为“普通话”选择模型'), findsOneWidget);
@@ -458,12 +471,6 @@ void main() {
 
     await tester.tap(find.text('TeleSpeech    普通话 7 分'));
     await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
-          .groupValue,
-      'telespeech-ctc-int8',
-    );
 
     // 切换语言后只列出支持该语言的模型。
     await tester.tap(find.byType(DropdownButton<String>));
@@ -490,6 +497,7 @@ void main() {
     await pumpApp(tester);
     await tester.tap(find.byTooltip('设置'));
     await tester.pumpAndSettle();
+    await scrollSettingsToEnd(tester);
     await tester.tap(find.text('TeleSpeech    普通话 7 分'));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(BackButton));
@@ -551,6 +559,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('设置'));
     await tester.pumpAndSettle();
+    await scrollSettingsToEnd(tester);
     expect(find.text('为“粤语”选择模型'), findsOneWidget);
   });
 

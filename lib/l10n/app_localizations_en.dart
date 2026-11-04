@@ -83,6 +83,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get forceSplit => 'Force split';
+
+  @override
+  String get forceSplitHint =>
+      'Force a sentence boundary after this long without a result. Useful when background noise prevents silence detection. Set to \"Off\" to rely on voice detection alone.';
+
+  @override
+  String get forceSplitOff => 'Off';
+
+  @override
   String get floatingWindow => 'Floating window';
 
   @override
@@ -348,7 +358,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get langShandong => 'Shandong dialect';
 
   @override
-  String get langShanghai => 'Shanghainese';
+  String get langWu => 'Wu (Shanghainese)';
 
   @override
   String get langMinnan => 'Hokkien (Minnan)';
@@ -386,4 +396,121 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get systemAudioNotificationTitle =>
       'Captioning audio played on this device';
+
+  @override
+  String get regionMainland => 'Mainland China';
+
+  @override
+  String get regionOverseas => 'International';
+
+  @override
+  String get regionUnknown => 'Unknown';
+
+  @override
+  String get configUpdateTitle => 'Model config update available';
+
+  @override
+  String configUpdateBody(String region, int currentVersion, int newVersion) {
+    return 'Region: $region\nConfig: v$currentVersion → v$newVersion\n\nA new config has been saved in the background. It may include updated recognition models. Apply now and check for model downloads?';
+  }
+
+  @override
+  String get configUpdateLater => 'Later';
+
+  @override
+  String get configUpdateNow => 'Apply now';
+
+  @override
+  String get configUpdated =>
+      'Config updated — tap \"Start\" to check for and download new models';
+
+  @override
+  String get onboardingWelcomeTitle => 'Welcome to Visio Iridis';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Visio Iridis is an offline real-time caption tool designed for people with hearing loss. Everything runs locally on your device.\n\nLet\'s set up the permissions you\'ll need.';
+
+  @override
+  String get onboardingMicTitle => 'Microphone';
+
+  @override
+  String get onboardingMicBody =>
+      'Speech recognition needs microphone access. Speaker mode (capturing system audio) also requires it.';
+
+  @override
+  String get onboardingMicButton => 'Allow microphone';
+
+  @override
+  String get onboardingNotifTitle => 'Notifications';
+
+  @override
+  String get onboardingNotifBody =>
+      'A persistent notification keeps the app running while captioning. Android 13 and above requires manual permission.';
+
+  @override
+  String get onboardingNotifButton => 'Allow notifications';
+
+  @override
+  String get onboardingOverlayTitle => 'Floating window';
+
+  @override
+  String get onboardingOverlayBody =>
+      'See captions in a floating window while using other apps. This must be enabled in system settings.';
+
+  @override
+  String get onboardingOverlayButton => 'Open overlay settings';
+
+  @override
+  String get onboardingBatteryTitle => 'Background activity';
+
+  @override
+  String get onboardingBatteryBody =>
+      'To prevent the system from interrupting recognition, add this app to the battery optimization whitelist in system settings.';
+
+  @override
+  String get onboardingBatteryButton => 'Disable battery limits';
+
+  @override
+  String get onboardingRegionTitle => 'Detect your region';
+
+  @override
+  String get onboardingRegionBody =>
+      'Checking your network environment to choose the best source for model config updates and downloads.';
+
+  @override
+  String get onboardingRegionDetecting => 'Detecting…';
+
+  @override
+  String onboardingRegionResult(String region) {
+    return 'Detected: $region';
+  }
+
+  @override
+  String get onboardingRegionMainlandHint =>
+      'Model config and downloads will use Gitee';
+
+  @override
+  String get onboardingRegionOverseasHint =>
+      'Model config and downloads will use GitHub';
+
+  @override
+  String get onboardingRegionUnknownHint =>
+      'Region unclear — detection will continue in the background';
+
+  @override
+  String get onboardingDone => 'Get started';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingGranted => 'Granted';
+
+  @override
+  String get onboardingOpenedSettings =>
+      'Settings opened — come back when you\'re done';
+
+  @override
+  String get onboardingNext => 'Next';
 }

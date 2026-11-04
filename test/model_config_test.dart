@@ -18,10 +18,10 @@ void main() {
         'fr',
         'de',
         'henan',
-        'sichuan',
+        'chuan',
         'dongbei',
         'shandong',
-        'shanghai',
+        'wu',
         'minnan',
         'ja',
         'ko',
@@ -30,6 +30,10 @@ void main() {
       expect(config.asrModels.map((m) => m.id), [
         'sense-voice-small-int8',
         'telespeech-ctc-int8',
+        'paraformer-yue-trilingual-int8',
+        'wenetspeech-yue-wenet-ctc-int8',
+        'paraformer-chuan-int8',
+        'wenetspeech-wu-wenet-ctc-int8',
         'dolphin-base-ctc-int8',
         'whisper-small-int8',
       ]);
@@ -74,8 +78,13 @@ void main() {
 
     test('cantonese with a dialect uses Dolphin', () {
       expect(pick({'yue', 'henan'}), 'dolphin-base-ctc-int8');
-      expect(pick({'shanghai'}), 'dolphin-base-ctc-int8');
+      expect(pick({'wu', 'minnan'}), 'dolphin-base-ctc-int8');
       expect(pick({'zh', 'minnan'}), 'dolphin-base-ctc-int8');
+    });
+
+    test('a single dialect prefers its dedicated model', () {
+      expect(pick({'wu'}), 'wenetspeech-wu-wenet-ctc-int8');
+      expect(pick({'chuan'}), 'paraformer-chuan-int8');
     });
 
     test('french and german use Whisper', () {
@@ -90,7 +99,7 @@ void main() {
 
     test('unsupported combination returns null', () {
       expect(pick({'yue', 'fr'}), isNull);
-      expect(pick({'de', 'sichuan'}), isNull);
+      expect(pick({'de', 'chuan'}), isNull);
     });
 
     test('a preferred model wins over a higher score', () {
@@ -159,29 +168,29 @@ void main() {
         ConfigRepository(loadBuiltin: () async => builtin, storageDir: dir);
 
     test('falls back to builtin when nothing is cached', () async {
-      expect((await repo().load()).configVersion, 3);
+      expect((await repo().load()).configVersion, 5);
     });
 
     test('prefers a cached remote config', () async {
       File('${dir.path}/model_config.json').writeAsStringSync(
-        builtin.replaceFirst('"configVersion": 3', '"configVersion": 5'),
+        builtin.replaceFirst('"configVersion": 5', '"configVersion": 6'),
       );
-      expect((await repo().load()).configVersion, 5);
+      expect((await repo().load()).configVersion, 6);
     });
 
     test('ignores a cached config with unsupported schema', () async {
       File('${dir.path}/model_config.json').writeAsStringSync(
         builtin.replaceFirst('"schemaVersion": 2', '"schemaVersion": 9'),
       );
-      expect((await repo().load()).configVersion, 3);
+      expect((await repo().load()).configVersion, 5);
     });
 
     test('acceptRemote requires a newer configVersion', () {
       final newer = builtin.replaceFirst(
-        '"configVersion": 3',
-        '"configVersion": 4',
+        '"configVersion": 5',
+        '"configVersion": 6',
       );
-      expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 4);
+      expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 6);
       expect(ConfigRepository.acceptRemote(config, builtin), isNull);
       expect(ConfigRepository.acceptRemote(config, 'not json'), isNull);
     });

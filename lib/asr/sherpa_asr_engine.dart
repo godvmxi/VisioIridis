@@ -26,6 +26,10 @@ class SherpaAsrEngine implements AsrEngine {
   StreamSubscription<Uint8List>? _audio;
   AudioInput _input = AudioInput.microphone;
 
+  int _forceSplitSeconds = 2;
+  bool _inSpeech = false;
+  Timer? _forceSplitTimer;
+
   @override
   Stream<AsrEvent> get events => _events.stream;
 
@@ -98,6 +102,9 @@ class SherpaAsrEngine implements AsrEngine {
   }
 
   Future<void> _stopInput() async {
+    _forceSplitTimer?.cancel();
+    _forceSplitTimer = null;
+    _inSpeech = false;
     final input = _input;
     await _audio?.cancel();
     _audio = null;
@@ -129,6 +136,29 @@ class SherpaAsrEngine implements AsrEngine {
   }
 
   @override
+  void updateForceSplitSeconds(int seconds) {
+    _forceSplitSeconds = seconds;
+  }
+
+  void _onPartialReceived() {
+    if (_inSpeech) return;
+    _inSpeech = true;
+    if (_forceSplitSeconds > 0) {
+      _forceSplitTimer = Timer(Duration(seconds: _forceSplitSeconds), () {
+        _forceSplitTimer = null;
+        _inSpeech = false;
+        _worker?.send(const WorkerFlush());
+      });
+    }
+  }
+
+  void _onFinalReceived() {
+    _inSpeech = false;
+    _forceSplitTimer?.cancel();
+    _forceSplitTimer = null;
+  }
+
+  @override
   void updateLanguages(Set<AsrLanguage> languages) {
     final model = _loaded;
     if (model == null) return;
@@ -140,6 +170,8 @@ class SherpaAsrEngine implements AsrEngine {
 
   @override
   void dispose() {
+    _forceSplitTimer?.cancel();
+    _forceSplitTimer = null;
     _audio?.cancel();
     _recorder.dispose();
     _shutdownWorker();
@@ -169,6 +201,8 @@ class SherpaAsrEngine implements AsrEngine {
             _fail(AsrIssue.recognitionFailed, message);
           }
         case AsrEvent event:
+          if (event is AsrPartial) _onPartialReceived();
+          if (event is AsrFinal) _onFinalReceived();
           _events.add(event);
       }
     });

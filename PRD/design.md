@@ -133,7 +133,10 @@
 
 ### 4.5.1 配置来源与更新
 - **内置默认配置**：随 App 打包在 `assets/config/model_config.json`，内容即 4.5.4 的示例配置。保证从未联网时也有一份完整配置。
-- **远程配置**：从配置中的 `remoteConfigUrl` 下载（正式地址待定）。
+- **远程配置**：App 根据 4.5.6 的地区判断结果选择下载地址，不依赖配置中的 `remoteConfigUrl` 字段：
+  - 海外环境：`https://raw.githubusercontent.com/godvmxi/VisioIridisConfig/refs/heads/master/model_config.json`
+  - 大陆环境：`https://raw.giteeusercontent.com/godvmxi/VisioIridisConfig/raw/master/model_config.json`
+  - 地区未知（首次启动且探测尚未完成）：依次尝试两个地址，取首个成功的结果。
   - 时机：App 启动后在后台检查，不阻塞界面；距上次成功检查不足 24 小时则跳过；请求超时 5s。
   - 接受条件：必须是 HTTPS；JSON 能正常解析；`schemaVersion` 是当前 App 支持的版本；`configVersion` 大于正在使用的配置。任一条件不满足即丢弃，继续使用当前配置，不提示用户。
   - 生效：校验通过后保存到应用私有目录，作为“最近可用配置”。识别进行中不切换，下次点击“开始识别”时生效。
@@ -178,12 +181,12 @@
   | 在默认三项基础上再勾选河南话 | TeleSpeech，自动取消粤语、英语 | 不传 |
 
 ### 4.5.4 示例配置（即内置默认配置）
-文件大小与 sha256 均为 2026-11-02 从 Hugging Face / GitHub 实际获取的真实值；`remoteConfigUrl` 为占位地址，正式地址待定。VAD 文件目前只有 GitHub 一个下载地址，国内镜像待补充。
+文件大小与 sha256 均为 2026-11-02 从 Hugging Face / GitHub 实际获取的真实值。模型文件 `urls[]` 顺序为海外默认（huggingface.co 优先），大陆环境下 App 在下载时自动将 hf-mirror.com 调整至首位，详见 4.5.6。VAD 文件目前只有 GitHub 一个下载地址，国内镜像待补充。
 ```json
 {
   "schemaVersion": 2,
   "configVersion": 2,
-  "remoteConfigUrl": "https://example.com/visio-iridis/model_config.json",
+  "remoteConfigUrl": "https://raw.githubusercontent.com/godvmxi/VisioIridisConfig/refs/heads/master/model_config.json",
   "languages": [
     { "id": "zh",    "name": "普通话", "defaultEnabled": true,  "order": 1 },
     { "id": "yue",   "name": "粤语",   "defaultEnabled": true,  "order": 2 },
@@ -301,6 +304,31 @@
   - 无网络且本地没有可用模型时，卡片显示“需要先下载识别模型，请连接网络”，不弹出网络错误。
 - **旧版本清理**：配置更新导致模型 `version` 变化时，新版本就绪并成功加载一次后，删除外置存储和 cache 中的旧版本目录。
 
+
+### 4.5.6 大陆地区网络适配
+中国大陆对 Google、X（Twitter）、Hugging Face 等境外服务有网络访问限制。App 在启动后通过连通性探测判断用户所在网络环境，并自动选择最优的配置与模型下载地址，无需用户手动配置。
+
+#### 探测机制
+- **时机**：App 启动后立即在后台 Isolate 中并发执行，不阻塞界面；探测结果异步更新，期间保持使用上次缓存结果。
+- **探测目标**（仅建立 TCP 连接，不发送 HTTP 请求，无隐私问题）：
+  | 组别 | 探测目标 | 说明 |
+  | --- | --- | --- |
+  | 境外站点（大陆受限） | `google.com:443`、`x.com:443`、`huggingface.co:443` | 任一可通则判定为境外/VPN 环境 |
+  | 大陆站点 | `baidu.com:443`、`taobao.com:443` | 至少一个可通则确认有网络但在大陆 |
+- **超时**：每次 TCP 连接超时 5s；所有连接并发发出，总等待不超过 5s。
+- **判断逻辑**：
+  - 境外站点**任一可通** → `overseas`（境外/VPN）
+  - 境外站点**全部不通** + 大陆站点**至少一个可通** → `mainland`（大陆）
+  - 全部不通 → `unknown`（无网络），按上次缓存结果处理；若无缓存则按 `overseas` 处理
+- **持久化**：探测结果保存到 `shared_preferences`（键 `region.result`），下次启动直接读取缓存结果；每次启动仍在后台重新探测并刷新缓存。
+
+#### 对下载行为的影响
+| 行为 | 大陆环境 | 境外/未知环境 |
+| --- | --- | --- |
+| 远程模型配置地址 | Gitee Raw URL | GitHub Raw URL |
+| 模型文件 `urls[]` 下载顺序 | hf-mirror.com 优先（调至首位） | 按配置原顺序（huggingface.co 优先） |
+
+URL 重排在模型下载时由 App 注入，不修改配置文件本身；配置 JSON 中的 `urls[]` 始终以 huggingface.co 为首（海外默认）。
 
 ## 4.6 设置页 (Settings)
 - 入口：顶部控制栏清屏按钮右侧的齿轮图标，进入独立的设置页面。所有设置立即生效并持久保存（shared_preferences），重启后保留。
@@ -511,6 +539,7 @@ class LanguageSupport {
 - [ ] 搭建 Flutter 主页面骨架与三段式 UI。
 - [ ] 集成 sherpa-onnx 与 SenseVoice-Small INT8 + Silero-VAD。
 - [ ] 实现普/粤/英自动切换与本地离线推理。
+- [ ] 实现地区检测（4.5.6）：App 启动后后台连通性探测，根据结果自动选择远程配置 URL 与模型下载 URL 顺序。
 - [ ] 实现模型配置（内置默认 + 远程更新）与模型下载、校验、外置存储到 cache 的缓存流程（4.5）。
 - [ ] 按配置生成语言胶囊，实现语言与模型的匹配和模型切换（4.5.3）。
 - [ ] 设置页：字体大小、配色模式、按语言选择识别模型（4.6）。

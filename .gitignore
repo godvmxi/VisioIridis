@@ -1,3 +1,6 @@
+# Credentials — never commit
+assets/config/hf.json
+
 # Miscellaneous
 *.class
 *.log

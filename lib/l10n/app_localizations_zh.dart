@@ -82,6 +82,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get forceSplit => '强制切断';
+
+  @override
+  String get forceSplitHint =>
+      '语音开始后超过设定时间仍无结果时，强制完成本句。适用于背景噪音导致无法检测到停顿的情况。设为「关」则完全依赖语音检测。';
+
+  @override
+  String get forceSplitOff => '关';
+
+  @override
   String get floatingWindow => '浮动窗';
 
   @override
@@ -343,7 +353,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get langShandong => '山东话';
 
   @override
-  String get langShanghai => '上海话';
+  String get langWu => '吴语（上海话）';
 
   @override
   String get langMinnan => '闽南语';
@@ -380,6 +390,115 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get systemAudioNotificationTitle => '正在识别系统播放的声音';
+
+  @override
+  String get regionMainland => '中国大陆';
+
+  @override
+  String get regionOverseas => '境外';
+
+  @override
+  String get regionUnknown => '未知';
+
+  @override
+  String get configUpdateTitle => '发现模型配置更新';
+
+  @override
+  String configUpdateBody(String region, int currentVersion, int newVersion) {
+    return '当前地区：$region\n当前配置版本：v$currentVersion → v$newVersion\n\n配置已在后台更新，可能包含新版本识别模型，是否立即生效并检查模型下载？';
+  }
+
+  @override
+  String get configUpdateLater => '稍后';
+
+  @override
+  String get configUpdateNow => '立即生效';
+
+  @override
+  String get configUpdated => '配置已更新，点击「开始识别」以检查并下载新模型';
+
+  @override
+  String get onboardingWelcomeTitle => '欢迎使用伊利斯之视';
+
+  @override
+  String get onboardingWelcomeBody =>
+      '伊利斯之视是专为听障人士设计的离线实时字幕工具，所有识别均在本设备完成，无需联网。\n\n接下来将帮您完成必要的权限配置。';
+
+  @override
+  String get onboardingMicTitle => '麦克风权限';
+
+  @override
+  String get onboardingMicBody => '实时语音识别需要使用麦克风。若使用喇叭模式识别系统播放的声音，也需要先授权麦克风。';
+
+  @override
+  String get onboardingMicButton => '授权麦克风';
+
+  @override
+  String get onboardingNotifTitle => '通知权限';
+
+  @override
+  String get onboardingNotifBody =>
+      '识别进行中时会显示持续通知，防止系统将应用移入后台而中断识别。Android 13 及以上需手动授权。';
+
+  @override
+  String get onboardingNotifButton => '允许通知';
+
+  @override
+  String get onboardingOverlayTitle => '悬浮窗权限';
+
+  @override
+  String get onboardingOverlayBody => '切换到其他应用时，可通过悬浮窗继续查看字幕。此权限需在系统设置中手动开启。';
+
+  @override
+  String get onboardingOverlayButton => '去开启悬浮窗';
+
+  @override
+  String get onboardingBatteryTitle => '后台运行';
+
+  @override
+  String get onboardingBatteryBody =>
+      '为防止系统在后台中断识别，建议将本应用加入电池优化白名单。此设置需在系统设置中手动完成。';
+
+  @override
+  String get onboardingBatteryButton => '去关闭电量限制';
+
+  @override
+  String get onboardingRegionTitle => '检测所在地区';
+
+  @override
+  String get onboardingRegionBody => '正在检测网络环境，以确定模型配置更新地址和模型下载来源。';
+
+  @override
+  String get onboardingRegionDetecting => '正在检测中…';
+
+  @override
+  String onboardingRegionResult(String region) {
+    return '检测完成：$region';
+  }
+
+  @override
+  String get onboardingRegionMainlandHint => '将从 Gitee 获取模型配置和下载地址';
+
+  @override
+  String get onboardingRegionOverseasHint => '将从 GitHub 获取模型配置和下载地址';
+
+  @override
+  String get onboardingRegionUnknownHint => '无法判断所在地区，后台将继续自动检测';
+
+  @override
+  String get onboardingDone => '开始使用';
+
+  @override
+  String get onboardingSkip => '跳过';
+
+  @override
+  String get onboardingGranted => '已授权';
+
+  @override
+  String get onboardingOpenedSettings => '已打开系统设置，完成后返回本应用';
+
+  @override
+  String get onboardingNext => '下一步';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -457,6 +576,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String lowContrast(String ratio) {
     return '對比度較低（$ratio:1），字幕可能不易看清，建議不低於 4.5:1';
   }
+
+  @override
+  String get forceSplit => '強制切斷';
+
+  @override
+  String get forceSplitHint =>
+      '語音開始後超過設定時間仍無結果時，強制完成本句。適用於背景噪音導致無法偵測到停頓的情況。設為「關」則完全依賴語音偵測。';
+
+  @override
+  String get forceSplitOff => '關';
 
   @override
   String get floatingWindow => '浮動窗';
@@ -720,7 +849,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get langShandong => '山東話';
 
   @override
-  String get langShanghai => '上海話';
+  String get langWu => '吳語（上海話）';
 
   @override
   String get langMinnan => '閩南語';
@@ -757,4 +886,113 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get systemAudioNotificationTitle => '正在辨識系統播放的聲音';
+
+  @override
+  String get regionMainland => '中國大陸';
+
+  @override
+  String get regionOverseas => '境外';
+
+  @override
+  String get regionUnknown => '未知';
+
+  @override
+  String get configUpdateTitle => '發現模型設定更新';
+
+  @override
+  String configUpdateBody(String region, int currentVersion, int newVersion) {
+    return '目前地區：$region\n目前設定版本：v$currentVersion → v$newVersion\n\n設定已在後台更新，可能包含新版本辨識模型，是否立即生效並檢查模型下載？';
+  }
+
+  @override
+  String get configUpdateLater => '稍後';
+
+  @override
+  String get configUpdateNow => '立即生效';
+
+  @override
+  String get configUpdated => '設定已更新，點擊「開始辨識」以檢查並下載新模型';
+
+  @override
+  String get onboardingWelcomeTitle => '歡迎使用伊利斯之視';
+
+  @override
+  String get onboardingWelcomeBody =>
+      '伊利斯之視是專為聽障人士設計的離線即時字幕工具，所有辨識均在本裝置完成，無需聯網。\n\n接下來將協助您完成必要的權限設定。';
+
+  @override
+  String get onboardingMicTitle => '麥克風權限';
+
+  @override
+  String get onboardingMicBody => '即時語音辨識需要使用麥克風。若使用喇叭模式辨識系統播放的聲音，也需要先授權麥克風。';
+
+  @override
+  String get onboardingMicButton => '授權麥克風';
+
+  @override
+  String get onboardingNotifTitle => '通知權限';
+
+  @override
+  String get onboardingNotifBody =>
+      '辨識進行中時會顯示持續通知，防止系統將應用程式移入背景而中斷辨識。Android 13 及以上需手動授權。';
+
+  @override
+  String get onboardingNotifButton => '允許通知';
+
+  @override
+  String get onboardingOverlayTitle => '懸浮窗權限';
+
+  @override
+  String get onboardingOverlayBody => '切換到其他應用程式時，可透過懸浮窗繼續查看字幕。此權限需在系統設定中手動開啟。';
+
+  @override
+  String get onboardingOverlayButton => '去開啟懸浮窗';
+
+  @override
+  String get onboardingBatteryTitle => '背景執行';
+
+  @override
+  String get onboardingBatteryBody =>
+      '為防止系統在背景中斷辨識，建議將本應用程式加入電池最佳化白名單。此設定需在系統設定中手動完成。';
+
+  @override
+  String get onboardingBatteryButton => '去關閉電量限制';
+
+  @override
+  String get onboardingRegionTitle => '偵測所在地區';
+
+  @override
+  String get onboardingRegionBody => '正在偵測網路環境，以確定模型設定更新地址和模型下載來源。';
+
+  @override
+  String get onboardingRegionDetecting => '正在偵測中…';
+
+  @override
+  String onboardingRegionResult(String region) {
+    return '偵測完成：$region';
+  }
+
+  @override
+  String get onboardingRegionMainlandHint => '將從 Gitee 取得模型設定和下載地址';
+
+  @override
+  String get onboardingRegionOverseasHint => '將從 GitHub 取得模型設定和下載地址';
+
+  @override
+  String get onboardingRegionUnknownHint => '無法判斷所在地區，背景將繼續自動偵測';
+
+  @override
+  String get onboardingDone => '開始使用';
+
+  @override
+  String get onboardingSkip => '跳過';
+
+  @override
+  String get onboardingGranted => '已授權';
+
+  @override
+  String get onboardingOpenedSettings => '已開啟系統設定，完成後返回本應用程式';
+
+  @override
+  String get onboardingNext => '下一步';
 }

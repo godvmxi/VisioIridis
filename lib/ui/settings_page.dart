@@ -30,6 +30,8 @@ class SettingsPage extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        // ignore: deprecated_member_use
+        cacheExtent: 5000,
         children: [
           _Section(
             title: l10n.interfaceLanguage,
@@ -117,6 +119,30 @@ class SettingsPage extends ConsumerWidget {
               ),
               if (settings.colorMode == ColorMode.custom)
                 _CustomColors(settings: settings, controller: controller),
+            ],
+          ),
+          _Section(
+            title: l10n.forceSplit,
+            icon: Icons.content_cut_rounded,
+            children: [
+              Text(
+                l10n.forceSplitHint,
+                style: TextStyle(color: palette.historyText, height: 1.5),
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<int>(
+                segments: [
+                  ButtonSegment(value: 0, label: Text(l10n.forceSplitOff)),
+                  const ButtonSegment(value: 1, label: Text('1s')),
+                  const ButtonSegment(value: 2, label: Text('2s')),
+                  const ButtonSegment(value: 3, label: Text('3s')),
+                  const ButtonSegment(value: 5, label: Text('5s')),
+                ],
+                selected: {settings.forceSplitSeconds},
+                onSelectionChanged: (s) =>
+                    controller.setForceSplitSeconds(s.single),
+                showSelectedIcon: false,
+              ),
             ],
           ),
           _Section(

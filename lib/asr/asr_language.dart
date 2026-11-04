@@ -7,10 +7,10 @@ enum AsrLanguage {
   french('fr'),
   german('de'),
   henan('henan'),
-  sichuan('sichuan'),
+  sichuan('chuan'),
   dongbei('dongbei'),
   shandong('shandong'),
-  shanghai('shanghai'),
+  wu('wu'),
   minnan('minnan');
 
   const AsrLanguage(this.code);

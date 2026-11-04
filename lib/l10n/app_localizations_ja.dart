@@ -82,6 +82,16 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get forceSplit => '強制区切り';
+
+  @override
+  String get forceSplitHint =>
+      '認識結果が出ないままこの時間が経つと、強制的に文を区切ります。周囲の雑音で無音を検出できないときに便利です。「オフ」にすると音声検出だけで区切ります。';
+
+  @override
+  String get forceSplitOff => 'オフ';
+
+  @override
   String get floatingWindow => 'フローティングウィンドウ';
 
   @override
@@ -344,7 +354,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get langShandong => '山東方言';
 
   @override
-  String get langShanghai => '上海語';
+  String get langWu => '呉語（上海語）';
 
   @override
   String get langMinnan => '閩南語';
@@ -381,4 +391,116 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get systemAudioNotificationTitle => 'この端末で再生中の音声を認識しています';
+
+  @override
+  String get regionMainland => '中国本土';
+
+  @override
+  String get regionOverseas => '中国本土以外';
+
+  @override
+  String get regionUnknown => '不明';
+
+  @override
+  String get configUpdateTitle => 'モデル設定の更新があります';
+
+  @override
+  String configUpdateBody(String region, int currentVersion, int newVersion) {
+    return '地域：$region\n設定：v$currentVersion → v$newVersion\n\n新しい設定をバックグラウンドで保存しました。認識モデルの更新が含まれている可能性があります。今すぐ適用してモデルのダウンロードを確認しますか？';
+  }
+
+  @override
+  String get configUpdateLater => '後で';
+
+  @override
+  String get configUpdateNow => '今すぐ適用';
+
+  @override
+  String get configUpdated => '設定を更新しました。「開始」をタップすると新しいモデルを確認してダウンロードします';
+
+  @override
+  String get onboardingWelcomeTitle => 'Visio Iridis へようこそ';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Visio Iridis は聴覚に障害のある方のためのオフライン リアルタイム字幕ツールです。すべての処理は端末内で行われます。\n\nまず必要な権限を設定しましょう。';
+
+  @override
+  String get onboardingMicTitle => 'マイク';
+
+  @override
+  String get onboardingMicBody =>
+      '音声認識にはマイクへのアクセスが必要です。スピーカーモード（システム音声の取得）にも必要です。';
+
+  @override
+  String get onboardingMicButton => 'マイクを許可';
+
+  @override
+  String get onboardingNotifTitle => '通知';
+
+  @override
+  String get onboardingNotifBody =>
+      '字幕の認識中は常駐通知でアプリの動作を維持します。Android 13 以降では手動で許可する必要があります。';
+
+  @override
+  String get onboardingNotifButton => '通知を許可';
+
+  @override
+  String get onboardingOverlayTitle => 'フローティングウィンドウ';
+
+  @override
+  String get onboardingOverlayBody =>
+      '他のアプリを使いながら、フローティングウィンドウで字幕を確認できます。システム設定で有効にする必要があります。';
+
+  @override
+  String get onboardingOverlayButton => '重ねて表示の設定を開く';
+
+  @override
+  String get onboardingBatteryTitle => 'バックグラウンド動作';
+
+  @override
+  String get onboardingBatteryBody =>
+      'システムによって認識が中断されないよう、システム設定でこのアプリを電池の最適化の対象外にしてください。';
+
+  @override
+  String get onboardingBatteryButton => '電池の制限を解除';
+
+  @override
+  String get onboardingRegionTitle => '地域の検出';
+
+  @override
+  String get onboardingRegionBody =>
+      'ネットワーク環境を確認し、モデル設定の更新とダウンロードに最適な配信元を選びます。';
+
+  @override
+  String get onboardingRegionDetecting => '検出中…';
+
+  @override
+  String onboardingRegionResult(String region) {
+    return '検出結果：$region';
+  }
+
+  @override
+  String get onboardingRegionMainlandHint => 'モデル設定とダウンロードには Gitee を使用します';
+
+  @override
+  String get onboardingRegionOverseasHint => 'モデル設定とダウンロードには GitHub を使用します';
+
+  @override
+  String get onboardingRegionUnknownHint => '地域を判別できませんでした。バックグラウンドで検出を続けます';
+
+  @override
+  String get onboardingDone => 'はじめる';
+
+  @override
+  String get onboardingSkip => 'スキップ';
+
+  @override
+  String get onboardingGranted => '許可済み';
+
+  @override
+  String get onboardingOpenedSettings => '設定を開きました。終わったら戻ってきてください';
+
+  @override
+  String get onboardingNext => '次へ';
 }

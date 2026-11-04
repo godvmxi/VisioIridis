@@ -48,6 +48,9 @@ class MockAsrEngine implements AsrEngine {
   void updateLanguages(Set<AsrLanguage> languages) {}
 
   @override
+  void updateForceSplitSeconds(int seconds) {}
+
+  @override
   Future<void> setAudioInput(AudioInput input) async {}
 
   @override
