@@ -1,83 +1,128 @@
 {
   "schemaVersion": 2,
-  "configVersion": 5,
+  "configVersion": 6,
   "remoteConfigUrl": "https://raw.giteeusercontent.com/godvmxi/VisioIridisConfig/raw/master/model_config_cn.json",
+  "languageGroups": [
+    {
+      "id": "chinese",
+      "name": "中文",
+      "order": 1
+    },
+    {
+      "id": "english",
+      "name": "英语",
+      "order": 2
+    },
+    {
+      "id": "japanese",
+      "name": "日语",
+      "order": 3
+    },
+    {
+      "id": "korean",
+      "name": "韩语",
+      "order": 4
+    },
+    {
+      "id": "french",
+      "name": "法语",
+      "order": 5
+    },
+    {
+      "id": "german",
+      "name": "德语",
+      "order": 6
+    }
+  ],
   "languages": [
     {
       "id": "zh",
       "name": "普通话",
+      "group": "chinese",
       "defaultEnabled": true,
       "order": 1
     },
     {
       "id": "yue",
       "name": "粤语",
+      "group": "chinese",
       "defaultEnabled": true,
       "order": 2
     },
     {
       "id": "en",
       "name": "英语",
+      "group": "english",
       "defaultEnabled": true,
       "order": 3
     },
     {
       "id": "fr",
       "name": "法语",
+      "group": "french",
       "defaultEnabled": false,
       "order": 4
     },
     {
       "id": "de",
       "name": "德语",
+      "group": "german",
       "defaultEnabled": false,
       "order": 5
     },
     {
       "id": "henan",
       "name": "河南话",
+      "group": "chinese",
       "defaultEnabled": false,
       "order": 6
     },
     {
       "id": "chuan",
       "name": "四川话",
+      "group": "chinese",
       "defaultEnabled": false,
       "order": 7
     },
     {
       "id": "dongbei",
       "name": "东北话",
+      "group": "chinese",
       "defaultEnabled": false,
       "order": 8
     },
     {
       "id": "shandong",
       "name": "山东话",
+      "group": "chinese",
       "defaultEnabled": false,
       "order": 9
     },
     {
       "id": "wu",
       "name": "吴语",
+      "group": "chinese",
       "defaultEnabled": false,
       "order": 10
     },
     {
       "id": "minnan",
       "name": "闽南语",
+      "group": "chinese",
       "defaultEnabled": false,
       "order": 11
     },
     {
       "id": "ja",
       "name": "日语",
+      "group": "japanese",
       "defaultEnabled": false,
       "order": 12
     },
     {
       "id": "ko",
       "name": "韩语",
+      "group": "korean",
       "defaultEnabled": false,
       "order": 13
     }

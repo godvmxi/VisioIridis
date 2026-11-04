@@ -123,7 +123,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recognitionModelHint =>
-      'Choose a model for each language. Scores are out of 10; \"Auto\" picks the highest-scoring model. Changes apply when you tap \"Start\", and you\'ll be asked to download a new model if needed.';
+      'Choose a language, then a dialect, then a model. Scores are out of 10 and models are listed from highest to lowest. Changes apply when you tap \"Start\", and you\'ll be asked to download a new model if needed.';
 
   @override
   String modelConfigLoadFailed(String error) {
@@ -143,6 +143,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
+  String get languageGroup => 'Language';
+
+  @override
+  String get dialect => 'Dialect';
+
+  @override
+  String get langGroupChinese => 'Chinese';
+
+  @override
+  String autoDetectLanguages(String languages) {
+    return 'Auto-detect: $languages';
+  }
+
+  @override
+  String currentSelection(String path) {
+    return 'Current: $path';
+  }
+
+  @override
   String chooseModelFor(String language) {
     return 'Model for $language';
   }
@@ -152,11 +171,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noModelAvailable => 'No model available';
-
-  @override
-  String autoPicks(String model, int score) {
-    return 'Highest-scoring model: $model  $score/10';
-  }
 
   @override
   String modelScoreTitle(String model, String language, int score) {
@@ -221,19 +235,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get notSupportedByModel => 'Not supported by the current model';
-
-  @override
-  String get keepOneLanguage => 'Keep at least one language';
-
-  @override
-  String get alsoAutoDetect => 'Also detected automatically';
-
-  @override
-  String get alsoAutoDetectHint =>
-      'These languages are recognized when more than one language is selected (auto-detect).';
-
-  @override
   String get listSeparator => ', ';
 
   @override
@@ -243,7 +244,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearConfirmButton => 'Clear';
 
   @override
-  String get noModelForLanguages => 'No model supports the selected languages';
+  String get noModelForLanguages => 'No recognition model is available';
 
   @override
   String modelSwitched(String model) {

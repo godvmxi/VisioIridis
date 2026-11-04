@@ -123,7 +123,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get recognitionModelHint =>
-      'Choisissez un modèle pour chaque langue. Les notes sont sur 10 ; « Auto » choisit le modèle le mieux noté. Les changements s\'appliquent quand vous appuyez sur « Démarrer », et le téléchargement d\'un nouveau modèle vous sera proposé si nécessaire.';
+      'Choisissez une langue, puis un dialecte, puis un modèle. Les notes sont sur 10 et les modèles sont classés de la meilleure à la moins bonne note. Les changements s\'appliquent quand vous appuyez sur « Démarrer », et le téléchargement d\'un nouveau modèle vous sera proposé si nécessaire.';
 
   @override
   String modelConfigLoadFailed(String error) {
@@ -144,6 +144,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get language => 'Langue';
 
   @override
+  String get languageGroup => 'Langue';
+
+  @override
+  String get dialect => 'Dialecte';
+
+  @override
+  String get langGroupChinese => 'Chinois';
+
+  @override
+  String autoDetectLanguages(String languages) {
+    return 'Détection auto : $languages';
+  }
+
+  @override
+  String currentSelection(String path) {
+    return 'Actuel : $path';
+  }
+
+  @override
   String chooseModelFor(String language) {
     return 'Modèle pour : $language';
   }
@@ -153,11 +172,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noModelAvailable => 'Aucun modèle disponible';
-
-  @override
-  String autoPicks(String model, int score) {
-    return 'Modèle le mieux noté : $model  $score/10';
-  }
 
   @override
   String modelScoreTitle(String model, String language, int score) {
@@ -222,19 +236,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get notSupportedByModel => 'Non prise en charge par le modèle actuel';
-
-  @override
-  String get keepOneLanguage => 'Gardez au moins une langue';
-
-  @override
-  String get alsoAutoDetect => 'Également détectées automatiquement';
-
-  @override
-  String get alsoAutoDetectHint =>
-      'Ces langues sont reconnues lorsque plusieurs langues sont sélectionnées (détection automatique).';
-
-  @override
   String get listSeparator => ', ';
 
   @override
@@ -244,8 +245,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get clearConfirmButton => 'Effacer';
 
   @override
-  String get noModelForLanguages =>
-      'Aucun modèle ne prend en charge les langues sélectionnées';
+  String get noModelForLanguages => 'Aucun modèle de reconnaissance disponible';
 
   @override
   String modelSwitched(String model) {

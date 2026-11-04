@@ -121,7 +121,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get recognitionModelHint =>
-      '언어마다 사용할 모델을 지정할 수 있습니다. 점수는 10점 만점이며, \"자동\"은 점수가 가장 높은 모델을 선택합니다. 변경 사항은 \"시작\"을 누를 때 적용되며, 필요하면 새 모델 다운로드를 안내합니다.';
+      '언어, 방언, 모델 순서로 선택합니다. 점수는 10점 만점이며 모델은 점수가 높은 순으로 표시됩니다. 변경 사항은 \"시작\"을 누를 때 적용되며, 필요하면 새 모델 다운로드를 안내합니다.';
 
   @override
   String modelConfigLoadFailed(String error) {
@@ -141,6 +141,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String get language => '언어';
 
   @override
+  String get languageGroup => '언어';
+
+  @override
+  String get dialect => '방언';
+
+  @override
+  String get langGroupChinese => '중국어';
+
+  @override
+  String autoDetectLanguages(String languages) {
+    return '자동 감지: $languages';
+  }
+
+  @override
+  String currentSelection(String path) {
+    return '현재: $path';
+  }
+
+  @override
   String chooseModelFor(String language) {
     return '\"$language\" 모델 선택';
   }
@@ -150,11 +169,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get noModelAvailable => '사용할 수 있는 모델이 없습니다';
-
-  @override
-  String autoPicks(String model, int score) {
-    return '최고 점수 모델: $model  $score점';
-  }
 
   @override
   String modelScoreTitle(String model, String language, int score) {
@@ -219,18 +233,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get notSupportedByModel => '현재 모델이 지원하지 않아 인식하지 않습니다';
-
-  @override
-  String get keepOneLanguage => '언어를 하나 이상 선택하세요';
-
-  @override
-  String get alsoAutoDetect => '자동으로 인식되는 언어';
-
-  @override
-  String get alsoAutoDetectHint => '여러 언어를 선택하면(자동 감지) 이 언어들도 인식됩니다.';
-
-  @override
   String get listSeparator => ', ';
 
   @override
@@ -240,7 +242,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get clearConfirmButton => '지우기';
 
   @override
-  String get noModelForLanguages => '선택한 언어를 지원하는 모델이 없습니다';
+  String get noModelForLanguages => '사용할 수 있는 인식 모델이 없습니다';
 
   @override
   String modelSwitched(String model) {

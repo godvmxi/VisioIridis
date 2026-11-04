@@ -84,7 +84,7 @@ void main() {
     expect(find.text('开始识别'), findsOneWidget);
     expect(find.text('麦克风'), findsOneWidget);
     expect(find.text('喇叭'), findsOneWidget);
-    expect(find.text('普通话 +2'), findsOneWidget);
+    expect(find.text('自动'), findsOneWidget);
   });
 
   testWidgets('largest font fits on a phone screen while listening', (
@@ -125,21 +125,31 @@ void main() {
     expect(find.textContaining('今天几点开会？', findRichText: true), findsOneWidget);
   });
 
-  testWidgets('cannot deselect the last language', (tester) async {
+  testWidgets('top-bar language dialog picks auto or one language', (
+    tester,
+  ) async {
     await pumpApp(tester);
-    await tester.tap(find.text('普通话 +2'));
+    await tester.tap(find.text('自动'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(CheckboxListTile, '普通话'));
+    expect(find.text('当前模型：SenseVoice Small'), findsOneWidget);
+    expect(find.text('自动识别：普通话、粤语、英语、日语、韩语'), findsOneWidget);
+    expect(find.byType(RadioListTile<String>), findsNWidgets(6));
+    await tester.tap(find.widgetWithText(RadioListTile<String>, '粤语'));
     await tester.pump();
-    await tester.tap(find.widgetWithText(CheckboxListTile, '粤语'));
-    await tester.pump();
-    await tester.tap(find.widgetWithText(CheckboxListTile, '英语'));
-    await tester.pump();
-    expect(find.text('至少保留一种识别语言'), findsOneWidget);
     await tester.tap(find.text('完成'));
     await tester.pumpAndSettle();
-    expect(find.text('英语'), findsOneWidget);
+    expect(find.text('粤语'), findsOneWidget);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('settings.decodeLanguage'), 'yue');
+
+    await tester.tap(find.text('粤语'));
     await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(RadioListTile<String>, '自动'));
+    await tester.pump();
+    await tester.tap(find.text('完成'));
+    await tester.pumpAndSettle();
+    expect(find.text('自动'), findsOneWidget);
+    expect(prefs.getString('settings.decodeLanguage'), '');
   });
 
   testWidgets('clear asks for confirmation', (tester) async {
@@ -166,7 +176,7 @@ void main() {
     await tester.tap(find.byTooltip('设置'));
     await tester.pumpAndSettle();
     expect(find.text('识别模型'), findsOneWidget);
-    expect(find.text('选打分最高的模型：SenseVoice Small  10 分'), findsOneWidget);
+    expect(find.text('当前：中文 › 普通话 › SenseVoice Small'), findsOneWidget);
 
     await tester.tap(find.text('巨大'));
     await tester.tap(find.text('黑字白底'));
@@ -223,7 +233,7 @@ void main() {
       ),
     );
     expect(icon.color, yellow);
-    expect(styleOf(tester, '普通话 +2')?.color, yellow);
+    expect(styleOf(tester, '自动')?.color, yellow);
   });
 
   testWidgets('chat bubbles: speaker on the left, microphone on the right', (
@@ -388,7 +398,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('開始辨識'), findsOneWidget);
     expect(find.text('麥克風'), findsOneWidget);
-    expect(find.text('普通話 +2'), findsOneWidget);
+    expect(find.text('自動'), findsOneWidget);
   });
 
   testWidgets('English interface reaches the overlay and captions', (
@@ -402,7 +412,7 @@ void main() {
       },
     );
     expect(find.text('Start'), findsOneWidget);
-    expect(find.text('Mandarin +2'), findsOneWidget);
+    expect(find.text('Auto'), findsOneWidget);
 
     await tester.tap(find.text('Start'));
     await tester.pump();
@@ -426,7 +436,7 @@ void main() {
 
     // 声音来源在主语言之前；不显示图标。
     final mic = tester.getTopLeft(find.text('麦克风')).dx;
-    final languages = tester.getTopLeft(find.text('普通话 +2')).dx;
+    final languages = tester.getTopLeft(find.text('自动')).dx;
     expect(mic < languages, isTrue);
     expect(
       find.descendant(
@@ -435,21 +445,11 @@ void main() {
       ),
       findsNothing,
     );
-
-    await tester.tap(find.text('普通话 +2'));
-    await tester.pumpAndSettle();
-    expect(find.text('当前模型：SenseVoice Small'), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, '粤语'), findsOneWidget);
-    expect(find.text('日语、韩语'), findsOneWidget);
-
-    await tester.tap(find.widgetWithText(CheckboxListTile, '普通话'));
-    await tester.pump();
-    await tester.tap(find.text('完成'));
-    await tester.pumpAndSettle();
-    expect(find.text('粤语 +1'), findsOneWidget);
   });
 
-  testWidgets('model chooser lists candidates with scores', (tester) async {
+  testWidgets('model chooser: language, then dialect, then model', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 3600);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
@@ -458,9 +458,9 @@ void main() {
     await tester.pumpAndSettle();
     await scrollSettingsToEnd(tester);
 
-    // 默认选中第一种语言，下方直接列出候选模型及其支持的全部语言打分。
+    // 默认为中文 › 普通话，列出候选模型及其支持的全部语言打分。
+    expect(find.text('当前：中文 › 普通话 › SenseVoice Small'), findsOneWidget);
     expect(find.text('为“普通话”选择模型'), findsOneWidget);
-    expect(find.text('选打分最高的模型：SenseVoice Small  10 分'), findsOneWidget);
     expect(find.text('SenseVoice Small    普通话 10 分'), findsOneWidget);
     expect(find.text('TeleSpeech    普通话 7 分'), findsOneWidget);
     expect(
@@ -469,23 +469,33 @@ void main() {
     );
     expect(find.text('支持：普通话 10 · 粤语 10 · 英语 9 · 日语 8 · 韩语 8'), findsOneWidget);
 
-    await tester.tap(find.text('TeleSpeech    普通话 7 分'));
-    await tester.pumpAndSettle();
-
-    // 切换语言后只列出支持该语言的模型。
-    await tester.tap(find.byType(DropdownButton<String>));
+    // 换方言后只列出支持该方言的模型，点选模型前当前选择不变。
+    final dropdowns = find.byType(DropdownButton<String>);
+    expect(dropdowns, findsNWidgets(2));
+    await tester.tap(dropdowns.last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('粤语').last);
     await tester.pumpAndSettle();
     expect(find.text('为“粤语”选择模型'), findsOneWidget);
-    expect(find.text('SenseVoice Small    粤语 10 分'), findsOneWidget);
     expect(find.textContaining('TeleSpeech'), findsNothing);
+    expect(find.text('当前：中文 › 普通话 › SenseVoice Small'), findsOneWidget);
 
+    await tester.tap(find.text('SenseVoice Small    粤语 10 分'));
+    await tester.pumpAndSettle();
+    expect(find.text('当前：中文 › 粤语 › SenseVoice Small'), findsOneWidget);
     final prefs = await SharedPreferences.getInstance();
-    expect(
-      prefs.getString('settings.modelPreferences'),
-      contains('telespeech-ctc-int8'),
-    );
+    expect(prefs.getString('settings.asrLanguage'), 'yue');
+    expect(prefs.getString('settings.asrModel'), 'sense-voice-small-int8');
+    expect(prefs.getString('settings.decodeLanguage'), 'yue');
+
+    // 只有一种方言的语种不显示方言。
+    await tester.tap(dropdowns.first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('法语').last);
+    await tester.pumpAndSettle();
+    expect(find.byType(DropdownButton<String>), findsOneWidget);
+    expect(find.text('为“法语”选择模型'), findsOneWidget);
+    expect(find.textContaining('Whisper'), findsWidgets);
   });
 
   testWidgets('model chosen in settings shows in the language dialog', (
@@ -503,18 +513,13 @@ void main() {
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
-    // 勾选了普通话、粤语、英语；TeleSpeech 不支持后两者，仍按用户的选择使用它。
-    await tester.tap(find.text('普通话 +2'));
+    // 识别语言随之改为普通话；弹窗只列出 TeleSpeech 支持的语言。
+    await tester.tap(find.text('普通话'));
     await tester.pumpAndSettle();
     expect(find.text('当前模型：TeleSpeech'), findsOneWidget);
-    expect(find.text('当前模型不支持，不会识别'), findsNWidgets(2));
-    expect(
-      find.descendant(
-        of: find.widgetWithText(CheckboxListTile, '普通话'),
-        matching: find.text('当前模型不支持，不会识别'),
-      ),
-      findsNothing,
-    );
+    expect(find.widgetWithText(RadioListTile<String>, '河南话'), findsOneWidget);
+    expect(find.widgetWithText(RadioListTile<String>, '粤语'), findsNothing);
+    expect(find.byType(RadioListTile<String>), findsNWidgets(6));
   });
 
   for (final language in ['ja', 'ko', 'fr', 'de']) {
@@ -544,23 +549,18 @@ void main() {
     });
   }
 
-  testWidgets('settings model chooser starts at the ticked language', (
+  testWidgets('settings model chooser starts at the saved dialect', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1080, 3600);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
-    await pumpApp(tester);
-    await tester.tap(find.text('普通话 +2'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(CheckboxListTile, '普通话'));
-    await tester.pump();
-    await tester.tap(find.text('完成'));
-    await tester.pumpAndSettle();
+    await pumpApp(tester, prefsValues: {'settings.asrLanguage': 'wu'});
     await tester.tap(find.byTooltip('设置'));
     await tester.pumpAndSettle();
     await scrollSettingsToEnd(tester);
-    expect(find.text('为“粤语”选择模型'), findsOneWidget);
+    expect(find.text('为“吴语（上海话）”选择模型'), findsOneWidget);
+    expect(find.text('当前：中文 › 吴语（上海话） › WenetSpeech-Wu'), findsOneWidget);
   });
 
   group('floating caption (PRD 4.7)', () {

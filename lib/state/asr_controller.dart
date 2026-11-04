@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../asr/asr_engine.dart';
-import '../asr/asr_language.dart';
 import '../asr/prepared_model.dart';
 import '../asr/sherpa_asr_engine.dart';
 import '../asr/tag_formatter.dart';
 import '../l10n/l10n.dart';
 import '../models/subtitle_item.dart';
 import 'asr_state.dart';
+import 'current_model.dart';
 import 'script_converter.dart';
 import 'settings.dart';
 
@@ -42,6 +42,10 @@ class AsrController extends Notifier<AsrEngineState> {
       (_, seconds) => _engine.updateForceSplitSeconds(seconds),
       fireImmediately: true,
     );
+    // 顶部栏切换识别语言时，识别中下一句开始生效。
+    ref.listen<String?>(decodeLanguageProvider, (_, language) {
+      if (stateOrNull?.isListening ?? false) _engine.updateLanguage(language);
+    });
     return const AsrEngineState();
   }
 
@@ -50,7 +54,7 @@ class AsrController extends Notifier<AsrEngineState> {
     if (state.isListening || state.isLoading) return;
     state = state.copyWith(isLoading: true);
     try {
-      await _engine.start(model, state.enabledLanguages);
+      await _engine.start(model, ref.read(decodeLanguageProvider));
       if (!ref.mounted) return;
       state = state.copyWith(isListening: true, isLoading: false);
       // 开始前已选择“喇叭”时，启动后立即切到系统播放的声音。
@@ -110,20 +114,6 @@ class AsrController extends Notifier<AsrEngineState> {
     } finally {
       _switchingInput = false;
     }
-  }
-
-  /// 切换某语言的勾选。若会导致三者全部取消则拒绝并返回 false（PRD 4.1 防空保护）。
-  bool toggleLanguage(AsrLanguage language) {
-    final enabled = {...state.enabledLanguages};
-    if (enabled.contains(language)) {
-      if (enabled.length == 1) return false;
-      enabled.remove(language);
-    } else {
-      enabled.add(language);
-    }
-    state = state.copyWith(enabledLanguages: enabled);
-    if (state.isListening) _engine.updateLanguages(enabled);
-    return true;
   }
 
   void clearHistory() {

@@ -55,7 +55,7 @@
   "cancel": "取消",
   "done": "完成",
   "recognitionModel": "识别模型",
-  "recognitionModelHint": "为每种语言指定使用的模型，打分为 10 分制；“自动”选择打分最高的模型。修改后点击“开始识别”时生效，需要时会提示下载新模型。",
+  "recognitionModelHint": "依次选择语种、方言和模型，打分为 10 分制，模型按打分从高到低排列。修改后点击“开始识别”时生效，需要时会提示下载新模型。",
   "modelConfigLoadFailed": "模型配置加载失败：{error}",
   "@modelConfigLoadFailed": {
     "placeholders": {
@@ -68,6 +68,25 @@
   "previewFocus": "下午三点见",
   "swatchSample": "字",
   "language": "语言",
+  "languageGroup": "语种",
+  "dialect": "方言",
+  "langGroupChinese": "中文",
+  "autoDetectLanguages": "自动识别：{languages}",
+  "@autoDetectLanguages": {
+    "placeholders": {
+      "languages": {
+        "type": "String"
+      }
+    }
+  },
+  "currentSelection": "当前：{path}",
+  "@currentSelection": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "chooseModelFor": "为“{language}”选择模型",
   "@chooseModelFor": {
     "placeholders": {
@@ -78,17 +97,6 @@
   },
   "auto": "自动",
   "noModelAvailable": "没有可用模型",
-  "autoPicks": "选打分最高的模型：{model}  {score} 分",
-  "@autoPicks": {
-    "placeholders": {
-      "model": {
-        "type": "String"
-      },
-      "score": {
-        "type": "int"
-      }
-    }
-  },
   "modelScoreTitle": "{model}    {language} {score} 分",
   "@modelScoreTitle": {
     "placeholders": {
@@ -141,14 +149,10 @@
       }
     }
   },
-  "notSupportedByModel": "当前模型不支持，不会识别",
-  "keepOneLanguage": "至少保留一种识别语言",
-  "alsoAutoDetect": "还可自动识别",
-  "alsoAutoDetectHint": "勾选多种语言（自动识别）时可识别这些语言。",
   "listSeparator": "、",
   "clearConfirm": "确认清空所有历史字幕记录？",
   "clearConfirmButton": "确认清空",
-  "noModelForLanguages": "当前语言组合没有可用的识别模型",
+  "noModelForLanguages": "没有可用的识别模型",
   "modelSwitched": "识别模型已切换为「{model}」",
   "@modelSwitched": {
     "placeholders": {

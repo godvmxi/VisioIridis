@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../asr/asr_engine.dart';
-import '../asr/asr_language.dart';
 import '../l10n/l10n.dart';
 import '../model_store/model_config.dart';
 import '../model_store/model_selector.dart';
 import '../platform/background_platform.dart';
-import '../state/asr_controller.dart';
 import '../state/model_providers.dart';
 import '../state/settings.dart';
 import 'app_colors.dart';
 import 'widgets/history_list.dart';
 
-/// 设置页：界面语言、字体大小、配色模式、按语言选择识别模型（PRD 4.6）。
+/// 设置页：界面语言、字体大小、配色模式、识别模型（PRD 4.6）。
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
@@ -160,15 +158,15 @@ class SettingsPage extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               switch (config) {
-                AsyncData(:final value) => _ModelPreferences(
+                AsyncData(:final value) => _ModelChooser(
                   config: value,
-                  preferences: settings.modelPreferences,
-                  enabledLanguages: ref
-                      .read(asrControllerProvider)
-                      .enabledLanguages
-                      .map((l) => l.code)
-                      .toSet(),
-                  onChanged: controller.setModelPreference,
+                  language: settings.asrLanguage,
+                  model: resolveModel(
+                    value,
+                    settings.asrLanguage,
+                    settings.asrModel,
+                  ),
+                  onChanged: controller.setAsrModel,
                 ),
                 AsyncError(:final error) => Text(
                   l10n.modelConfigLoadFailed('$error'),
@@ -542,55 +540,39 @@ class _Swatch extends StatelessWidget {
   }
 }
 
-/// 按语言选择识别模型（PRD 4.6）：先在下拉框中选语言，下方列出支持该语言的候选模型及其
-/// 支持的全部语言打分，点击模型即选中。
-class _ModelPreferences extends StatefulWidget {
-  const _ModelPreferences({
+/// 选择识别模型（PRD 4.6）：依次单选语种、方言、模型。只有一种方言的语种不显示方言。
+/// 点选模型后才保存；只改语种或方言而未点选模型时，当前模型保持不变。
+class _ModelChooser extends StatefulWidget {
+  const _ModelChooser({
     required this.config,
-    required this.preferences,
-    required this.enabledLanguages,
+    required this.language,
+    required this.model,
     required this.onChanged,
   });
 
   final ModelConfig config;
-  final Map<String, String> preferences;
 
-  /// 顶部栏已勾选的语言；默认展示其中排在最前的一种。
-  final Set<String> enabledLanguages;
-  final void Function(String language, String? modelId) onChanged;
+  /// 已保存的方言（语言 id）与据此选出的模型。
+  final String language;
+  final AsrModelDef? model;
+  final void Function(String language, String modelId) onChanged;
 
   @override
-  State<_ModelPreferences> createState() => _ModelPreferencesState();
+  State<_ModelChooser> createState() => _ModelChooserState();
 }
 
-class _ModelPreferencesState extends State<_ModelPreferences> {
-  static const _autoValue = '';
-
+class _ModelChooserState extends State<_ModelChooser> {
+  /// 正在浏览的语种与方言；为 null 时显示已保存的选择。
+  String? _group;
   String? _language;
 
   ModelConfig get _config => widget.config;
 
-  /// 只列出顶部栏可以勾选的语言。
-  List<LanguageDef> get _languages {
-    final selectable = AsrLanguage.values.map((l) => l.code).toSet();
-    return [..._config.languages]
-      ..retainWhere((l) => selectable.contains(l.id))
-      ..sort((a, b) => a.order.compareTo(b.order));
-  }
-
-  List<AsrModelDef> _modelsFor(String language) => [
-    for (final m in _config.asrModels)
-      if (m.languages.any((s) => s.lang == language)) m,
-  ]..sort((a, b) => _scoreOf(b, language).compareTo(_scoreOf(a, language)));
+  String _groupOf(String language) =>
+      _config.languageById(language)?.group ?? language;
 
   static int _scoreOf(AsrModelDef model, String language) =>
       model.languages.firstWhere((s) => s.lang == language).score;
-
-  /// 配置更新后已不存在或不再支持该语言的模型视为“自动”。
-  String? _validPreference(String language) {
-    final id = widget.preferences[language];
-    return _modelsFor(language).any((m) => m.id == id) ? id : null;
-  }
 
   /// 模型支持的全部语言及打分，按语言顺序排列。
   String _scoresOf(AppLocalizations l10n, AsrModelDef model) {
@@ -607,91 +589,152 @@ class _ModelPreferencesState extends State<_ModelPreferences> {
     ].join(' · ');
   }
 
+  /// 已保存的选择，如“中文 › 粤语 › SenseVoice Small”；只有一种方言的语种省略方言。
+  String _savedPath(AppLocalizations l10n, AsrModelDef model) {
+    final saved = _config.languageById(widget.language);
+    final groupId = _groupOf(widget.language);
+    final group = _config.groups.where((g) => g.id == groupId).firstOrNull;
+    return [
+      if (saved != null) ...[
+        l10n.languageGroupName(groupId, group?.name),
+        if (_config.languagesIn(groupId).length > 1)
+          l10n.languageName(saved.id, saved.name),
+      ],
+      model.name,
+    ].join(' › ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = AppPalette.of(context);
     final l10n = AppLocalizations.of(context);
     String nameOf(LanguageDef l) => l10n.languageName(l.id, l.name);
-    final languages = _languages;
-    if (languages.isEmpty) return const SizedBox.shrink();
-    final language = languages.firstWhere(
-      (l) => l.id == _language,
-      orElse: () => languages.firstWhere(
-        (l) => widget.enabledLanguages.contains(l.id),
-        orElse: () => languages.first,
-      ),
+
+    final groups = _config.groups;
+    if (groups.isEmpty) return const SizedBox.shrink();
+    final group = groups.firstWhere(
+      (g) => g.id == (_group ?? _groupOf(widget.language)),
+      orElse: () => groups.first,
     );
-    final auto = selectModel(_config, {language.id});
+    final dialects = _config.languagesIn(group.id);
+    final language = dialects.firstWhere(
+      (l) => l.id == (_language ?? widget.language),
+      orElse: () => dialects.first,
+    );
+    final models = modelsFor(_config, language.id);
+    // 只有正在浏览的就是已保存的方言时，才标出当前模型。
+    final selected = language.id == widget.language ? widget.model?.id : null;
+    final current = widget.model;
+
     final titleStyle = TextStyle(fontSize: 17, color: palette.focusText);
     final subtitleStyle = TextStyle(color: palette.historyText, height: 1.4);
+
+    Widget dropdown({
+      required String label,
+      required String value,
+      required List<DropdownMenuItem<String>> items,
+      required ValueChanged<String?> onChanged,
+    }) => Row(
+      children: [
+        SizedBox(width: 72, child: Text(label, style: titleStyle)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: DropdownButton<String>(
+            value: value,
+            isExpanded: true,
+            dropdownColor: palette.cardSurface,
+            style: TextStyle(fontSize: 17, color: palette.focusText),
+            iconEnabledColor: palette.focusText,
+            items: items,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(l10n.language, style: titleStyle),
-            const SizedBox(width: 16),
-            Expanded(
-              child: DropdownButton<String>(
-                value: language.id,
-                isExpanded: true,
-                dropdownColor: palette.cardSurface,
-                style: TextStyle(fontSize: 17, color: palette.focusText),
-                iconEnabledColor: palette.focusText,
-                items: [
-                  for (final l in languages)
-                    DropdownMenuItem(value: l.id, child: Text(nameOf(l))),
-                ],
-                onChanged: (id) => setState(() => _language = id),
-              ),
+        if (current != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              l10n.currentSelection(_savedPath(l10n, current)),
+              style: TextStyle(fontSize: 15, color: palette.focusText),
             ),
+          ),
+        dropdown(
+          label: l10n.languageGroup,
+          value: group.id,
+          items: [
+            for (final g in groups)
+              DropdownMenuItem(
+                value: g.id,
+                child: Text(l10n.languageGroupName(g.id, g.name)),
+              ),
           ],
+          onChanged: (id) {
+            if (id == null) return;
+            setState(() {
+              _group = id;
+              // 回到已保存的语种时显示已保存的方言，否则显示该语种的第一种方言。
+              _language = id == _groupOf(widget.language)
+                  ? widget.language
+                  : _config.languagesIn(id).first.id;
+            });
+          },
         ),
+        if (dialects.length > 1)
+          dropdown(
+            label: l10n.dialect,
+            value: language.id,
+            items: [
+              for (final l in dialects)
+                DropdownMenuItem(value: l.id, child: Text(nameOf(l))),
+            ],
+            onChanged: (id) => setState(() {
+              _group = group.id;
+              _language = id;
+            }),
+          ),
         const SizedBox(height: 12),
         Text(
           l10n.chooseModelFor(nameOf(language)),
           style: TextStyle(fontSize: 15, color: palette.historyText),
         ),
-        RadioGroup<String>(
-          groupValue: _validPreference(language.id) ?? _autoValue,
-          onChanged: (v) {
-            if (v == null) return;
-            widget.onChanged(language.id, v == _autoValue ? null : v);
-          },
-          child: Column(
-            children: [
-              RadioListTile<String>(
-                value: _autoValue,
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.auto, style: titleStyle),
-                subtitle: Text(
-                  auto == null
-                      ? l10n.noModelAvailable
-                      : l10n.autoPicks(auto.name, _scoreOf(auto, language.id)),
-                  style: subtitleStyle,
-                ),
-              ),
-              for (final model in _modelsFor(language.id))
-                RadioListTile<String>(
-                  value: model.id,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    l10n.modelScoreTitle(
-                      model.name,
-                      nameOf(language),
-                      _scoreOf(model, language.id),
+        if (models.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(l10n.noModelAvailable, style: subtitleStyle),
+          )
+        else
+          RadioGroup<String>(
+            groupValue: selected,
+            onChanged: (id) {
+              if (id != null) widget.onChanged(language.id, id);
+            },
+            child: Column(
+              children: [
+                for (final model in models)
+                  RadioListTile<String>(
+                    value: model.id,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      l10n.modelScoreTitle(
+                        model.name,
+                        nameOf(language),
+                        _scoreOf(model, language.id),
+                      ),
+                      style: titleStyle,
                     ),
-                    style: titleStyle,
+                    subtitle: Text(
+                      l10n.supports(_scoresOf(l10n, model)),
+                      style: subtitleStyle,
+                    ),
                   ),
-                  subtitle: Text(
-                    l10n.supports(_scoresOf(l10n, model)),
-                    style: subtitleStyle,
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

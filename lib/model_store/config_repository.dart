@@ -16,10 +16,9 @@ class ConfigRepository {
     this.remoteConfigUrlOverride,
 
     /// stamp 文件后缀，用于区分不同地区的检查时间（避免跨地区的 24h 冷却竞争）。
-    String stampSuffix = '',
+    this._stampSuffix = '',
   }) : _client = client ?? HttpClient(),
-       _now = now ?? DateTime.now,
-       _stampSuffix = stampSuffix;
+       _now = now ?? DateTime.now;
 
   static const checkInterval = Duration(hours: 24);
   static const timeout = Duration(seconds: 5);
@@ -39,16 +38,19 @@ class ConfigRepository {
   File get _stampFile =>
       File('${storageDir.path}/model_config.checked$_stampSuffix');
 
-  /// 最近可用的远程配置优先，否则用内置默认配置。
+  /// 缓存的远程配置与内置默认配置中 configVersion 较新的一份；相同时用缓存。
+  /// App 升级后内置配置可能比旧缓存更新。
   Future<ModelConfig> load() async {
+    final builtin = ModelConfig.parse(await loadBuiltin());
     try {
       if (await _cachedFile.exists()) {
-        return ModelConfig.parse(await _cachedFile.readAsString());
+        final cached = ModelConfig.parse(await _cachedFile.readAsString());
+        if (cached.configVersion >= builtin.configVersion) return cached;
       }
     } on FormatException {
       // 缓存的配置格式已不受支持，退回内置配置。
     }
-    return ModelConfig.parse(await loadBuiltin());
+    return builtin;
   }
 
   /// 检查远程配置。只有比 [current] 新且格式受支持时才保存并返回，

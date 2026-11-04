@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/asr/asr_language.dart';
 import 'package:seevoice/asr/prepared_model.dart';
 import 'package:seevoice/l10n/l10n.dart';
 import 'package:seevoice/model_store/model_config.dart';
@@ -54,7 +53,6 @@ void main() {
   Future<List<PreparedModel?>> pumpHost(
     WidgetTester tester, {
     required Map<String, Object> prefsValues,
-    Set<AsrLanguage>? languages,
   }) async {
     SharedPreferences.setMockInitialValues(prefsValues);
     final prefs = await SharedPreferences.getInstance();
@@ -85,21 +83,6 @@ void main() {
         ),
       ),
     );
-    if (languages != null) {
-      final container = ProviderScope.containerOf(
-        tester.element(find.text('开始')),
-      );
-      final asr = container.read(asrControllerProvider.notifier);
-      for (final l in AsrLanguage.values) {
-        if (languages.contains(l) !=
-            container
-                .read(asrControllerProvider)
-                .enabledLanguages
-                .contains(l)) {
-          asr.toggleLanguage(l);
-        }
-      }
-    }
     return results;
   }
 
@@ -155,9 +138,9 @@ void main() {
       tester,
       prefsValues: {
         ModelPreparer.lastModelKey: senseVoice,
-        'settings.modelPreferences': '{"zh":"$teleSpeech"}',
+        'settings.asrLanguage': 'zh',
+        'settings.asrModel': teleSpeech,
       },
-      languages: {AsrLanguage.mandarin},
     );
 
     await tester.tap(find.text('开始'));

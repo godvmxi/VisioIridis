@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'asr_engine.dart';
-import 'asr_language.dart';
 import 'prepared_model.dart';
 
 /// 模拟引擎：逐字吐出示例句子作为临时结果，句末发出定稿结果。
@@ -32,7 +31,7 @@ class MockAsrEngine implements AsrEngine {
   Stream<AsrEvent> get events => _controller.stream;
 
   @override
-  Future<void> start(PreparedModel model, Set<AsrLanguage> languages) async {
+  Future<void> start(PreparedModel model, String? language) async {
     _timer?.cancel();
     _token = 0;
     _timer = Timer.periodic(tokenInterval, (_) => _tick());
@@ -45,7 +44,7 @@ class MockAsrEngine implements AsrEngine {
   }
 
   @override
-  void updateLanguages(Set<AsrLanguage> languages) {}
+  void updateLanguage(String? language) {}
 
   @override
   void updateForceSplitSeconds(int seconds) {}

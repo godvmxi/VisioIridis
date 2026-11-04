@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/l10n.dart';
 import '../state/asr_controller.dart';
 import '../state/config_update_provider.dart';
-import '../state/region_detector.dart';
 import 'app_colors.dart';
 import 'widgets/action_button.dart';
 import 'widgets/focus_card.dart';

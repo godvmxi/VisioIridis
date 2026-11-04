@@ -3,10 +3,10 @@ import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seevoice/asr/asr_engine.dart';
-import 'package:seevoice/asr/asr_language.dart';
 import 'package:seevoice/l10n/l10n.dart';
 import 'package:seevoice/state/asr_controller.dart';
 import 'package:seevoice/state/asr_state.dart';
+import 'package:seevoice/state/current_model.dart';
 import 'package:seevoice/state/script_converter.dart';
 
 import 'fake_asr_engine.dart';
@@ -19,6 +19,19 @@ AsrController controller() => container.read(asrControllerProvider.notifier);
 AsrEngineState get state => container.read(asrControllerProvider);
 final zh = lookupAppLocalizations(const Locale('zh'));
 
+/// 代替设置页与顶部栏选择的识别语言。
+class TestLanguage extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  // 本文件顶层的 state getter 会遮住继承来的 setter。
+  void set(String? value) => this.state = value;
+}
+
+final testLanguageProvider = NotifierProvider<TestLanguage, String?>(
+  TestLanguage.new,
+);
+
 void main() {
   setUp(() {
     engine = FakeAsrEngine();
@@ -27,6 +40,9 @@ void main() {
         asrEngineProvider.overrideWithValue(engine),
         appLocalizationsProvider.overrideWithValue(zh),
         chineseScriptProvider.overrideWithValue(null),
+        decodeLanguageProvider.overrideWith(
+          (ref) => ref.watch(testLanguageProvider),
+        ),
       ],
     );
     container.listen(asrControllerProvider, (_, _) {});
@@ -37,21 +53,15 @@ void main() {
     engine.dispose();
   });
 
-  test('starts with mandarin, cantonese and english on auto', () {
-    expect(state.enabledLanguages, {
-      AsrLanguage.mandarin,
-      AsrLanguage.cantonese,
-      AsrLanguage.english,
-    });
-    expect(state.languageParam, 'auto');
+  test('starts with the chosen recognition language', () async {
+    container.read(testLanguageProvider.notifier).set('yue');
+    await controller().startListening(testPreparedModel);
+    expect(engine.lastLanguage, 'yue');
   });
 
-  test('refuses to disable the last language', () {
-    expect(controller().toggleLanguage(AsrLanguage.mandarin), isTrue);
-    expect(controller().toggleLanguage(AsrLanguage.cantonese), isTrue);
-    expect(state.languageParam, 'en');
-    expect(controller().toggleLanguage(AsrLanguage.english), isFalse);
-    expect(state.enabledLanguages, {AsrLanguage.english});
+  test('auto recognition passes no language', () async {
+    await controller().startListening(testPreparedModel);
+    expect(engine.lastLanguage, isNull);
   });
 
   test('startListening and stopListening drive the engine', () async {
@@ -89,8 +99,20 @@ void main() {
 
   test('language change while listening is forwarded to the engine', () async {
     await controller().startListening(testPreparedModel);
-    controller().toggleLanguage(AsrLanguage.cantonese);
-    expect(engine.lastLanguages, {AsrLanguage.mandarin, AsrLanguage.english});
+    // Riverpod 在微任务中通知监听者。
+    container.read(testLanguageProvider.notifier).set('en');
+    await Future<void>.delayed(Duration.zero);
+    expect(engine.lastLanguage, 'en');
+    container.read(testLanguageProvider.notifier).set(null);
+    await Future<void>.delayed(Duration.zero);
+    expect(engine.lastLanguage, isNull);
+    expect(engine.languageUpdates, 2);
+  });
+
+  test('language change while idle waits for the next start', () async {
+    container.read(testLanguageProvider.notifier).set('en');
+    await Future<void>.delayed(Duration.zero);
+    expect(engine.languageUpdates, 0);
   });
 
   test('partial updates the card, final appends to history', () {

@@ -1,4 +1,3 @@
-import 'asr_language.dart';
 import 'prepared_model.dart';
 
 /// 识别引擎输出的事件。
@@ -78,12 +77,13 @@ abstract class AsrEngine {
   Stream<AsrEvent> get events;
 
   /// 加载模型（已加载同一模型时跳过）并开始拾音。失败时抛出异常。
-  Future<void> start(PreparedModel model, Set<AsrLanguage> languages);
+  /// [language] 为识别语言 id，null 表示自动识别模型支持的全部语言。
+  Future<void> start(PreparedModel model, String? language);
 
   Future<void> stop();
 
-  /// 识别中切换语言勾选时调用，下一句开始生效。
-  void updateLanguages(Set<AsrLanguage> languages);
+  /// 识别中切换识别语言时调用，下一句开始生效。
+  void updateLanguage(String? language);
 
   /// 识别中切换声音来源；当前句按句尾处理。切换失败时回到麦克风并抛出异常。
   Future<void> setAudioInput(AudioInput input);

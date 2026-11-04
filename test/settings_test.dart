@@ -20,7 +20,9 @@ void main() {
     final settings = container.read(settingsProvider);
     expect(settings.fontScale, FontScale.large);
     expect(settings.colorMode, ColorMode.yellowOnBlack);
-    expect(settings.modelPreferences, isEmpty);
+    expect(settings.asrLanguage, 'zh');
+    expect(settings.asrModel, isNull);
+    expect(settings.decodeLanguage, isNull);
     expect(settings.boldText, isFalse);
   });
 
@@ -29,7 +31,7 @@ void main() {
     final controller = container.read(settingsProvider.notifier);
     controller.setFontScale(FontScale.giant);
     controller.setColorMode(ColorMode.blackOnWhite);
-    controller.setModelPreference('zh', 'telespeech-ctc-int8');
+    controller.setAsrModel('yue', 'sense-voice-small-int8');
     controller.setBoldText(true);
 
     final prefs = container.read(sharedPreferencesProvider);
@@ -40,26 +42,39 @@ void main() {
     final settings = reloaded.read(settingsProvider);
     expect(settings.fontScale, FontScale.giant);
     expect(settings.colorMode, ColorMode.blackOnWhite);
-    expect(settings.modelPreferences, {'zh': 'telespeech-ctc-int8'});
+    expect(settings.asrLanguage, 'yue');
+    expect(settings.asrModel, 'sense-voice-small-int8');
+    // 选定模型后，顶部栏的识别语言随之改为该方言。
+    expect(settings.decodeLanguage, 'yue');
     expect(settings.boldText, isTrue);
     expect(settings.textWeight, FontWeight.bold);
   });
 
-  test('clearing a model preference returns to automatic', () async {
+  test('choosing auto recognition is persisted', () async {
     final container = await containerWith({});
     final controller = container.read(settingsProvider.notifier);
-    controller.setModelPreference('zh', 'telespeech-ctc-int8');
-    controller.setModelPreference('zh', null);
-    expect(container.read(settingsProvider).modelPreferences, isEmpty);
+    controller.setAsrModel('yue', 'sense-voice-small-int8');
+    controller.setDecodeLanguage(null);
+    controller.setFontScale(FontScale.huge);
+    final settings = container.read(settingsProvider);
+    expect(settings.decodeLanguage, isNull);
+    expect(settings.asrModel, 'sense-voice-small-int8');
+
+    final reloaded = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(
+          container.read(sharedPreferencesProvider),
+        ),
+      ],
+    );
+    addTearDown(reloaded.dispose);
+    expect(reloaded.read(settingsProvider).decodeLanguage, isNull);
+    expect(reloaded.read(settingsProvider).asrLanguage, 'yue');
   });
 
   test('ignores corrupted stored values', () async {
-    final container = await containerWith({
-      'settings.fontScale': 'gigantic',
-      'settings.modelPreferences': 'not json',
-    });
+    final container = await containerWith({'settings.fontScale': 'gigantic'});
     final settings = container.read(settingsProvider);
     expect(settings.fontScale, FontScale.large);
-    expect(settings.modelPreferences, isEmpty);
   });
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:seevoice/asr/asr_engine.dart';
-import 'package:seevoice/asr/asr_language.dart';
 import 'package:seevoice/asr/prepared_model.dart';
 import 'package:seevoice/model_store/model_config.dart';
 
@@ -30,7 +29,10 @@ class FakeAsrEngine implements AsrEngine {
 
   bool started = false;
   Object? startError;
-  Set<AsrLanguage>? lastLanguages;
+
+  /// 最近一次 start / updateLanguage 传入的识别语言；null 表示自动。
+  String? lastLanguage;
+  int languageUpdates = 0;
   AudioInput? lastInput;
   Object? inputError;
 
@@ -40,17 +42,20 @@ class FakeAsrEngine implements AsrEngine {
   Stream<AsrEvent> get events => _controller.stream;
 
   @override
-  Future<void> start(PreparedModel model, Set<AsrLanguage> languages) async {
+  Future<void> start(PreparedModel model, String? language) async {
     if (startError != null) throw startError!;
     started = true;
-    lastLanguages = languages;
+    lastLanguage = language;
   }
 
   @override
   Future<void> stop() async => started = false;
 
   @override
-  void updateLanguages(Set<AsrLanguage> languages) => lastLanguages = languages;
+  void updateLanguage(String? language) {
+    lastLanguage = language;
+    languageUpdates++;
+  }
 
   @override
   Future<void> setAudioInput(AudioInput input) async {

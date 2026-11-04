@@ -60,74 +60,115 @@ void main() {
     });
   });
 
-  group('selectModel (PRD 4.5.3)', () {
-    String? pick(Set<String> langs) => selectModel(config, langs)?.id;
-
-    test('default three languages use SenseVoice', () {
-      expect(pick({'zh', 'yue', 'en'}), 'sense-voice-small-int8');
+  group('language groups', () {
+    test('groups dialects under their language', () {
+      expect(config.groups.map((g) => g.id), [
+        'chinese',
+        'english',
+        'japanese',
+        'korean',
+        'french',
+        'german',
+      ]);
+      expect(config.languagesIn('chinese').map((l) => l.id), [
+        'zh',
+        'yue',
+        'henan',
+        'chuan',
+        'dongbei',
+        'shandong',
+        'wu',
+        'minnan',
+      ]);
+      expect(config.languagesIn('english').map((l) => l.id), ['en']);
     });
 
-    test('mandarin alone prefers the higher score', () {
-      expect(pick({'zh'}), 'sense-voice-small-int8');
+    test('the mainland config has the same groups', () {
+      final cn = ModelConfig.parse(
+        File('assets/config/model_config_cn.json').readAsStringSync(),
+      );
+      expect(cn.configVersion, config.configVersion);
+      expect(cn.groups.map((g) => g.id), config.groups.map((g) => g.id));
+      for (final l in config.languages) {
+        expect(cn.languageById(l.id)?.group, l.group, reason: l.id);
+      }
     });
 
-    test('henan alone or with mandarin uses TeleSpeech', () {
-      expect(pick({'henan'}), 'telespeech-ctc-int8');
-      expect(pick({'zh', 'henan'}), 'telespeech-ctc-int8');
+    test('a config without groups makes each language its own group', () {
+      final old = ModelConfig.parse(
+        builtin
+            .replaceAll(RegExp(r'"group": "\w+", '), '')
+            .replaceFirst(RegExp(r'"languageGroups": \[[^\]]*\],'), ''),
+      );
+      expect(old.languageGroups, isEmpty);
+      expect(old.groups.map((g) => g.id), old.sortedLanguages.map((l) => l.id));
+      expect(old.languagesIn('yue').single.name, '粤语');
+    });
+  });
+
+  group('model choice (PRD 4.5.3)', () {
+    final senseVoice = config.asrModels.first;
+
+    test('models for a dialect are sorted by its score', () {
+      for (final language in config.languages) {
+        final models = modelsFor(config, language.id);
+        expect(models, isNotEmpty, reason: language.id);
+        final scores = [
+          for (final m in models)
+            m.languages.firstWhere((s) => s.lang == language.id).score,
+        ];
+        expect(scores, [...scores]..sort((a, b) => b - a));
+      }
+      expect(modelsFor(config, 'zh').first.id, 'sense-voice-small-int8');
+      expect(modelsFor(config, 'wu').first.id, 'wenetspeech-wu-wenet-ctc-int8');
+      expect(modelsFor(config, 'fr').map((m) => m.id), ['whisper-small-int8']);
+      expect(modelsFor(config, 'henan').map((m) => m.id), [
+        'telespeech-ctc-int8',
+        'dolphin-base-ctc-int8',
+      ]);
     });
 
-    test('cantonese with a dialect uses Dolphin', () {
-      expect(pick({'yue', 'henan'}), 'dolphin-base-ctc-int8');
-      expect(pick({'wu', 'minnan'}), 'dolphin-base-ctc-int8');
-      expect(pick({'zh', 'minnan'}), 'dolphin-base-ctc-int8');
-    });
-
-    test('a single dialect prefers its dedicated model', () {
-      expect(pick({'wu'}), 'wenetspeech-wu-wenet-ctc-int8');
-      expect(pick({'chuan'}), 'paraformer-chuan-int8');
-    });
-
-    test('french and german use Whisper', () {
-      expect(pick({'fr'}), 'whisper-small-int8');
-      expect(pick({'de'}), 'whisper-small-int8');
-      expect(pick({'en', 'fr', 'de'}), 'whisper-small-int8');
-    });
-
-    test('english alone still prefers SenseVoice', () {
-      expect(pick({'en'}), 'sense-voice-small-int8');
-    });
-
-    test('unsupported combination returns null', () {
-      expect(pick({'yue', 'fr'}), isNull);
-      expect(pick({'de', 'chuan'}), isNull);
-    });
-
-    test('a preferred model wins over a higher score', () {
+    test('the chosen model is used', () {
       expect(
-        selectModel(
-          config,
-          {'zh'},
-          preferred: {'zh': 'telespeech-ctc-int8'},
-        )?.id,
+        resolveModel(config, 'zh', 'telespeech-ctc-int8')?.id,
         'telespeech-ctc-int8',
       );
     });
 
-    test('a preferred model wins even if it lacks another language', () {
-      final model = selectModel(
-        config,
-        {'zh', 'en'},
-        preferred: {'zh': 'telespeech-ctc-int8'},
-      )!;
-      expect(model.id, 'telespeech-ctc-int8');
-      expect(unsupportedLanguages(model, {'zh', 'en'}), {'en'});
-    });
-
-    test('unknown preferred ids are ignored', () {
+    test('no or unknown choice falls back to the best model', () {
+      expect(resolveModel(config, 'chuan', null)?.id, 'paraformer-chuan-int8');
       expect(
-        selectModel(config, {'zh'}, preferred: {'zh': 'removed-model'})?.id,
+        resolveModel(config, 'zh', 'removed-model')?.id,
         'sense-voice-small-int8',
       );
+      expect(
+        resolveModel(config, 'unknown', null)?.id,
+        'sense-voice-small-int8',
+      );
+    });
+
+    test('recognition language is auto unless the model supports it', () {
+      expect(effectiveLanguage(senseVoice, 'yue'), 'yue');
+      expect(effectiveLanguage(senseVoice, 'henan'), isNull);
+      expect(effectiveLanguage(senseVoice, null), isNull);
+    });
+
+    test('auto allows every language of the model', () {
+      expect(allowedLanguages(senseVoice, null), {
+        'zh',
+        'yue',
+        'en',
+        'ja',
+        'ko',
+      });
+      expect(allowedLanguages(senseVoice, 'en'), {'en'});
+      expect(allowedLanguages(senseVoice, 'fr'), {
+        'zh',
+        'yue',
+        'en',
+        'ja',
+        'ko',
+      });
     });
   });
 
@@ -168,12 +209,19 @@ void main() {
         ConfigRepository(loadBuiltin: () async => builtin, storageDir: dir);
 
     test('falls back to builtin when nothing is cached', () async {
-      expect((await repo().load()).configVersion, 5);
+      expect((await repo().load()).configVersion, 6);
     });
 
     test('prefers a cached remote config', () async {
       File('${dir.path}/model_config.json').writeAsStringSync(
-        builtin.replaceFirst('"configVersion": 5', '"configVersion": 6'),
+        builtin.replaceFirst('"configVersion": 6', '"configVersion": 7'),
+      );
+      expect((await repo().load()).configVersion, 7);
+    });
+
+    test('a newer builtin config wins over an older cache', () async {
+      File('${dir.path}/model_config.json').writeAsStringSync(
+        builtin.replaceFirst('"configVersion": 6', '"configVersion": 4'),
       );
       expect((await repo().load()).configVersion, 6);
     });
@@ -182,15 +230,15 @@ void main() {
       File('${dir.path}/model_config.json').writeAsStringSync(
         builtin.replaceFirst('"schemaVersion": 2', '"schemaVersion": 9'),
       );
-      expect((await repo().load()).configVersion, 5);
+      expect((await repo().load()).configVersion, 6);
     });
 
     test('acceptRemote requires a newer configVersion', () {
       final newer = builtin.replaceFirst(
-        '"configVersion": 5',
         '"configVersion": 6',
+        '"configVersion": 7',
       );
-      expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 6);
+      expect(ConfigRepository.acceptRemote(config, newer)?.configVersion, 7);
       expect(ConfigRepository.acceptRemote(config, builtin), isNull);
       expect(ConfigRepository.acceptRemote(config, 'not json'), isNull);
     });

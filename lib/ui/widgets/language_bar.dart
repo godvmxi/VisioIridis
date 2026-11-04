@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../asr/asr_engine.dart';
-import '../../asr/asr_language.dart';
 import '../../l10n/l10n.dart';
-import '../../model_store/model_selector.dart';
+import '../../model_store/model_config.dart';
 import '../../state/asr_controller.dart';
 import '../../state/current_model.dart';
 import '../../state/model_providers.dart';
+import '../../state/settings.dart';
 import '../app_colors.dart';
 import '../settings_page.dart';
 
@@ -26,22 +26,10 @@ class LanguageBar extends ConsumerWidget {
     }
   }
 
-  /// 主语言按钮的文字：第一个勾选的主语言，勾选多种时附上其余数量。
-  static String _summary(AppLocalizations l10n, Set<AsrLanguage> enabled) {
-    final ordered = [
-      for (final l in AsrLanguage.values)
-        if (enabled.contains(l)) l,
-    ];
-    final first = l10n.languageName(ordered.first.code);
-    final extra = ordered.length - 1;
-    return extra > 0 ? '$first +$extra' : first;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enabled = ref.watch(
-      asrControllerProvider.select((s) => s.enabledLanguages),
-    );
+    final language = ref.watch(decodeLanguageProvider);
+    final names = _languageNames(ref);
     final audioInput = ref.watch(
       asrControllerProvider.select((s) => s.audioInput),
     );
@@ -52,7 +40,7 @@ class LanguageBar extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
       child: Row(
         children: [
-          // 依次为：声音来源、主语言、（右侧固定）清空记录与设置。
+          // 依次为：声音来源、识别语言、（右侧固定）清空记录与设置。
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -87,14 +75,21 @@ class LanguageBar extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // 主语言：点击弹窗选择语言并查看当前模型支持的全部语言。
+                  // 识别语言：点击弹窗为当前模型选择自动或单一语言。
                   Semantics(
                     label: l10n.recognitionLanguage,
                     child: ActionChip(
                       label: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(_summary(l10n, enabled)),
+                          Text(
+                            language == null
+                                ? l10n.auto
+                                : l10n.languageName(
+                                    language,
+                                    names[language]?.name,
+                                  ),
+                          ),
                           Icon(
                             Icons.arrow_drop_down_rounded,
                             color: palette.focusText,
@@ -137,44 +132,32 @@ class LanguageBar extends ConsumerWidget {
   }
 }
 
-/// 识别语言弹窗（PRD 4.1）：勾选主语言，并列出当前模型支持的全部语言。
-class _LanguageDialog extends ConsumerStatefulWidget {
+/// 配置中的语言定义，按 id 查找名称与顺序。
+Map<String, LanguageDef> _languageNames(WidgetRef ref) => {
+  for (final l in ref.watch(modelConfigProvider).value?.languages ?? const [])
+    l.id: l,
+};
+
+/// 识别语言弹窗（PRD 4.1）：为设置页选定的模型选择自动识别，或只识别其中一种语言。
+class _LanguageDialog extends ConsumerWidget {
   const _LanguageDialog();
 
-  @override
-  ConsumerState<_LanguageDialog> createState() => _LanguageDialogState();
-}
-
-class _LanguageDialogState extends ConsumerState<_LanguageDialog> {
-  bool _rejected = false;
-
-  void _toggle(AsrLanguage language) {
-    final accepted = ref
-        .read(asrControllerProvider.notifier)
-        .toggleLanguage(language);
-    setState(() => _rejected = !accepted);
-  }
+  static const _autoValue = '';
 
   @override
-  Widget build(BuildContext context) {
-    final enabled = ref.watch(
-      asrControllerProvider.select((s) => s.enabledLanguages),
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
     final model = ref.watch(currentModelProvider);
+    final selected = ref.watch(decodeLanguageProvider);
     final l10n = AppLocalizations.of(context);
-    final languages = ref.watch(modelConfigProvider).value?.languages ?? [];
-    final names = {for (final l in languages) l.id: l};
-    final mainCodes = AsrLanguage.values.map((l) => l.code).toSet();
-    final others =
-        [
-          for (final s in model?.languages ?? const [])
-            if (!mainCodes.contains(s.lang)) s.lang,
+    final names = _languageNames(ref);
+    String nameOf(String id) => l10n.languageName(id, names[id]?.name);
+    final languages =
+        <String>[
+          for (final s in model?.languages ?? const <LanguageSupport>[]) s.lang,
         ]..sort(
           (a, b) => (names[a]?.order ?? 999).compareTo(names[b]?.order ?? 999),
         );
-    final unsupported = model == null
-        ? const <String>{}
-        : unsupportedLanguages(model, {for (final l in enabled) l.code});
+    const titleStyle = TextStyle(fontSize: 18);
 
     return AlertDialog(
       title: Text(l10n.recognitionLanguage),
@@ -189,47 +172,37 @@ class _LanguageDialogState extends ConsumerState<_LanguageDialog> {
                 style: const TextStyle(fontSize: 14),
               ),
             const SizedBox(height: 8),
-            for (final language in AsrLanguage.values)
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                value: enabled.contains(language),
-                onChanged: (_) => _toggle(language),
-                title: Text(
-                  l10n.languageName(language.code),
-                  style: const TextStyle(fontSize: 18),
-                ),
-                // 设置页为其他语言指定的模型可能不支持这里勾选的语言。
-                subtitle: unsupported.contains(language.code)
-                    ? Text(
-                        l10n.notSupportedByModel,
-                        style: const TextStyle(
-                          color: Color(0xFFFF5252),
-                          fontSize: 14,
+            RadioGroup<String>(
+              groupValue: selected ?? _autoValue,
+              onChanged: (v) {
+                if (v == null) return;
+                ref
+                    .read(settingsProvider.notifier)
+                    .setDecodeLanguage(v == _autoValue ? null : v);
+              },
+              child: Column(
+                children: [
+                  if (languages.length > 1)
+                    RadioListTile<String>(
+                      value: _autoValue,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l10n.auto, style: titleStyle),
+                      subtitle: Text(
+                        l10n.autoDetectLanguages(
+                          languages.map(nameOf).join(l10n.listSeparator),
                         ),
-                      )
-                    : null,
+                        style: const TextStyle(fontSize: 14, height: 1.4),
+                      ),
+                    ),
+                  for (final language in languages)
+                    RadioListTile<String>(
+                      value: language,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(nameOf(language), style: titleStyle),
+                    ),
+                ],
               ),
-            if (_rejected)
-              Text(
-                l10n.keepOneLanguage,
-                style: const TextStyle(color: Color(0xFFFF5252), fontSize: 14),
-              ),
-            if (others.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(l10n.alsoAutoDetect, style: const TextStyle(fontSize: 14)),
-              const SizedBox(height: 4),
-              Text(
-                others
-                    .map((code) => l10n.languageName(code, names[code]?.name))
-                    .join(l10n.listSeparator),
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.alsoAutoDetectHint,
-                style: const TextStyle(fontSize: 13, height: 1.4),
-              ),
-            ],
+            ),
           ],
         ),
       ),

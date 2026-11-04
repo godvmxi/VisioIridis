@@ -121,7 +121,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get recognitionModelHint =>
-      '言語ごとに使用するモデルを選べます。スコアは 10 点満点で、「自動」は最もスコアの高いモデルを選びます。変更は「開始」をタップしたときに反映され、必要に応じて新しいモデルのダウンロードを案内します。';
+      '言語、方言、モデルの順に選びます。スコアは 10 点満点で、モデルはスコアの高い順に並びます。変更は「開始」をタップしたときに反映され、必要に応じて新しいモデルのダウンロードを案内します。';
 
   @override
   String modelConfigLoadFailed(String error) {
@@ -141,6 +141,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String get language => '言語';
 
   @override
+  String get languageGroup => '言語';
+
+  @override
+  String get dialect => '方言';
+
+  @override
+  String get langGroupChinese => '中国語';
+
+  @override
+  String autoDetectLanguages(String languages) {
+    return '自動判別：$languages';
+  }
+
+  @override
+  String currentSelection(String path) {
+    return '現在：$path';
+  }
+
+  @override
   String chooseModelFor(String language) {
     return '「$language」のモデル';
   }
@@ -150,11 +169,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get noModelAvailable => '使えるモデルがありません';
-
-  @override
-  String autoPicks(String model, int score) {
-    return '最高スコアのモデル：$model  $score 点';
-  }
 
   @override
   String modelScoreTitle(String model, String language, int score) {
@@ -219,18 +233,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get notSupportedByModel => '現在のモデルは非対応のため認識しません';
-
-  @override
-  String get keepOneLanguage => '少なくとも 1 つの言語を選んでください';
-
-  @override
-  String get alsoAutoDetect => '自動で認識できる言語';
-
-  @override
-  String get alsoAutoDetectHint => '複数の言語を選ぶと（自動判別）、これらの言語も認識されます。';
-
-  @override
   String get listSeparator => '、';
 
   @override
@@ -240,7 +242,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get clearConfirmButton => '消去';
 
   @override
-  String get noModelForLanguages => '選択した言語に対応するモデルがありません';
+  String get noModelForLanguages => '使用できる認識モデルがありません';
 
   @override
   String modelSwitched(String model) {

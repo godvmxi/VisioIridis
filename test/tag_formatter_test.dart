@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/asr/asr_language.dart';
 import 'package:seevoice/asr/tag_formatter.dart';
 import 'package:seevoice/l10n/l10n.dart';
 
@@ -35,24 +34,6 @@ void main() {
 
     test('cleanText removes every tag', () {
       expect(TagFormatter.cleanText('<|zh|><|NEUTRAL|><|Speech|>你好'), '你好');
-    });
-  });
-
-  group('AsrLanguage.languageParamFor', () {
-    test('single language forces that code', () {
-      expect(AsrLanguage.languageParamFor({AsrLanguage.english}), 'en');
-      expect(AsrLanguage.languageParamFor({AsrLanguage.cantonese}), 'yue');
-    });
-
-    test('two or three languages use auto', () {
-      expect(
-        AsrLanguage.languageParamFor({
-          AsrLanguage.mandarin,
-          AsrLanguage.english,
-        }),
-        'auto',
-      );
-      expect(AsrLanguage.languageParamFor(AsrLanguage.values.toSet()), 'auto');
     });
   });
 }

@@ -9,7 +9,6 @@ import '../model_store/model_selector.dart';
 import '../platform/keep_alive.dart';
 import '../platform/system_audio.dart';
 import 'asr_engine.dart';
-import 'asr_language.dart';
 import 'prepared_model.dart';
 import 'sherpa_worker.dart';
 
@@ -34,15 +33,15 @@ class SherpaAsrEngine implements AsrEngine {
   Stream<AsrEvent> get events => _events.stream;
 
   @override
-  Future<void> start(PreparedModel model, Set<AsrLanguage> languages) async {
+  Future<void> start(PreparedModel model, String? language) async {
     if (!await _recorder.hasPermission()) {
       throw const AsrStartException(AsrIssue.micPermissionDenied);
     }
     if (_loaded?.asrModelDir != model.asrModelDir) {
       await _shutdownWorker();
-      await _spawnWorker(model, languages);
+      await _spawnWorker(model, language);
     } else {
-      updateLanguages(languages);
+      updateLanguage(language);
     }
 
     await _startInput(AudioInput.microphone);
@@ -159,10 +158,10 @@ class SherpaAsrEngine implements AsrEngine {
   }
 
   @override
-  void updateLanguages(Set<AsrLanguage> languages) {
+  void updateLanguage(String? language) {
     final model = _loaded;
     if (model == null) return;
-    final codes = languages.map((l) => l.code).toSet();
+    final codes = allowedLanguages(model.asrModel, language);
     _worker?.send(
       WorkerLanguages(decodeParamFor(model.asrModel, codes), codes),
     );
@@ -178,13 +177,10 @@ class SherpaAsrEngine implements AsrEngine {
     _events.close();
   }
 
-  Future<void> _spawnWorker(
-    PreparedModel model,
-    Set<AsrLanguage> languages,
-  ) async {
+  Future<void> _spawnWorker(PreparedModel model, String? language) async {
     final inbox = ReceivePort();
     final ready = Completer<void>();
-    final codes = languages.map((l) => l.code).toSet();
+    final codes = allowedLanguages(model.asrModel, language);
 
     inbox.listen((message) {
       switch (message) {

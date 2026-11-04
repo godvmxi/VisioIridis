@@ -314,7 +314,7 @@ abstract class AppLocalizations {
   /// No description provided for @recognitionModelHint.
   ///
   /// In zh, this message translates to:
-  /// **'为每种语言指定使用的模型，打分为 10 分制；“自动”选择打分最高的模型。修改后点击“开始识别”时生效，需要时会提示下载新模型。'**
+  /// **'依次选择语种、方言和模型，打分为 10 分制，模型按打分从高到低排列。修改后点击“开始识别”时生效，需要时会提示下载新模型。'**
   String get recognitionModelHint;
 
   /// No description provided for @modelConfigLoadFailed.
@@ -347,6 +347,36 @@ abstract class AppLocalizations {
   /// **'语言'**
   String get language;
 
+  /// No description provided for @languageGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'语种'**
+  String get languageGroup;
+
+  /// No description provided for @dialect.
+  ///
+  /// In zh, this message translates to:
+  /// **'方言'**
+  String get dialect;
+
+  /// No description provided for @langGroupChinese.
+  ///
+  /// In zh, this message translates to:
+  /// **'中文'**
+  String get langGroupChinese;
+
+  /// No description provided for @autoDetectLanguages.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动识别：{languages}'**
+  String autoDetectLanguages(String languages);
+
+  /// No description provided for @currentSelection.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前：{path}'**
+  String currentSelection(String path);
+
   /// No description provided for @chooseModelFor.
   ///
   /// In zh, this message translates to:
@@ -364,12 +394,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'没有可用模型'**
   String get noModelAvailable;
-
-  /// No description provided for @autoPicks.
-  ///
-  /// In zh, this message translates to:
-  /// **'选打分最高的模型：{model}  {score} 分'**
-  String autoPicks(String model, int score);
 
   /// No description provided for @modelScoreTitle.
   ///
@@ -479,30 +503,6 @@ abstract class AppLocalizations {
   /// **'当前模型：{model}'**
   String currentModel(String model);
 
-  /// No description provided for @notSupportedByModel.
-  ///
-  /// In zh, this message translates to:
-  /// **'当前模型不支持，不会识别'**
-  String get notSupportedByModel;
-
-  /// No description provided for @keepOneLanguage.
-  ///
-  /// In zh, this message translates to:
-  /// **'至少保留一种识别语言'**
-  String get keepOneLanguage;
-
-  /// No description provided for @alsoAutoDetect.
-  ///
-  /// In zh, this message translates to:
-  /// **'还可自动识别'**
-  String get alsoAutoDetect;
-
-  /// No description provided for @alsoAutoDetectHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'勾选多种语言（自动识别）时可识别这些语言。'**
-  String get alsoAutoDetectHint;
-
   /// No description provided for @listSeparator.
   ///
   /// In zh, this message translates to:
@@ -524,7 +524,7 @@ abstract class AppLocalizations {
   /// No description provided for @noModelForLanguages.
   ///
   /// In zh, this message translates to:
-  /// **'当前语言组合没有可用的识别模型'**
+  /// **'没有可用的识别模型'**
   String get noModelForLanguages;
 
   /// No description provided for @modelSwitched.

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,7 +26,9 @@ class AppSettings {
   const AppSettings({
     this.fontScale = FontScale.large,
     this.colorMode = ColorMode.yellowOnBlack,
-    this.modelPreferences = const {},
+    this.asrLanguage = 'zh',
+    this.asrModel,
+    this.decodeLanguage,
     this.floatingCaption = false,
     this.boldText = false,
     this.customBackground = const Color(0xFF0D1B2A),
@@ -40,8 +40,14 @@ class AppSettings {
   final FontScale fontScale;
   final ColorMode colorMode;
 
-  /// 语言 id → 指定的模型 id；没有条目表示”自动”（按权重选择）。
-  final Map<String, String> modelPreferences;
+  /// 设置页“语种 → 方言 → 模型”中选择的方言（语言 id，如 yue）。
+  final String asrLanguage;
+
+  /// 设置页选择的模型 id；为 null 时取支持 [asrLanguage] 且打分最高的模型。
+  final String? asrModel;
+
+  /// 顶部栏为当前模型选择的识别语言；为 null 表示自动识别模型支持的全部语言。
+  final String? decodeLanguage;
 
   /// App 切到后台时显示浮动字幕窗口（PRD 4.7）。
   final bool floatingCaption;
@@ -64,7 +70,6 @@ class AppSettings {
   AppSettings copyWith({
     FontScale? fontScale,
     ColorMode? colorMode,
-    Map<String, String>? modelPreferences,
     bool? floatingCaption,
     bool? boldText,
     Color? customBackground,
@@ -75,7 +80,9 @@ class AppSettings {
     return AppSettings(
       fontScale: fontScale ?? this.fontScale,
       colorMode: colorMode ?? this.colorMode,
-      modelPreferences: modelPreferences ?? this.modelPreferences,
+      asrLanguage: asrLanguage,
+      asrModel: asrModel,
+      decodeLanguage: decodeLanguage,
       floatingCaption: floatingCaption ?? this.floatingCaption,
       boldText: boldText ?? this.boldText,
       customBackground: customBackground ?? this.customBackground,
@@ -98,7 +105,9 @@ final settingsProvider = NotifierProvider<SettingsController, AppSettings>(
 class SettingsController extends Notifier<AppSettings> {
   static const _fontKey = 'settings.fontScale';
   static const _colorKey = 'settings.colorMode';
-  static const _modelsKey = 'settings.modelPreferences';
+  static const _asrLanguageKey = 'settings.asrLanguage';
+  static const _asrModelKey = 'settings.asrModel';
+  static const _decodeLanguageKey = 'settings.decodeLanguage';
   static const _floatingKey = 'settings.floatingCaption';
   static const _boldKey = 'settings.boldText';
   static const _customBackgroundKey = 'settings.customBackground';
@@ -118,7 +127,13 @@ class SettingsController extends Notifier<AppSettings> {
       colorMode:
           _byName(ColorMode.values, prefs.getString(_colorKey)) ??
           ColorMode.yellowOnBlack,
-      modelPreferences: _decodeMap(prefs.getString(_modelsKey)),
+      asrLanguage: prefs.getString(_asrLanguageKey) ?? 'zh',
+      asrModel: prefs.getString(_asrModelKey),
+      // 首次使用时自动识别；存为空串表示用户选择了自动。
+      decodeLanguage: switch (prefs.getString(_decodeLanguageKey)) {
+        null || '' => null,
+        final value => value,
+      },
       floatingCaption: prefs.getBool(_floatingKey) ?? false,
       boldText: prefs.getBool(_boldKey) ?? false,
       customBackground:
@@ -176,16 +191,45 @@ class SettingsController extends Notifier<AppSettings> {
     _prefs.setInt(_forceSplitKey, value);
   }
 
-  /// [modelId] 为 null 表示该语言恢复”自动”。
-  void setModelPreference(String language, String? modelId) {
-    final prefs = {...state.modelPreferences};
-    if (modelId == null) {
-      prefs.remove(language);
-    } else {
-      prefs[language] = modelId;
-    }
-    state = state.copyWith(modelPreferences: prefs);
-    _prefs.setString(_modelsKey, jsonEncode(prefs));
+  /// 设置页依次选定方言 [language] 与模型 [modelId]；
+  /// 顶部栏的识别语言随之改为该方言。
+  void setAsrModel(String language, String modelId) {
+    _replace(
+      asrLanguage: language,
+      asrModel: modelId,
+      decodeLanguage: language,
+    );
+    _prefs.setString(_asrLanguageKey, language);
+    _prefs.setString(_asrModelKey, modelId);
+    _prefs.setString(_decodeLanguageKey, language);
+  }
+
+  /// 顶部栏选择识别语言；null 表示自动。
+  void setDecodeLanguage(String? language) {
+    _replace(decodeLanguage: language);
+    _prefs.setString(_decodeLanguageKey, language ?? '');
+  }
+
+  /// copyWith 无法把可空字段改回 null，模型相关字段在这里整体替换。
+  void _replace({
+    String? asrLanguage,
+    String? asrModel,
+    String? decodeLanguage,
+  }) {
+    final s = state;
+    state = AppSettings(
+      fontScale: s.fontScale,
+      colorMode: s.colorMode,
+      asrLanguage: asrLanguage ?? s.asrLanguage,
+      asrModel: asrModel ?? s.asrModel,
+      decodeLanguage: decodeLanguage,
+      floatingCaption: s.floatingCaption,
+      boldText: s.boldText,
+      customBackground: s.customBackground,
+      customText: s.customText,
+      appLanguage: s.appLanguage,
+      forceSplitSeconds: s.forceSplitSeconds,
+    );
   }
 
   static T? _byName<T extends Enum>(List<T> values, String? name) {
@@ -193,15 +237,6 @@ class SettingsController extends Notifier<AppSettings> {
       if (v.name == name) return v;
     }
     return null;
-  }
-
-  static Map<String, String> _decodeMap(String? raw) {
-    if (raw == null) return const {};
-    try {
-      return (jsonDecode(raw) as Map<String, dynamic>).cast<String, String>();
-    } on FormatException {
-      return const {};
-    }
   }
 }
 

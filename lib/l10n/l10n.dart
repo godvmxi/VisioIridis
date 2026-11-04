@@ -82,6 +82,17 @@ extension AppStrings on AppLocalizations {
     _ => fallback ?? id,
   };
 
+  /// 语种名称；只含一种语言的语种与该语言同名。
+  String languageGroupName(String id, [String? fallback]) => switch (id) {
+    'chinese' => langGroupChinese,
+    'english' => langEn,
+    'french' => langFr,
+    'german' => langDe,
+    'japanese' => langJa,
+    'korean' => langKo,
+    _ => languageName(id, fallback),
+  };
+
   String fontScaleName(FontScale scale) => switch (scale) {
     FontScale.standard => fontStandard,
     FontScale.large => fontLarge,

@@ -9,6 +9,7 @@ class ModelConfig {
     required this.languages,
     required this.vad,
     required this.asrModels,
+    this.languageGroups = const [],
   });
 
   /// 当前 App 支持的配置格式版本。
@@ -19,6 +20,9 @@ class ModelConfig {
   final int configVersion;
   final String remoteConfigUrl;
   final List<LanguageDef> languages;
+
+  /// 语种（如“中文”），其下的方言见 [LanguageDef.group]。旧配置没有此字段。
+  final List<LanguageGroup> languageGroups;
   final ModelDef vad;
   final List<AsrModelDef> asrModels;
 
@@ -40,11 +44,57 @@ class ModelConfig {
         languages: _list(json['languages'], LanguageDef.fromJson),
         vad: ModelDef.fromJson(json['vad'] as Map<String, dynamic>),
         asrModels: _list(json['asrModels'], AsrModelDef.fromJson),
+        languageGroups: json['languageGroups'] == null
+            ? const []
+            : _list(json['languageGroups'], LanguageGroup.fromJson),
       );
     } on TypeError catch (e) {
       throw FormatException('配置字段缺失或类型错误: $e');
     }
   }
+
+  /// 按顺序排列的语种。旧配置没有语种时，每种语言自成一个语种（id 与语言相同）。
+  List<LanguageGroup> get groups {
+    final declared = {for (final g in languageGroups) g.id: g};
+    final result = <String, LanguageGroup>{};
+    for (final l in sortedLanguages) {
+      final id = l.group ?? l.id;
+      result[id] ??=
+          declared[id] ?? LanguageGroup(id: id, name: l.name, order: l.order);
+    }
+    return result.values.toList()..sort((a, b) => a.order.compareTo(b.order));
+  }
+
+  /// 语种 [groupId] 下的语言（方言），按顺序排列。
+  List<LanguageDef> languagesIn(String groupId) => [
+    for (final l in sortedLanguages)
+      if ((l.group ?? l.id) == groupId) l,
+  ];
+
+  List<LanguageDef> get sortedLanguages =>
+      [...languages]..sort((a, b) => a.order.compareTo(b.order));
+
+  LanguageDef? languageById(String id) =>
+      languages.where((l) => l.id == id).firstOrNull;
+}
+
+/// 语种，如“中文”，其下包含普通话、粤语等方言。
+class LanguageGroup {
+  const LanguageGroup({
+    required this.id,
+    required this.name,
+    required this.order,
+  });
+
+  factory LanguageGroup.fromJson(Map<String, dynamic> json) => LanguageGroup(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    order: json['order'] as int,
+  );
+
+  final String id;
+  final String name;
+  final int order;
 }
 
 class LanguageDef {
@@ -53,6 +103,7 @@ class LanguageDef {
     required this.name,
     required this.defaultEnabled,
     required this.order,
+    this.group,
   });
 
   factory LanguageDef.fromJson(Map<String, dynamic> json) => LanguageDef(
@@ -60,12 +111,16 @@ class LanguageDef {
     name: json['name'] as String,
     defaultEnabled: json['defaultEnabled'] as bool,
     order: json['order'] as int,
+    group: json['group'] as String?,
   );
 
   final String id;
   final String name;
   final bool defaultEnabled;
   final int order;
+
+  /// 所属语种 id；为 null 时自成一个语种。
+  final String? group;
 }
 
 class ModelDef {

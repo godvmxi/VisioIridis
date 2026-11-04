@@ -121,7 +121,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get recognitionModelHint =>
-      '为每种语言指定使用的模型，打分为 10 分制；“自动”选择打分最高的模型。修改后点击“开始识别”时生效，需要时会提示下载新模型。';
+      '依次选择语种、方言和模型，打分为 10 分制，模型按打分从高到低排列。修改后点击“开始识别”时生效，需要时会提示下载新模型。';
 
   @override
   String modelConfigLoadFailed(String error) {
@@ -141,6 +141,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get language => '语言';
 
   @override
+  String get languageGroup => '语种';
+
+  @override
+  String get dialect => '方言';
+
+  @override
+  String get langGroupChinese => '中文';
+
+  @override
+  String autoDetectLanguages(String languages) {
+    return '自动识别：$languages';
+  }
+
+  @override
+  String currentSelection(String path) {
+    return '当前：$path';
+  }
+
+  @override
   String chooseModelFor(String language) {
     return '为“$language”选择模型';
   }
@@ -150,11 +169,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noModelAvailable => '没有可用模型';
-
-  @override
-  String autoPicks(String model, int score) {
-    return '选打分最高的模型：$model  $score 分';
-  }
 
   @override
   String modelScoreTitle(String model, String language, int score) {
@@ -219,18 +233,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get notSupportedByModel => '当前模型不支持，不会识别';
-
-  @override
-  String get keepOneLanguage => '至少保留一种识别语言';
-
-  @override
-  String get alsoAutoDetect => '还可自动识别';
-
-  @override
-  String get alsoAutoDetectHint => '勾选多种语言（自动识别）时可识别这些语言。';
-
-  @override
   String get listSeparator => '、';
 
   @override
@@ -240,7 +242,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clearConfirmButton => '确认清空';
 
   @override
-  String get noModelForLanguages => '当前语言组合没有可用的识别模型';
+  String get noModelForLanguages => '没有可用的识别模型';
 
   @override
   String modelSwitched(String model) {
@@ -617,7 +619,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get recognitionModelHint =>
-      '為每種語言指定使用的模型，評分為 10 分制；「自動」選擇評分最高的模型。修改後點擊「開始辨識」時生效，需要時會提示下載新模型。';
+      '依次選擇語種、方言和模型，評分為 10 分制，模型依評分由高到低排列。修改後點擊「開始辨識」時生效，需要時會提示下載新模型。';
 
   @override
   String modelConfigLoadFailed(String error) {
@@ -637,6 +639,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get language => '語言';
 
   @override
+  String get languageGroup => '語種';
+
+  @override
+  String get dialect => '方言';
+
+  @override
+  String get langGroupChinese => '中文';
+
+  @override
+  String autoDetectLanguages(String languages) {
+    return '自動辨識：$languages';
+  }
+
+  @override
+  String currentSelection(String path) {
+    return '目前：$path';
+  }
+
+  @override
   String chooseModelFor(String language) {
     return '為「$language」選擇模型';
   }
@@ -646,11 +667,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get noModelAvailable => '沒有可用模型';
-
-  @override
-  String autoPicks(String model, int score) {
-    return '選評分最高的模型：$model  $score 分';
-  }
 
   @override
   String modelScoreTitle(String model, String language, int score) {
@@ -715,18 +731,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get notSupportedByModel => '目前模型不支援，不會辨識';
-
-  @override
-  String get keepOneLanguage => '至少保留一種辨識語言';
-
-  @override
-  String get alsoAutoDetect => '還可自動辨識';
-
-  @override
-  String get alsoAutoDetectHint => '勾選多種語言（自動辨識）時可辨識這些語言。';
-
-  @override
   String get listSeparator => '、';
 
   @override
@@ -736,7 +740,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get clearConfirmButton => '確認清除';
 
   @override
-  String get noModelForLanguages => '目前語言組合沒有可用的辨識模型';
+  String get noModelForLanguages => '沒有可用的辨識模型';
 
   @override
   String modelSwitched(String model) {

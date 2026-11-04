@@ -123,7 +123,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get recognitionModelHint =>
-      'Wähle für jede Sprache ein Modell. Die Bewertung reicht bis 10; „Automatisch“ wählt das am besten bewertete Modell. Änderungen gelten, wenn du auf „Starten“ tippst; bei Bedarf wirst du gefragt, ein neues Modell herunterzuladen.';
+      'Wähle eine Sprache, dann einen Dialekt, dann ein Modell. Die Bewertung reicht bis 10, Modelle sind nach Bewertung sortiert. Änderungen gelten, wenn du auf „Starten“ tippst; bei Bedarf wirst du gefragt, ein neues Modell herunterzuladen.';
 
   @override
   String modelConfigLoadFailed(String error) {
@@ -143,6 +143,25 @@ class AppLocalizationsDe extends AppLocalizations {
   String get language => 'Sprache';
 
   @override
+  String get languageGroup => 'Sprache';
+
+  @override
+  String get dialect => 'Dialekt';
+
+  @override
+  String get langGroupChinese => 'Chinesisch';
+
+  @override
+  String autoDetectLanguages(String languages) {
+    return 'Automatisch erkennen: $languages';
+  }
+
+  @override
+  String currentSelection(String path) {
+    return 'Aktuell: $path';
+  }
+
+  @override
   String chooseModelFor(String language) {
     return 'Modell für $language';
   }
@@ -152,11 +171,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get noModelAvailable => 'Kein Modell verfügbar';
-
-  @override
-  String autoPicks(String model, int score) {
-    return 'Am besten bewertet: $model  $score/10';
-  }
 
   @override
   String modelScoreTitle(String model, String language, int score) {
@@ -221,19 +235,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get notSupportedByModel => 'Vom aktuellen Modell nicht unterstützt';
-
-  @override
-  String get keepOneLanguage => 'Mindestens eine Sprache auswählen';
-
-  @override
-  String get alsoAutoDetect => 'Wird ebenfalls automatisch erkannt';
-
-  @override
-  String get alsoAutoDetectHint =>
-      'Diese Sprachen werden erkannt, wenn mehr als eine Sprache ausgewählt ist (automatische Erkennung).';
-
-  @override
   String get listSeparator => ', ';
 
   @override
@@ -243,8 +244,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get clearConfirmButton => 'Löschen';
 
   @override
-  String get noModelForLanguages =>
-      'Kein Modell unterstützt die ausgewählten Sprachen';
+  String get noModelForLanguages => 'Kein Erkennungsmodell verfügbar';
 
   @override
   String modelSwitched(String model) {

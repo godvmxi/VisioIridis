@@ -268,11 +268,12 @@ class _DialogPermissionStepState extends State<_DialogPermissionStep> {
   Future<void> _request() async {
     setState(() => _loading = true);
     final granted = await widget.onRequest();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _granted = granted;
         _loading = false;
       });
+    }
   }
 
   @override

@@ -9,7 +9,6 @@ import '../model_store/model_config.dart';
 import '../model_store/model_repository.dart';
 import '../model_store/model_selector.dart';
 import '../model_store/model_store.dart';
-import '../state/asr_controller.dart';
 import '../state/model_providers.dart';
 import '../state/settings.dart';
 
@@ -38,15 +37,11 @@ class ModelPreparer {
     final l10n = AppLocalizations.of(context);
     try {
       final config = await _ref.read(modelConfigProvider.future);
-      final languages = _ref
-          .read(asrControllerProvider)
-          .enabledLanguages
-          .map((l) => l.code)
-          .toSet();
-      final model = selectModel(
+      final settings = _ref.read(settingsProvider);
+      final model = resolveModel(
         config,
-        languages,
-        preferred: _ref.read(settingsProvider).modelPreferences,
+        settings.asrLanguage,
+        settings.asrModel,
       );
       if (model == null) {
         if (context.mounted) _toast(context, l10n.noModelForLanguages);
@@ -88,12 +83,10 @@ class ModelPreparer {
         downloadBytes += (await repo.plan(m)).downloadBytes;
       }
       if (downloadBytes > 0) {
-        // 上次的模型支持当前语言且已就绪时，可以先继续用它。
+        // 上次的模型支持所选方言且已就绪时，可以先继续用它。
         final fallback =
             previous != null &&
-                languages.every(
-                  (l) => previous.languages.any((s) => s.lang == l),
-                ) &&
+                previous.languages.any((s) => s.lang == settings.asrLanguage) &&
                 await _allReady(cache, [config.vad, previous])
             ? previous
             : null;
