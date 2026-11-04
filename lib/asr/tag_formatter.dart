@@ -25,7 +25,12 @@ class TagFormatter {
     return '$emoji [$text]';
   }
 
-  /// 剔除文本中残留的所有 `<|...|>` 标签。
-  static String cleanText(String text) =>
-      text.replaceAll(_tagPattern, '').trim();
+  /// 只有空白与标点（如“。”“.”“，”）的文本。
+  static final _punctuationOnly = RegExp(r'^[\p{P}\s]*$', unicode: true);
+
+  /// 剔除文本中残留的所有 `<|...|>` 标签；只剩空白或标点时返回空串，不上屏。
+  static String cleanText(String text) {
+    final cleaned = text.replaceAll(_tagPattern, '').trim();
+    return _punctuationOnly.hasMatch(cleaned) ? '' : cleaned;
+  }
 }

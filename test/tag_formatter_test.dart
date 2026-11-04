@@ -35,5 +35,13 @@ void main() {
     test('cleanText removes every tag', () {
       expect(TagFormatter.cleanText('<|zh|><|NEUTRAL|><|Speech|>你好'), '你好');
     });
+
+    test('cleanText drops text that is only spaces or punctuation', () {
+      for (final text in [' ', '。', '.', ' 。 ', '<|zh|>.', '，。', '?']) {
+        expect(TagFormatter.cleanText(text), '', reason: text);
+      }
+      expect(TagFormatter.cleanText('好。'), '好。');
+      expect(TagFormatter.cleanText('OK.'), 'OK.');
+    });
   });
 }

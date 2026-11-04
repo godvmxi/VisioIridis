@@ -133,6 +133,17 @@ void main() {
     expect(state.history.single.displayText(zh.eventName), '😄 [笑声]');
   });
 
+  test('punctuation-only results are not shown', () {
+    engine.emit(const AsrPartial('。'));
+    expect(state.currentPendingText, '');
+    engine.emit(const AsrFinal(' . '));
+    engine.emit(const AsrFinal('<|zh|>。'));
+    expect(state.history, isEmpty);
+    // 带事件标签时仍显示标签。
+    engine.emit(const AsrFinal('。', event: '<|Laughter|>'));
+    expect(state.history.single.displayText(zh.eventName), '😄 [笑声]');
+  });
+
   test('clearHistory empties history and pending text', () {
     engine.emit(const AsrFinal('一'));
     engine.emit(const AsrPartial('二'));
