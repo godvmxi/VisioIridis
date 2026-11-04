@@ -7,7 +7,6 @@ import '../model_store/downloader.dart';
 import '../model_store/model_config.dart';
 import '../model_store/model_repository.dart';
 import 'region_detector.dart';
-import 'settings.dart';
 
 /// 当前生效的模型配置。远程检查由 configUpdateProvider 负责（PRD 4.5.1、4.5.6）。
 final modelConfigProvider = FutureProvider<ModelConfig>((ref) async {
@@ -34,10 +33,7 @@ final modelCacheProvider = FutureProvider<ModelCache>(
   (ref) async => ModelCache(await getApplicationCacheDirectory()),
 );
 
-final downloaderProvider = Provider<Downloader>((ref) {
-  final token = ref.watch(hfTokenProvider);
-  return HttpDownloader(hfToken: token);
-});
+final downloaderProvider = Provider<Downloader>((ref) => HttpDownloader());
 
 /// 正在准备的模型及进度；为 null 表示当前没有准备任务。
 class PrepState {

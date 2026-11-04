@@ -239,33 +239,3 @@ class SettingsController extends Notifier<AppSettings> {
     return null;
   }
 }
-
-// ── HuggingFace access token（单独存储，不归入 AppSettings）──────────────
-
-final hfTokenProvider = NotifierProvider<HfTokenController, String?>(
-  HfTokenController.new,
-);
-
-class HfTokenController extends Notifier<String?> {
-  static const _key = 'credentials.hfToken';
-
-  SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
-
-  @override
-  String? build() {
-    final raw = ref.watch(sharedPreferencesProvider).getString(_key);
-    return (raw?.isEmpty ?? true) ? null : raw;
-  }
-
-  void set(String? token) {
-    final v = (token?.trim().isEmpty ?? true) ? null : token!.trim();
-    state = v;
-    if (v == null) {
-      _prefs.remove(_key);
-    } else {
-      _prefs.setString(_key, v);
-    }
-  }
-
-  void clear() => set(null);
-}

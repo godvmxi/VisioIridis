@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart' hide KeepAlive;
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,17 +17,8 @@ import 'ui/onboarding_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
-  // Seed HF token from bundled hf.json on first run (prefs take priority on subsequent runs).
-  if (prefs.getString('credentials.hfToken') == null) {
-    try {
-      final raw = await rootBundle.loadString('assets/config/hf.json');
-      final token =
-          (jsonDecode(raw) as Map<String, dynamic>)['access_token'] as String?;
-      if (token != null && token.isNotEmpty) {
-        await prefs.setString('credentials.hfToken', token);
-      }
-    } catch (_) {}
-  }
+  // 旧版本可能存过 HuggingFace token，已不再使用。
+  prefs.remove('credentials.hfToken');
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],

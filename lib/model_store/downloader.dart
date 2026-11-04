@@ -26,18 +26,12 @@ abstract class Downloader {
 }
 
 class HttpDownloader implements Downloader {
-  HttpDownloader({HttpClient? client, this.hfToken})
+  HttpDownloader({HttpClient? client})
     : _client =
           client ??
           (HttpClient()..connectionTimeout = const Duration(seconds: 15));
 
   final HttpClient _client;
-
-  /// HuggingFace personal access token，用于访问需要认证的仓库。
-  final String? hfToken;
-
-  static bool _isHfHost(Uri uri) =>
-      uri.host == 'huggingface.co' || uri.host == 'hf-mirror.com';
 
   @override
   Future<void> fetch(
@@ -88,9 +82,6 @@ class HttpDownloader implements Downloader {
     final request = await _client.getUrl(uri);
     // Range 按原始字节计算，禁止服务器压缩传输。
     request.headers.set(HttpHeaders.acceptEncodingHeader, 'identity');
-    if (hfToken != null && _isHfHost(uri)) {
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $hfToken');
-    }
     if (offset > 0) {
       request.headers.set(HttpHeaders.rangeHeader, 'bytes=$offset-');
     }

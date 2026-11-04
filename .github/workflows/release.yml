@@ -26,10 +26,6 @@ jobs:
           channel: stable
           cache: true
 
-      # hf.json is gitignored but declared as an asset; ship an empty one (no token in public builds).
-      - name: Create hf.json
-        run: echo '{}' > assets/config/hf.json
-
       - name: Install dependencies
         run: flutter pub get
 
