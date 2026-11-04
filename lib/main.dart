@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/l10n.dart';
 import 'platform/keep_alive.dart';
 import 'platform/system_audio.dart';
+import 'state/analytics.dart';
 import 'state/onboarding.dart';
 import 'state/settings.dart';
 import 'ui/app_colors.dart';
@@ -19,16 +20,17 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   // 旧版本可能存过 HuggingFace token，已不再使用。
   prefs.remove('credentials.hfToken');
+  // PostHog 由原生 AUTO_INIT 自动初始化，这里无需手动 setup（见 AndroidManifest.xml）。
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: const SeeVoiceApp(),
+      child: const VisioIridisApp(),
     ),
   );
 }
 
-class SeeVoiceApp extends ConsumerWidget {
-  const SeeVoiceApp({super.key});
+class VisioIridisApp extends ConsumerWidget {
+  const VisioIridisApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,6 +60,7 @@ class SeeVoiceApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       debugShowCheckedModeBanner: false,
+      navigatorObservers: [Analytics.observer],
       theme: buildTheme(palette),
       home: ref.watch(onboardingDoneProvider)
           ? const FloatingCaptionHost(child: HomePage())

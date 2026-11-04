@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/model_store/config_repository.dart';
-import 'package:seevoice/model_store/model_config.dart';
-import 'package:seevoice/model_store/model_selector.dart';
+import 'package:visioiridis/model_store/config_repository.dart';
+import 'package:visioiridis/model_store/model_config.dart';
+import 'package:visioiridis/model_store/model_selector.dart';
 
 void main() {
   final builtin = File('assets/config/model_config.json').readAsStringSync();

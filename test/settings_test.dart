@@ -1,7 +1,7 @@
 import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/state/settings.dart';
+import 'package:visioiridis/state/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<ProviderContainer> containerWith(Map<String, Object> values) async {

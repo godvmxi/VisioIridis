@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/asr/tag_formatter.dart';
-import 'package:seevoice/l10n/l10n.dart';
+import 'package:visioiridis/asr/tag_formatter.dart';
+import 'package:visioiridis/l10n/l10n.dart';
 
 void main() {
   group('TagFormatter', () {

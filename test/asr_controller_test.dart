@@ -2,12 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/asr/asr_engine.dart';
-import 'package:seevoice/l10n/l10n.dart';
-import 'package:seevoice/state/asr_controller.dart';
-import 'package:seevoice/state/asr_state.dart';
-import 'package:seevoice/state/current_model.dart';
-import 'package:seevoice/state/script_converter.dart';
+import 'package:visioiridis/asr/asr_engine.dart';
+import 'package:visioiridis/l10n/l10n.dart';
+import 'package:visioiridis/state/asr_controller.dart';
+import 'package:visioiridis/state/asr_state.dart';
+import 'package:visioiridis/state/current_model.dart';
+import 'package:visioiridis/state/script_converter.dart';
 
 import 'fake_asr_engine.dart';
 import 'fake_script_converter.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/state/settings.dart';
-import 'package:seevoice/ui/app_colors.dart';
+import 'package:visioiridis/state/settings.dart';
+import 'package:visioiridis/ui/app_colors.dart';
 
 void main() {
   test('contrastRatio follows WCAG', () {

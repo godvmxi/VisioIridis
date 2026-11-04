@@ -63,6 +63,23 @@
             android:foregroundServiceType="mediaProjection"
             android:stopWithTask="true"
             android:exported="false" />
+        <!-- PostHog 分析（官方自动初始化，AUTO_INIT 默认即为 true） -->
+        <!-- 项目 Token（Project API Key，形如 phc_xxx）；在此 value 处替换 -->
+        <meta-data
+            android:name="com.posthog.posthog.PROJECT_TOKEN"
+            android:value="phc_ufay3k7gantMUetwMMp6YWkwgasfve5qYPY2a462uyjo" />
+        <!-- 上报地址：US 用 us.i.posthog.com，EU 改为 https://eu.i.posthog.com -->
+        <meta-data
+            android:name="com.posthog.posthog.POSTHOG_HOST"
+            android:value="https://us.i.posthog.com" />
+        <!-- 采集前后台生命周期事件（应用打开/进入后台等） -->
+        <meta-data
+            android:name="com.posthog.posthog.TRACK_APPLICATION_LIFECYCLE_EVENTS"
+            android:value="true" />
+        <!-- 调试日志：发布前改为 false -->
+        <meta-data
+            android:name="com.posthog.posthog.DEBUG"
+            android:value="true" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

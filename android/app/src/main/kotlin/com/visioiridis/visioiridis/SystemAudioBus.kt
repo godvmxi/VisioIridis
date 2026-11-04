@@ -1,4 +1,4 @@
-package com.seevoice.seevoice
+package com.visioiridis.visioiridis
 
 import android.os.Handler
 import android.os.Looper

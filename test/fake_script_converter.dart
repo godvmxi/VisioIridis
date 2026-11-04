@@ -1,4 +1,4 @@
-import 'package:seevoice/state/script_converter.dart';
+import 'package:visioiridis/state/script_converter.dart';
 
 /// 用少量字的对照表模拟 OpenCC，不依赖原生插件。
 class FakeScriptConverter implements ScriptConverter {

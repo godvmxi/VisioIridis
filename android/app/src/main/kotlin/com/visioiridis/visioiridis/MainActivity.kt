@@ -1,4 +1,4 @@
-package com.seevoice.seevoice
+package com.visioiridis.visioiridis
 
 import android.content.Intent
 import android.os.Build

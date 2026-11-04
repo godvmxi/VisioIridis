@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/asr/audio_utils.dart';
+import 'package:visioiridis/asr/audio_utils.dart';
 
 import 'fake_asr_engine.dart';
 

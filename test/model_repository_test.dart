@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/model_store/downloader.dart';
-import 'package:seevoice/model_store/model_config.dart';
-import 'package:seevoice/model_store/model_repository.dart';
-import 'package:seevoice/model_store/model_store.dart';
+import 'package:visioiridis/model_store/downloader.dart';
+import 'package:visioiridis/model_store/model_config.dart';
+import 'package:visioiridis/model_store/model_repository.dart';
+import 'package:visioiridis/model_store/model_store.dart';
 
 /// 按 URL 返回预设内容的下载器，并记录下载次数。
 class FakeDownloader implements Downloader {

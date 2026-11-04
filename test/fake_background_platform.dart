@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:seevoice/asr/asr_engine.dart';
-import 'package:seevoice/platform/background_platform.dart';
+import 'package:visioiridis/asr/asr_engine.dart';
+import 'package:visioiridis/platform/background_platform.dart';
 
 /// 记录浮动窗口调用的测试平台。
 class FakeBackgroundPlatform implements BackgroundPlatform {

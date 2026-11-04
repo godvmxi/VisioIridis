@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/l10n/l10n.dart';
-import 'package:seevoice/state/settings.dart';
+import 'package:visioiridis/l10n/l10n.dart';
+import 'package:visioiridis/state/settings.dart';
 
 /// 界面语言解析（PRD 4.6）。
 void main() {

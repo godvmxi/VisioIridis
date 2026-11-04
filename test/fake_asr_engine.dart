@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:seevoice/asr/asr_engine.dart';
-import 'package:seevoice/asr/prepared_model.dart';
-import 'package:seevoice/model_store/model_config.dart';
+import 'package:visioiridis/asr/asr_engine.dart';
+import 'package:visioiridis/asr/prepared_model.dart';
+import 'package:visioiridis/model_store/model_config.dart';
 
 /// 测试用的模型路径，文件并不存在。
 const testPreparedModel = PreparedModel(

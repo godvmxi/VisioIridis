@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/model_store/downloader.dart';
+import 'package:visioiridis/model_store/downloader.dart';
 
 void main() {
   final payload = Uint8List.fromList(List.generate(100000, (i) => i % 251));

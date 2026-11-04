@@ -3,19 +3,19 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seevoice/asr/asr_engine.dart';
-import 'package:seevoice/asr/prepared_model.dart';
-import 'package:seevoice/l10n/l10n.dart';
-import 'package:seevoice/main.dart';
-import 'package:seevoice/model_store/model_config.dart';
-import 'package:seevoice/platform/background_platform.dart';
-import 'package:seevoice/state/asr_controller.dart';
-import 'package:seevoice/state/model_providers.dart';
-import 'package:seevoice/state/script_converter.dart';
-import 'package:seevoice/state/settings.dart';
-import 'package:seevoice/ui/app_colors.dart';
-import 'package:seevoice/ui/model_preparer.dart';
-import 'package:seevoice/ui/widgets/history_list.dart';
+import 'package:visioiridis/asr/asr_engine.dart';
+import 'package:visioiridis/asr/prepared_model.dart';
+import 'package:visioiridis/l10n/l10n.dart';
+import 'package:visioiridis/main.dart';
+import 'package:visioiridis/model_store/model_config.dart';
+import 'package:visioiridis/platform/background_platform.dart';
+import 'package:visioiridis/state/asr_controller.dart';
+import 'package:visioiridis/state/model_providers.dart';
+import 'package:visioiridis/state/script_converter.dart';
+import 'package:visioiridis/state/settings.dart';
+import 'package:visioiridis/ui/app_colors.dart';
+import 'package:visioiridis/ui/model_preparer.dart';
+import 'package:visioiridis/ui/widgets/history_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_asr_engine.dart';
@@ -73,7 +73,7 @@ void main() {
             ),
           ),
         ],
-        child: const SeeVoiceApp(),
+        child: const VisioIridisApp(),
       ),
     );
   }

@@ -14,7 +14,7 @@ abstract class ModelStore {
 }
 
 /// 普通文件系统目录。App 使用应用专属外置目录
-/// （Android/data/com.seevoice.seevoice/files），盒子出厂时可通过 adb 预置模型。
+/// （Android/data/com.visioiridis.visioiridis/files），盒子出厂时可通过 adb 预置模型。
 class DirectoryModelStore implements ModelStore {
   DirectoryModelStore(this.root, {this.label = '应用专属目录'});
 
