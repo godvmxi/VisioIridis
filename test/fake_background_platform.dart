@@ -8,6 +8,10 @@ class FakeBackgroundPlatform implements BackgroundPlatform {
   bool overlayAllowed = true;
   bool openedOverlaySettings = false;
 
+  /// 默认模拟 Android：两种平台能力都具备。置为 false 可模拟 iOS。
+  bool overlaySupported = true;
+  bool systemAudioSupported = true;
+
   FloatingCaptionStyle? shownStyle;
   bool visible = false;
   final updates =
@@ -36,6 +40,12 @@ class FakeBackgroundPlatform implements BackgroundPlatform {
 
   @override
   Future<void> showToast(String message) async => toasts.add(message);
+
+  @override
+  bool get supportsOverlay => overlaySupported;
+
+  @override
+  bool get supportsSystemAudio => systemAudioSupported;
 
   @override
   Future<bool> canShowOverlay() async => overlayAllowed;

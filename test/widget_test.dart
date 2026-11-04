@@ -729,4 +729,32 @@ void main() {
       expect(prefs.getBool('settings.floatingCaption'), isNull);
     });
   });
+
+  group('平台能力缺失时隐藏入口', () {
+    testWidgets('不支持悬浮窗时设置页整块不渲染浮动窗分区', (tester) async {
+      platform.overlaySupported = false;
+      tester.view.physicalSize = const Size(1080, 3200);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      await pumpApp(tester);
+      await tester.tap(find.byTooltip('设置'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('浮动窗'), findsNothing);
+      expect(find.text('显示浮动窗'), findsNothing);
+      // 后一个分区照常渲染，说明只少了这一块、没有把整页带塌。
+      expect(find.text('识别模型'), findsOneWidget);
+    });
+
+    testWidgets('不支持系统内录时顶栏不渲染声音来源切换', (tester) async {
+      platform.systemAudioSupported = false;
+      await pumpApp(tester);
+
+      expect(find.text('麦克风'), findsNothing);
+      expect(find.text('喇叭'), findsNothing);
+      // 顶栏其余部分照常。
+      expect(find.text('自动'), findsOneWidget);
+      expect(find.text('开始识别'), findsOneWidget);
+    });
+  });
 }

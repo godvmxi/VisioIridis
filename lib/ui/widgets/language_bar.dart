@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../asr/asr_engine.dart';
 import '../../l10n/l10n.dart';
 import '../../model_store/model_config.dart';
+import '../../platform/background_platform.dart';
 import '../../state/asr_controller.dart';
 import '../../state/current_model.dart';
 import '../../state/model_providers.dart';
@@ -33,6 +34,7 @@ class LanguageBar extends ConsumerWidget {
     final audioInput = ref.watch(
       asrControllerProvider.select((s) => s.audioInput),
     );
+    final platform = ref.watch(backgroundPlatformProvider);
     final palette = AppPalette.of(context);
     final l10n = AppLocalizations.of(context);
 
@@ -47,34 +49,38 @@ class LanguageBar extends ConsumerWidget {
               child: Row(
                 children: [
                   // 声音来源：麦克风或喇叭（系统播放的声音，PRD 4.8）。
-                  Semantics(
-                    label: l10n.soundSource,
-                    child: SegmentedButton<AudioInput>(
-                      segments: [
-                        ButtonSegment(
-                          value: AudioInput.microphone,
-                          label: Text(l10n.microphone),
-                        ),
-                        ButtonSegment(
-                          value: AudioInput.systemAudio,
-                          label: Text(l10n.speaker),
-                        ),
-                      ],
-                      selected: {audioInput},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (s) => ref
-                          .read(asrControllerProvider.notifier)
-                          .setAudioInput(s.single),
-                      style: const ButtonStyle(
-                        visualDensity: VisualDensity.compact,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        textStyle: WidgetStatePropertyAll(
-                          TextStyle(fontSize: 16),
+                  // 平台无法捕获系统播放的声音时整个切换隐藏，只剩麦克风一种
+                  // 来源，留着一个二选一的按钮没有意义。
+                  if (platform.supportsSystemAudio) ...[
+                    Semantics(
+                      label: l10n.soundSource,
+                      child: SegmentedButton<AudioInput>(
+                        segments: [
+                          ButtonSegment(
+                            value: AudioInput.microphone,
+                            label: Text(l10n.microphone),
+                          ),
+                          ButtonSegment(
+                            value: AudioInput.systemAudio,
+                            label: Text(l10n.speaker),
+                          ),
+                        ],
+                        selected: {audioInput},
+                        showSelectedIcon: false,
+                        onSelectionChanged: (s) => ref
+                            .read(asrControllerProvider.notifier)
+                            .setAudioInput(s.single),
+                        style: const ButtonStyle(
+                          visualDensity: VisualDensity.compact,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          textStyle: WidgetStatePropertyAll(
+                            TextStyle(fontSize: 16),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
+                  ],
                   // 识别语言：点击弹窗为当前模型选择自动或单一语言。
                   Semantics(
                     label: l10n.recognitionLanguage,

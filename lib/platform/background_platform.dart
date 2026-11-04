@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -51,6 +52,21 @@ class FloatingCaptionLabels {
 
 /// 浮动字幕窗口相关的平台能力。
 abstract class BackgroundPlatform {
+  /// 本平台能否把字幕画在其他 App 之上（PRD 4.7）。
+  ///
+  /// 和 [canShowOverlay] 问的不是一回事：这里问「平台有没有这种能力」，
+  /// [canShowOverlay] 问「用户有没有授权」。iOS 不允许任何 App 画在别的 App
+  /// 之上，没有对等能力也没有可申请的权限，所以界面据此整块隐藏浮动窗设置项，
+  /// 而不是留一个点下去必然失败的开关。
+  ///
+  /// 同步返回：界面要用它决定是否渲染控件，build 里没法 await。
+  bool get supportsOverlay;
+
+  /// 本平台能否捕获系统播放的声音（PRD 4.8）。
+  ///
+  /// iOS 没有捕获其他 App 音频的 API，界面据此隐藏「声音来源」切换。
+  bool get supportsSystemAudio;
+
   Future<bool> canShowOverlay();
 
   /// 打开系统“显示在其他应用上层”设置页，用户返回 App 后完成。
@@ -81,8 +97,61 @@ abstract class BackgroundPlatform {
   Future<void> hideOverlay();
 }
 
+/// 浮动窗口与系统内录都依赖平台独有能力，在没有这些能力的平台（iOS）上
+/// 用这个实现：能力查询一律返回 false，其余方法是空操作，不触碰任何
+/// MethodChannel（否则会抛 MissingPluginException）。
+///
+/// 纯 Dart，不需要原生代码：
+/// - 浮动窗相关的方法不会被调用，因为界面在 [supportsOverlay] 为 false 时
+///   不渲染入口，`FloatingCaptionHost` 也会在 [canShowOverlay] 处提前返回；
+/// - [showToast] 只在浮动窗口可见时才会被调用，所以这里不必找 iOS 的替代品；
+/// - [exitApp] 保持空操作：iOS 上 App 主动自杀会被审核拒绝。
+class UnsupportedBackgroundPlatform implements BackgroundPlatform {
+  const UnsupportedBackgroundPlatform();
+
+  @override
+  bool get supportsOverlay => false;
+
+  @override
+  bool get supportsSystemAudio => false;
+
+  @override
+  Future<bool> canShowOverlay() async => false;
+
+  @override
+  Future<void> openOverlaySettings() async {}
+
+  @override
+  Future<void> showOverlay(FloatingCaptionStyle style) async {}
+
+  @override
+  Future<void> updateOverlay({
+    required String current,
+    required bool partial,
+    required List<String> history,
+    required bool systemAudio,
+  }) async {}
+
+  @override
+  Future<void> hideOverlay() async {}
+
+  @override
+  Stream<AudioInput> get audioInputRequests => const Stream.empty();
+
+  @override
+  Stream<void> get exitRequests => const Stream.empty();
+
+  @override
+  Future<void> showToast(String message) async {}
+
+  @override
+  Future<void> exitApp() async {}
+}
+
 final backgroundPlatformProvider = Provider<BackgroundPlatform>(
-  (ref) => AndroidBackgroundPlatform(),
+  (ref) => defaultTargetPlatform == TargetPlatform.android
+      ? AndroidBackgroundPlatform()
+      : const UnsupportedBackgroundPlatform(),
 );
 
 class AndroidBackgroundPlatform implements BackgroundPlatform {
@@ -100,6 +169,12 @@ class AndroidBackgroundPlatform implements BackgroundPlatform {
   static const _channel = MethodChannel('visio_iridis/overlay');
   final _inputs = StreamController<AudioInput>.broadcast();
   final _exits = StreamController<void>.broadcast();
+
+  @override
+  bool get supportsOverlay => true;
+
+  @override
+  bool get supportsSystemAudio => true;
 
   @override
   Stream<void> get exitRequests => _exits.stream;
