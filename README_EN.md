@@ -24,6 +24,14 @@ Visio Iridis is a real-time speech-to-caption tool built for people who are deaf
 
 ---
 
+## Screenshots
+
+| Live captions | Recognition language | Font & preview | Model choice |
+|---|---|---|---|
+| <img src="docs/screenshots/home.jpg" width="200"> | <img src="docs/screenshots/language.jpg" width="200"> | <img src="docs/screenshots/settings.jpg" width="200"> | <img src="docs/screenshots/models.jpg" width="200"> |
+
+---
+
 ## Download
 
 Get the latest APK from the [Releases](https://github.com/godvmxi/VisioIridis/releases) page.

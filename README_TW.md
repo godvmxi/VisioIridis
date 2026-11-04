@@ -36,6 +36,14 @@ Visio Iridis 是一款面向聽障人士的即時語音轉字幕工具。核心�
 
 ---
 
+## 截圖
+
+| 即時字幕 | 辨識語言 | 字型與預覽 | 選擇模型 |
+|---|---|---|---|
+| <img src="docs/screenshots/home.jpg" width="200"> | <img src="docs/screenshots/language.jpg" width="200"> | <img src="docs/screenshots/settings.jpg" width="200"> | <img src="docs/screenshots/models.jpg" width="200"> |
+
+---
+
 ## 下載
 
 前往 [Releases](https://github.com/godvmxi/VisioIridis/releases) 頁面下載最新 APK。
