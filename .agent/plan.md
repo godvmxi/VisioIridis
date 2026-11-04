@@ -1,6 +1,6 @@
 # Project Plan
 
-Build an offline, low-latency, high-contrast live-caption Android app for hard-of-hearing users, using **Flutter** and **sherpa-onnx** (SenseVoice-Small INT8 + Silero-VAD). The source of truth for requirements is `PRD/design.md`.
+Build an offline, low-latency, high-contrast live-caption Android app for hard-of-hearing users, using **Flutter** and **sherpa-onnx** (SenseVoice-Small INT8 + Silero-VAD). The source of truth for requirements is `design.md` in the separate [VisioIridisPRD](https://github.com/godvmxi/VisioIridisPRD) repo.
 
 ## Project Brief
 
