@@ -4,6 +4,7 @@
 
 [![Release](https://img.shields.io/github/v/release/godvmxi/VisioIridis)](https://github.com/godvmxi/VisioIridis/releases)
 [![Platform](https://img.shields.io/badge/platform-Android-green)](https://github.com/godvmxi/VisioIridis/releases)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 
 [简体中文 →](README.md) | [繁體中文 →](README_TW.md)
 
@@ -135,3 +136,15 @@ Special thanks to **Larry, LT, Tom, and Swan** for their encouragement and early
 Issues and pull requests are welcome. If you are deaf or hard of hearing and have feedback on usability, please open an issue — lived experience is the most valuable input this project can receive.
 
 We are also looking for beta testers who speak languages other than Mandarin, Cantonese, and English, to help validate multilingual recognition quality. If you are interested, leave a comment in an issue or reach out by email.
+
+---
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0 (GPL-3.0)](LICENSE):
+
+- ✅ Anyone may freely use, study, modify and redistribute the software
+- 🔁 If you distribute the software or a modified version, you must release the complete source code under GPL-3.0 and keep the copyright and license notices
+- ⚠️ The software is provided "as is", without any warranty
+
+Third-party components (such as sherpa-onnx) and the recognition models remain under their own licenses.

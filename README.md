@@ -4,6 +4,7 @@
 
 [![Release](https://img.shields.io/github/v/release/godvmxi/VisioIridis)](https://github.com/godvmxi/VisioIridis/releases)
 [![Platform](https://img.shields.io/badge/platform-Android-green)](https://github.com/godvmxi/VisioIridis/releases)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 
 [English →](README_EN.md) | [繁體中文 →](README_TW.md)
 
@@ -135,3 +136,15 @@ Visio Iridis 是一款**公益软件**，免费、开源，核心目的只有一
 欢迎提交 Issue 和 Pull Request。如果你是听障用户，对使用体验有任何反馈，请直接开 Issue——来自当事人的真实体验是这个项目最宝贵的输入。
 
 我们也在寻找各语种的朋友加入内测团队，帮助验证多语言识别效果。如果你有兴趣，请在 Issue 中留言或发邮件联系。
+
+---
+
+## 许可证
+
+本项目采用 [GNU 通用公共许可证第 3 版（GPL-3.0）](LICENSE) 授权：
+
+- ✅ 任何人都可以自由使用、学习、修改和再分发本软件
+- 🔁 分发本软件或其修改版本时，必须以 GPL-3.0 公开完整源代码，并保留版权和许可证声明
+- ⚠️ 本软件按“原样”提供，不附带任何担保
+
+本软件使用的第三方组件（如 sherpa-onnx）和识别模型各自遵循其原有许可证。
