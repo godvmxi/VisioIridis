@@ -17,6 +17,7 @@ import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import kotlin.math.abs
 
@@ -26,7 +27,8 @@ import kotlin.math.abs
  * 顶部依次为最左侧的“退出”按钮、拖动条（上下拖动移动窗口）、“麦克风 | 喇叭”声音来源选择
  * （PRD 4.8）与“返回”按钮；点击“退出”后顶部改为“确定退出？”确认栏，[CONFIRM_SECONDS] 秒内
  * 无操作自动恢复，识别不中断。
- * 中间为历史记录，不可滑动：只显示最近 [HISTORY_MAX] 条并贴底排列，放不下时裁掉较早的部分。
+ * 中间为历史记录，放在可滚动容器里并自动贴底：最新一条始终可见，较早的记录向上滚出，
+ * 可手动上下滑动查看（最多保留 [HISTORY_MAX] 条）。长句自动换行。
  * 最底部固定显示当前识别，最多 [CURRENT_MAX_LINES] 行，超出时显示最后几行。
  */
 class CaptionOverlay(
@@ -39,6 +41,7 @@ class CaptionOverlay(
     private val windowManager = context.getSystemService(WindowManager::class.java)
     private var root: View? = null
     private var historyBox: LinearLayout? = null
+    private var historyScroll: ScrollView? = null
     private var currentView: TextView? = null
     private var micOption: TextView? = null
     private var speakerOption: TextView? = null
@@ -95,10 +98,22 @@ class CaptionOverlay(
 
         val header = buildHeader(style, labels)
 
-        // 贴底排列：内容超出高度时裁掉顶部较早的记录。
+        // 历史记录纵向排列，放在可滚动容器里；内容超高时自动滚到底部，始终显示最新几条。
         val history = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.BOTTOM
+        }
+        val historyScroll = ScrollView(context).apply {
+            isVerticalScrollBarEnabled = false
+            overScrollMode = View.OVER_SCROLL_NEVER
+            isFillViewport = true
+            addView(
+                history,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    Gravity.BOTTOM,
+                ),
+            )
         }
         val current = TextView(context).apply {
             setTextColor(style.focusColor)
@@ -115,10 +130,16 @@ class CaptionOverlay(
             orientation = LinearLayout.VERTICAL
             addView(header)
             addView(
-                history,
+                historyScroll,
                 LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
             )
-            addView(current)
+            addView(
+                current,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                )
+            )
         }
         val frame = FrameLayout(context).apply {
             background = GradientDrawable().apply {
@@ -147,6 +168,7 @@ class CaptionOverlay(
 
         root = frame
         historyBox = history
+        this.historyScroll = historyScroll
         currentView = current
         shownHistory = emptyList()
     }
@@ -172,6 +194,7 @@ class CaptionOverlay(
         root?.let { windowManager.removeView(it) }
         root = null
         historyBox = null
+        historyScroll = null
         currentView = null
         micOption = null
         speakerOption = null
@@ -208,16 +231,25 @@ class CaptionOverlay(
         val style = style ?: return
         box.removeAllViews()
         for (line in history.takeLast(HISTORY_MAX)) {
-            box.addView(TextView(context).apply {
-                text = line
-                setTextColor(style.historyColor)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, style.historySize)
-                setLineSpacing(0f, 1.15f)
-                if (style.historyBold) setTypeface(typeface, Typeface.BOLD)
-                setPadding(0, dp(2), 0, dp(2))
-            })
+            box.addView(
+                TextView(context).apply {
+                    text = line
+                    setTextColor(style.historyColor)
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, style.historySize)
+                    setLineSpacing(0f, 1.15f)
+                    if (style.historyBold) setTypeface(typeface, Typeface.BOLD)
+                    setPadding(0, dp(2), 0, dp(2))
+                },
+                // 占满宽度，长句自动换行（否则会单行溢出被裁掉）。
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ),
+            )
         }
         shownHistory = history
+        // 滚到底部，保证最新一条始终可见（超高时裁掉顶部较早的记录）。
+        historyScroll?.post { historyScroll?.fullScroll(View.FOCUS_DOWN) }
     }
 
     private fun buildHeader(style: Style, labels: Labels): LinearLayout {
@@ -377,8 +409,8 @@ class CaptionOverlay(
         /** 底部当前识别最多显示的行数。 */
         const val CURRENT_MAX_LINES = 3
 
-        /** 历史区最多显示的条数。 */
-        const val HISTORY_MAX = 5
+        /** 历史区保留的条数（可滚动查看；超出的较早记录丢弃）。 */
+        const val HISTORY_MAX = 50
     }
 
     private fun dp(value: Int): Int = TypedValue.applyDimension(

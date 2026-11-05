@@ -30,7 +30,11 @@ class _FloatingCaptionHostState extends ConsumerState<FloatingCaptionHost> {
   late final AppLifecycleListener _lifecycle;
   StreamSubscription<AudioInput>? _inputRequests;
   StreamSubscription<void>? _exitRequests;
+  StreamSubscription<AsrEngineState>? _stateChanges;
   bool _visible = false;
+
+  /// 浮动窗可见期间已提示过的错误 id，避免重复弹 Toast。
+  int _lastErrorId = 0;
 
   /// 在 initState 中取出，dispose 时不能再通过 ref 读取。
   late final BackgroundPlatform _platform;
@@ -44,6 +48,12 @@ class _FloatingCaptionHostState extends ConsumerState<FloatingCaptionHost> {
       (input) => ref.read(asrControllerProvider.notifier).setAudioInput(input),
     );
     _exitRequests = _platform.exitRequests.listen((_) => _exit());
+    // 直接订阅识别状态的广播流而非控件层 ref.listen：后台帧暂停时仍能即时更新，
+    // 否则浮动窗会“慢一句”（最新一句要等下一句才显示）。
+    _stateChanges = ref
+        .read(asrControllerProvider.notifier)
+        .changes
+        .listen(_onStateChanged);
   }
 
   @override
@@ -51,8 +61,24 @@ class _FloatingCaptionHostState extends ConsumerState<FloatingCaptionHost> {
     _lifecycle.dispose();
     _inputRequests?.cancel();
     _exitRequests?.cancel();
+    _stateChanges?.cancel();
     if (_visible) _platform.hideOverlay();
     super.dispose();
+  }
+
+  /// 识别状态变化（后台帧无关）：可见时推送到浮动窗，并在停止识别时收起。
+  void _onStateChanged(AsrEngineState next) {
+    if (!_visible) return;
+    if (next.errorId != _lastErrorId) {
+      _lastErrorId = next.errorId;
+      final message = next.errorMessage;
+      if (message != null) _platform.showToast(message);
+    }
+    if (!next.isListening) {
+      _onShow();
+    } else {
+      _push(next);
+    }
   }
 
   Future<void> _onHide() async {
@@ -82,6 +108,8 @@ class _FloatingCaptionHostState extends ConsumerState<FloatingCaptionHost> {
       ),
     );
     _visible = true;
+    // 以当前错误 id 为基线，避免显示浮动窗时重播此前已提示过的错误。
+    _lastErrorId = ref.read(asrControllerProvider).errorId;
     await _push(ref.read(asrControllerProvider));
   }
 
@@ -117,19 +145,7 @@ class _FloatingCaptionHostState extends ConsumerState<FloatingCaptionHost> {
 
   @override
   Widget build(BuildContext context) {
-    // 后台时主界面的 SnackBar 不可见，提示改用 Toast。
-    ref.listen(asrControllerProvider.select((s) => s.errorId), (_, _) {
-      final message = ref.read(asrControllerProvider).errorMessage;
-      if (_visible && message != null) _platform.showToast(message);
-    });
-    ref.listen(asrControllerProvider, (_, next) {
-      if (!_visible) return;
-      if (!next.isListening) {
-        _onShow();
-      } else {
-        _push(next);
-      }
-    });
+    // 浮动窗的更新改由 _onStateChanged 驱动（见 initState）；此处仅承载子树。
     return widget.child;
   }
 }

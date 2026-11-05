@@ -32,6 +32,21 @@ class AsrController extends Notifier<AsrEngineState> {
   Future<void> _queue = Future.value();
   int _converting = 0;
 
+  /// 状态变化的广播流，供浮动字幕窗口订阅。
+  ///
+  /// 控件层的 `ref.listen` 回调随 Flutter 帧管线刷新，而 App 切到后台后帧会暂停，
+  /// 导致浮动窗“慢一句”才更新；改用与帧无关的广播流（由 [ref.listenSelf] 驱动，
+  /// 走微任务）推送，保证后台也即时更新。
+  final _changes = StreamController<AsrEngineState>.broadcast();
+  Stream<AsrEngineState> get changes => _changes.stream;
+
+  // 每次状态写入同步镜像到广播流（走微任务，不依赖 Flutter 帧）。
+  @override
+  set state(AsrEngineState value) {
+    super.state = value;
+    _changes.add(value);
+  }
+
   @override
   AsrEngineState build() {
     _engine = ref.watch(asrEngineProvider);
@@ -46,6 +61,7 @@ class AsrController extends Notifier<AsrEngineState> {
     ref.listen<String?>(decodeLanguageProvider, (_, language) {
       if (stateOrNull?.isListening ?? false) _engine.updateLanguage(language);
     });
+    ref.onDispose(_changes.close);
     return const AsrEngineState();
   }
 
