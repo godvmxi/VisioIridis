@@ -321,5 +321,11 @@
   "onboardingSkip": "跳过",
   "onboardingGranted": "已授权",
   "onboardingOpenedSettings": "已打开系统设置，完成后返回本应用",
-  "onboardingNext": "下一步"
+  "onboardingNext": "下一步",
+  "onboardingLanguageTitle": "语言设置",
+  "onboardingLanguageBody": "请选择您要识别的语言，以及应用界面显示的语言。稍后都可在设置中更改。",
+  "onboardingSpokenLanguage": "您说的语言",
+  "onboardingSpokenLanguageHint": "可稍后在设置中选择不同的识别模型",
+  "onboardingAppearanceTitle": "显示外观",
+  "onboardingAppearanceBody": "调整字幕的配色和文字大小，让您看得更清楚。稍后都可在设置中更改。"
 }

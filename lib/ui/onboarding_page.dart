@@ -6,9 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../l10n/l10n.dart';
+import '../model_store/model_config.dart';
+import '../model_store/model_selector.dart';
+import '../state/model_providers.dart';
 import '../state/onboarding.dart';
 import '../state/region_detector.dart';
+import '../state/settings.dart';
 import 'app_colors.dart';
+import 'widgets/caption_preview.dart';
+import 'widgets/custom_colors.dart';
 
 class OnboardingPage extends ConsumerStatefulWidget {
   const OnboardingPage({super.key});
@@ -20,7 +26,7 @@ class OnboardingPage extends ConsumerStatefulWidget {
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final _controller = PageController();
   int _page = 0;
-  static const _totalPages = 6;
+  static const _totalPages = 8;
 
   void _next() {
     if (_page >= _totalPages - 1) return;
@@ -58,6 +64,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _WelcomeStep(onNext: _next),
+                  _LanguageStep(onNext: _next),
+                  _AppearanceStep(onNext: _next),
                   _DialogPermissionStep(
                     icon: Icons.mic,
                     getTitle: (l) => l.onboardingMicTitle,
@@ -221,6 +229,343 @@ class _WelcomeStep extends StatelessWidget {
       buttons: [
         FilledButton(onPressed: onNext, child: Text(l10n.onboardingNext)),
       ],
+    );
+  }
+}
+
+// ── Language & appearance steps (shown before the welcome screen) ────────────
+
+/// 可滚动的表单式步骤布局：顶部图标+标题+说明，中部为可交互内容，底部按钮固定。
+class _FormStepLayout extends StatelessWidget {
+  const _FormStepLayout({
+    required this.icon,
+    required this.title,
+    this.body,
+    required this.content,
+    required this.buttons,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? body;
+  final List<Widget> content;
+  final List<Widget> buttons;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = AppPalette.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 12, 28, 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: ListView(
+              children: [
+                Center(child: Icon(icon, size: 52, color: palette.focusText)),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: palette.focusText,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (body != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    body!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: palette.historyText,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                const SizedBox(height: 24),
+                ...content,
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...buttons,
+        ],
+      ),
+    );
+  }
+}
+
+/// 步骤：选择识别语言（说的语言）与界面显示语言（默认跟随系统）。
+class _LanguageStep extends ConsumerWidget {
+  const _LanguageStep({required this.onNext});
+
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final palette = AppPalette.of(context);
+    final settings = ref.watch(settingsProvider);
+    final controller = ref.read(settingsProvider.notifier);
+    final config = ref.watch(modelConfigProvider);
+
+    final labelStyle = TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.bold,
+      color: palette.focusText,
+    );
+
+    return _FormStepLayout(
+      icon: Icons.language,
+      title: l10n.onboardingLanguageTitle,
+      body: l10n.onboardingLanguageBody,
+      content: [
+        Text(l10n.interfaceLanguage, style: labelStyle),
+        DropdownButton<AppLanguage>(
+          value: settings.appLanguage,
+          isExpanded: true,
+          dropdownColor: palette.cardSurface,
+          style: TextStyle(fontSize: 17, color: palette.focusText),
+          iconEnabledColor: palette.focusText,
+          items: [
+            for (final language in AppLanguage.values)
+              DropdownMenuItem(
+                value: language,
+                child: Text(l10n.appLanguageName(language)),
+              ),
+          ],
+          onChanged: (language) {
+            if (language != null) controller.setAppLanguage(language);
+          },
+        ),
+        const SizedBox(height: 20),
+        Text(l10n.onboardingSpokenLanguage, style: labelStyle),
+        switch (config) {
+          AsyncData(:final value) => _SpokenLanguagePicker(
+            config: value,
+            asrLanguage: settings.asrLanguage,
+            onChanged: controller.setAsrModel,
+          ),
+          AsyncError() => const SizedBox.shrink(),
+          _ => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        },
+        const SizedBox(height: 6),
+        Text(
+          l10n.onboardingSpokenLanguageHint,
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.4,
+            color: palette.historyText,
+          ),
+        ),
+      ],
+      buttons: [
+        FilledButton(onPressed: onNext, child: Text(l10n.onboardingNext)),
+      ],
+    );
+  }
+}
+
+/// 识别语言选择：先选语种，再选该语种下配置里的方言；二者皆自动套用打分最高的模型。
+/// 只有一种方言的语种不显示方言下拉。更换模型仍在设置页。
+class _SpokenLanguagePicker extends StatelessWidget {
+  const _SpokenLanguagePicker({
+    required this.config,
+    required this.asrLanguage,
+    required this.onChanged,
+  });
+
+  final ModelConfig config;
+
+  /// 已保存的方言（语言 id）。
+  final String asrLanguage;
+  final void Function(String language, String modelId) onChanged;
+
+  /// 选定方言后套用其打分最高的模型。
+  void _apply(String dialect) {
+    final model = resolveModel(config, dialect, null);
+    if (model != null) onChanged(dialect, model.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = AppPalette.of(context);
+    final l10n = AppLocalizations.of(context);
+    final groups = config.groups;
+    if (groups.isEmpty) return const SizedBox.shrink();
+
+    final currentGroupId =
+        config.languageById(asrLanguage)?.group ?? asrLanguage;
+    final groupId = groups.any((g) => g.id == currentGroupId)
+        ? currentGroupId
+        : groups.first.id;
+    final dialects = config.languagesIn(groupId);
+    final dialectId = dialects.any((l) => l.id == asrLanguage)
+        ? asrLanguage
+        : dialects.first.id;
+
+    Widget dropdown({
+      required String value,
+      required List<DropdownMenuItem<String>> items,
+      required ValueChanged<String?> onChanged,
+    }) => DropdownButton<String>(
+      value: value,
+      isExpanded: true,
+      dropdownColor: palette.cardSurface,
+      style: TextStyle(fontSize: 17, color: palette.focusText),
+      iconEnabledColor: palette.focusText,
+      items: items,
+      onChanged: onChanged,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        dropdown(
+          value: groupId,
+          items: [
+            for (final g in groups)
+              DropdownMenuItem(
+                value: g.id,
+                child: Text(l10n.languageGroupName(g.id, g.name)),
+              ),
+          ],
+          onChanged: (id) {
+            if (id == null || id == groupId) return;
+            final list = config.languagesIn(id);
+            if (list.isEmpty) return;
+            final dialect = list.firstWhere(
+              (l) => l.defaultEnabled,
+              orElse: () => list.first,
+            );
+            _apply(dialect.id);
+          },
+        ),
+        if (dialects.length > 1) ...[
+          const SizedBox(height: 8),
+          dropdown(
+            value: dialectId,
+            items: [
+              for (final l in dialects)
+                DropdownMenuItem(
+                  value: l.id,
+                  child: Text(l10n.languageName(l.id, l.name)),
+                ),
+            ],
+            onChanged: (id) {
+              if (id != null && id != dialectId) _apply(id);
+            },
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// 步骤：选择配色方案与文字大小，并实时预览效果。自定义配色仍在设置页调整。
+class _AppearanceStep extends ConsumerWidget {
+  const _AppearanceStep({required this.onNext});
+
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final palette = AppPalette.of(context);
+    final settings = ref.watch(settingsProvider);
+    final controller = ref.read(settingsProvider.notifier);
+
+    final labelStyle = TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.bold,
+      color: palette.focusText,
+    );
+
+    return _FormStepLayout(
+      icon: Icons.palette_outlined,
+      title: l10n.onboardingAppearanceTitle,
+      body: l10n.onboardingAppearanceBody,
+      content: [
+        Text(l10n.fontSize, style: labelStyle),
+        const SizedBox(height: 8),
+        SegmentedButton<FontScale>(
+          segments: [
+            for (final scale in FontScale.values)
+              ButtonSegment(value: scale, label: Text(l10n.fontScaleName(scale))),
+          ],
+          selected: {settings.fontScale},
+          onSelectionChanged: (s) => controller.setFontScale(s.single),
+          showSelectedIcon: false,
+        ),
+        const SizedBox(height: 20),
+        Text(l10n.colorMode, style: labelStyle),
+        RadioGroup<ColorMode>(
+          groupValue: settings.colorMode,
+          onChanged: (mode) {
+            if (mode != null) controller.setColorMode(mode);
+          },
+          child: Column(
+            children: [
+              for (final mode in ColorMode.values)
+                RadioListTile<ColorMode>(
+                  value: mode,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    l10n.colorModeName(mode),
+                    style: TextStyle(color: palette.focusText),
+                  ),
+                  secondary: _OnboardingSwatch(
+                    palette: AppPalette.forSettings(
+                      settings.copyWith(colorMode: mode),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (settings.colorMode == ColorMode.custom)
+          CustomColorPicker(settings: settings, controller: controller),
+        const SizedBox(height: 12),
+        CaptionPreview(settings: settings),
+      ],
+      buttons: [
+        FilledButton(onPressed: onNext, child: Text(l10n.onboardingNext)),
+      ],
+    );
+  }
+}
+
+/// 配色小样（与设置页一致的样式）。
+class _OnboardingSwatch extends StatelessWidget {
+  const _OnboardingSwatch({required this.palette});
+
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      height: 34,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: palette.background,
+        border: Border.all(color: palette.cardBorder),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        AppLocalizations.of(context).swatchSample,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: palette.focusText,
+        ),
+      ),
     );
   }
 }

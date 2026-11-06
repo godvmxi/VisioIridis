@@ -505,4 +505,24 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingNext => '次へ';
+
+  @override
+  String get onboardingLanguageTitle => '言語設定';
+
+  @override
+  String get onboardingLanguageBody =>
+      '認識したい言語と、アプリの表示言語を選んでください。どちらも後で設定から変更できます。';
+
+  @override
+  String get onboardingSpokenLanguage => '話す言語';
+
+  @override
+  String get onboardingSpokenLanguageHint => '別の認識モデルは後で設定から選べます';
+
+  @override
+  String get onboardingAppearanceTitle => '表示の外観';
+
+  @override
+  String get onboardingAppearanceBody =>
+      '字幕の配色と文字サイズを調整して見やすくしましょう。後で設定から変更できます。';
 }

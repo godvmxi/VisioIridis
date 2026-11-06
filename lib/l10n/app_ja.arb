@@ -146,5 +146,11 @@
   "onboardingSkip": "スキップ",
   "onboardingGranted": "許可済み",
   "onboardingOpenedSettings": "設定を開きました。終わったら戻ってきてください",
-  "onboardingNext": "次へ"
+  "onboardingNext": "次へ",
+  "onboardingLanguageTitle": "言語設定",
+  "onboardingLanguageBody": "認識したい言語と、アプリの表示言語を選んでください。どちらも後で設定から変更できます。",
+  "onboardingSpokenLanguage": "話す言語",
+  "onboardingSpokenLanguageHint": "別の認識モデルは後で設定から選べます",
+  "onboardingAppearanceTitle": "表示の外観",
+  "onboardingAppearanceBody": "字幕の配色と文字サイズを調整して見やすくしましょう。後で設定から変更できます。"
 }

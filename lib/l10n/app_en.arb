@@ -159,5 +159,11 @@
   "onboardingSkip": "Skip",
   "onboardingGranted": "Granted",
   "onboardingOpenedSettings": "Settings opened — come back when you're done",
-  "onboardingNext": "Next"
+  "onboardingNext": "Next",
+  "onboardingLanguageTitle": "Languages",
+  "onboardingLanguageBody": "Choose the language you want recognized and the language for the app's interface. You can change both later in Settings.",
+  "onboardingSpokenLanguage": "Language you speak",
+  "onboardingSpokenLanguageHint": "You can choose a different recognition model later in Settings",
+  "onboardingAppearanceTitle": "Appearance",
+  "onboardingAppearanceBody": "Adjust caption colors and text size so they're easy to read. You can change these later in Settings."
 }

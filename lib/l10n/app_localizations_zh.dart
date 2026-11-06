@@ -501,6 +501,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onboardingNext => '下一步';
+
+  @override
+  String get onboardingLanguageTitle => '语言设置';
+
+  @override
+  String get onboardingLanguageBody => '请选择您要识别的语言，以及应用界面显示的语言。稍后都可在设置中更改。';
+
+  @override
+  String get onboardingSpokenLanguage => '您说的语言';
+
+  @override
+  String get onboardingSpokenLanguageHint => '可稍后在设置中选择不同的识别模型';
+
+  @override
+  String get onboardingAppearanceTitle => '显示外观';
+
+  @override
+  String get onboardingAppearanceBody => '调整字幕的配色和文字大小，让您看得更清楚。稍后都可在设置中更改。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -999,4 +1017,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get onboardingNext => '下一步';
+
+  @override
+  String get onboardingLanguageTitle => '語言設定';
+
+  @override
+  String get onboardingLanguageBody => '請選擇您要辨識的語言，以及應用程式介面顯示的語言。稍後都可在設定中變更。';
+
+  @override
+  String get onboardingSpokenLanguage => '您說的語言';
+
+  @override
+  String get onboardingSpokenLanguageHint => '可稍後在設定中選擇不同的辨識模型';
+
+  @override
+  String get onboardingAppearanceTitle => '顯示外觀';
+
+  @override
+  String get onboardingAppearanceBody => '調整字幕的配色與文字大小，讓您看得更清楚。稍後都可在設定中變更。';
 }

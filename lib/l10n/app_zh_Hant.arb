@@ -159,5 +159,11 @@
   "onboardingSkip": "跳過",
   "onboardingGranted": "已授權",
   "onboardingOpenedSettings": "已開啟系統設定，完成後返回本應用程式",
-  "onboardingNext": "下一步"
+  "onboardingNext": "下一步",
+  "onboardingLanguageTitle": "語言設定",
+  "onboardingLanguageBody": "請選擇您要辨識的語言，以及應用程式介面顯示的語言。稍後都可在設定中變更。",
+  "onboardingSpokenLanguage": "您說的語言",
+  "onboardingSpokenLanguageHint": "可稍後在設定中選擇不同的辨識模型",
+  "onboardingAppearanceTitle": "顯示外觀",
+  "onboardingAppearanceBody": "調整字幕的配色與文字大小，讓您看得更清楚。稍後都可在設定中變更。"
 }

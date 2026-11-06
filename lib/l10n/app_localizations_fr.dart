@@ -518,4 +518,25 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboardingNext => 'Suivant';
+
+  @override
+  String get onboardingLanguageTitle => 'Langues';
+
+  @override
+  String get onboardingLanguageBody =>
+      'Choisissez la langue à reconnaître et la langue de l\'interface de l\'application. Vous pourrez modifier les deux plus tard dans les Paramètres.';
+
+  @override
+  String get onboardingSpokenLanguage => 'Langue que vous parlez';
+
+  @override
+  String get onboardingSpokenLanguageHint =>
+      'Vous pourrez choisir un autre modèle de reconnaissance plus tard dans les Paramètres';
+
+  @override
+  String get onboardingAppearanceTitle => 'Apparence';
+
+  @override
+  String get onboardingAppearanceBody =>
+      'Ajustez les couleurs et la taille du texte des sous-titres pour une lecture facile. Modifiable plus tard dans les Paramètres.';
 }

@@ -505,4 +505,24 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get onboardingNext => '다음';
+
+  @override
+  String get onboardingLanguageTitle => '언어 설정';
+
+  @override
+  String get onboardingLanguageBody =>
+      '인식할 언어와 앱 화면에 표시할 언어를 선택하세요. 둘 다 나중에 설정에서 변경할 수 있습니다.';
+
+  @override
+  String get onboardingSpokenLanguage => '사용하는 언어';
+
+  @override
+  String get onboardingSpokenLanguageHint => '다른 인식 모델은 나중에 설정에서 선택할 수 있습니다';
+
+  @override
+  String get onboardingAppearanceTitle => '화면 모양';
+
+  @override
+  String get onboardingAppearanceBody =>
+      '자막 색상과 글자 크기를 보기 편하게 조정하세요. 나중에 설정에서 변경할 수 있습니다.';
 }

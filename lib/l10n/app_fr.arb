@@ -146,5 +146,11 @@
   "onboardingSkip": "Passer",
   "onboardingGranted": "Autorisé",
   "onboardingOpenedSettings": "Paramètres ouverts : revenez une fois terminé",
-  "onboardingNext": "Suivant"
+  "onboardingNext": "Suivant",
+  "onboardingLanguageTitle": "Langues",
+  "onboardingLanguageBody": "Choisissez la langue à reconnaître et la langue de l'interface de l'application. Vous pourrez modifier les deux plus tard dans les Paramètres.",
+  "onboardingSpokenLanguage": "Langue que vous parlez",
+  "onboardingSpokenLanguageHint": "Vous pourrez choisir un autre modèle de reconnaissance plus tard dans les Paramètres",
+  "onboardingAppearanceTitle": "Apparence",
+  "onboardingAppearanceBody": "Ajustez les couleurs et la taille du texte des sous-titres pour une lecture facile. Modifiable plus tard dans les Paramètres."
 }

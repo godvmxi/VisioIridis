@@ -988,6 +988,42 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'下一步'**
   String get onboardingNext;
+
+  /// No description provided for @onboardingLanguageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'语言设置'**
+  String get onboardingLanguageTitle;
+
+  /// No description provided for @onboardingLanguageBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择您要识别的语言，以及应用界面显示的语言。稍后都可在设置中更改。'**
+  String get onboardingLanguageBody;
+
+  /// No description provided for @onboardingSpokenLanguage.
+  ///
+  /// In zh, this message translates to:
+  /// **'您说的语言'**
+  String get onboardingSpokenLanguage;
+
+  /// No description provided for @onboardingSpokenLanguageHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'可稍后在设置中选择不同的识别模型'**
+  String get onboardingSpokenLanguageHint;
+
+  /// No description provided for @onboardingAppearanceTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示外观'**
+  String get onboardingAppearanceTitle;
+
+  /// No description provided for @onboardingAppearanceBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'调整字幕的配色和文字大小，让您看得更清楚。稍后都可在设置中更改。'**
+  String get onboardingAppearanceBody;
 }
 
 class _AppLocalizationsDelegate
