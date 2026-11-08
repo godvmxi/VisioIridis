@@ -165,6 +165,7 @@ class SettingsPage extends ConsumerWidget {
                     value,
                     settings.asrLanguage,
                     settings.asrModel,
+                    preferred: ref.watch(bundledModelsProvider).modelIds,
                   ),
                   onChanged: controller.setAsrModel,
                 ),

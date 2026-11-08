@@ -15,6 +15,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // 内置模型（.onnx）几乎无法压缩，不压缩可加快首次复制。
+    androidResources {
+        noCompress += "onnx"
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.visioiridis.visioiridis"

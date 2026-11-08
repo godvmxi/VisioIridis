@@ -48,3 +48,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Built-in model files are downloaded by tool/bundle_model.py in CI; only the empty manifest is committed.
+/assets/bundled_models/*
+!/assets/bundled_models/manifest.json

@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'l10n/l10n.dart';
+import 'model_store/bundled_model_store.dart';
 import 'platform/keep_alive.dart';
 import 'platform/system_audio.dart';
 import 'state/analytics.dart';
+import 'state/model_providers.dart';
 import 'state/onboarding.dart';
 import 'state/settings.dart';
 import 'ui/app_colors.dart';
@@ -18,12 +20,16 @@ import 'ui/onboarding_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
+  final bundled = await BundledModels.load();
   // 旧版本可能存过 HuggingFace token，已不再使用。
   prefs.remove('credentials.hfToken');
   // PostHog 由原生 AUTO_INIT 自动初始化，这里无需手动 setup（见 AndroidManifest.xml）。
   runApp(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        bundledModelsProvider.overrideWithValue(bundled),
+      ],
       child: const VisioIridisApp(),
     ),
   );

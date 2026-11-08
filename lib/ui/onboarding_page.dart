@@ -348,6 +348,7 @@ class _LanguageStep extends ConsumerWidget {
             config: value,
             asrLanguage: settings.asrLanguage,
             onChanged: controller.setAsrModel,
+            preferred: ref.watch(bundledModelsProvider).modelIds,
           ),
           AsyncError() => const SizedBox.shrink(),
           _ => const Padding(
@@ -379,9 +380,13 @@ class _SpokenLanguagePicker extends StatelessWidget {
     required this.config,
     required this.asrLanguage,
     required this.onChanged,
+    this.preferred = const {},
   });
 
   final ModelConfig config;
+
+  /// 优先套用的模型（随 APK 内置的模型）。
+  final Set<String> preferred;
 
   /// 已保存的方言（语言 id）。
   final String asrLanguage;
@@ -389,7 +394,7 @@ class _SpokenLanguagePicker extends StatelessWidget {
 
   /// 选定方言后套用其打分最高的模型。
   void _apply(String dialect) {
-    final model = resolveModel(config, dialect, null);
+    final model = resolveModel(config, dialect, null, preferred: preferred);
     if (model != null) onChanged(dialect, model.id);
   }
 
@@ -497,7 +502,10 @@ class _AppearanceStep extends ConsumerWidget {
         SegmentedButton<FontScale>(
           segments: [
             for (final scale in FontScale.values)
-              ButtonSegment(value: scale, label: Text(l10n.fontScaleName(scale))),
+              ButtonSegment(
+                value: scale,
+                label: Text(l10n.fontScaleName(scale)),
+              ),
           ],
           selected: {settings.fontScale},
           onSelectionChanged: (s) => controller.setFontScale(s.single),

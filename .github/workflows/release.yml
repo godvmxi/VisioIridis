@@ -11,6 +11,34 @@ permissions:
 jobs:
   build-android:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 标准版：不内置模型，首次使用时下载。同时构建 AAB。
+          - variant: standard
+            model: ''
+            suffix: ''
+            aab: true
+          # 内置模型版：APK 名称后缀 = 模型名-识别语言。
+          - variant: sensevoice-small
+            model: sense-voice-small-int8
+            suffix: '-SenseVoiceSmall-Mandarin-Cantonese-English-Japanese-Korean'
+            aab: false
+          - variant: wenetspeech-yue
+            model: wenetspeech-yue-wenet-ctc-int8
+            suffix: '-WenetSpeechYue-Cantonese'
+            aab: false
+          - variant: wenetspeech-wu
+            model: wenetspeech-wu-wenet-ctc-int8
+            suffix: '-WenetSpeechWu-Wu-Shanghainese'
+            aab: false
+          - variant: whisper-small
+            model: whisper-small-int8
+            suffix: '-WhisperSmall-Multilingual'
+            aab: false
+
+    name: build (${{ matrix.variant }})
 
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +54,17 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Cache bundled model
+        if: matrix.model != ''
+        uses: actions/cache@v4
+        with:
+          path: assets/bundled_models
+          key: bundled-${{ matrix.model }}-${{ hashFiles('assets/config/model_config.json') }}
+
+      - name: Bundle model
+        if: matrix.model != ''
+        run: python3 tool/bundle_model.py ${{ matrix.model }}
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -33,18 +72,37 @@ jobs:
         run: flutter build apk --release
 
       - name: Build App Bundle
+        if: matrix.aab
         run: flutter build appbundle --release
 
       - name: Rename artifacts
         run: |
           TAG=${GITHUB_REF_NAME}
-          cp build/app/outputs/flutter-apk/app-release.apk VisioIridis-${TAG}.apk
-          cp build/app/outputs/bundle/release/app-release.aab VisioIridis-${TAG}.aab
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/VisioIridis-${TAG}${{ matrix.suffix }}.apk"
+          if [ "${{ matrix.aab }}" = "true" ]; then
+            cp build/app/outputs/bundle/release/app-release.aab "dist/VisioIridis-${TAG}.aab"
+          fi
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.variant }}
+          path: dist/*
+          retention-days: 3
+
+  release:
+    needs: build-android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            VisioIridis-${{ github.ref_name }}.apk
-            VisioIridis-${{ github.ref_name }}.aab
+          files: dist/*
           generate_release_notes: true

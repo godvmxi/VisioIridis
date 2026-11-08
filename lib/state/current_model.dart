@@ -12,7 +12,12 @@ final currentModelProvider = Provider<AsrModelDef?>((ref) {
   if (config == null) return null;
   final language = ref.watch(settingsProvider.select((s) => s.asrLanguage));
   final model = ref.watch(settingsProvider.select((s) => s.asrModel));
-  return resolveModel(config, language, model);
+  return resolveModel(
+    config,
+    language,
+    model,
+    preferred: ref.watch(bundledModelsProvider).modelIds,
+  );
 });
 
 /// 顶部栏选择的识别语言；null 表示自动识别当前模型支持的全部语言。

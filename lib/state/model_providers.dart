@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../model_store/bundled_model_store.dart';
 import '../model_store/config_repository.dart';
 import '../model_store/downloader.dart';
 import '../model_store/model_config.dart';
@@ -28,6 +29,11 @@ final modelConfigProvider = FutureProvider<ModelConfig>((ref) async {
   );
   return repo.load();
 });
+
+/// 随 APK 内置的模型；在 main() 中用读取到的 manifest 覆盖，默认没有内置模型。
+final bundledModelsProvider = Provider<BundledModels>(
+  (ref) => BundledModels.empty,
+);
 
 final modelCacheProvider = FutureProvider<ModelCache>(
   (ref) async => ModelCache(await getApplicationCacheDirectory()),

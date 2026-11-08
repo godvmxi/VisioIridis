@@ -15,16 +15,20 @@ List<AsrModelDef> modelsFor(ModelConfig config, String language) {
 
 /// 设置页选择的模型（PRD 4.5.3、4.6）：语种 → 方言 [language] → 模型 [modelId]。
 ///
-/// [modelId] 为 null 或在配置中已不存在时，取支持 [language] 且打分最高的模型；
+/// [modelId] 为 null 或在配置中已不存在时，取支持 [language] 且打分最高的模型，
+/// 其中 [preferred]（如随 APK 内置的模型）支持该语言时优先；
 /// 该语言没有可用模型时退回第一个模型，配置中没有模型时返回 null。
 AsrModelDef? resolveModel(
   ModelConfig config,
   String language,
-  String? modelId,
-) {
+  String? modelId, {
+  Set<String> preferred = const {},
+}) {
   final chosen = config.asrModels.where((m) => m.id == modelId).firstOrNull;
-  return chosen ??
-      modelsFor(config, language).firstOrNull ??
+  if (chosen != null) return chosen;
+  final candidates = modelsFor(config, language);
+  return candidates.where((m) => preferred.contains(m.id)).firstOrNull ??
+      candidates.firstOrNull ??
       config.asrModels.firstOrNull;
 }
 

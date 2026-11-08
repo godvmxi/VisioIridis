@@ -4,11 +4,13 @@ import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import com.pravera.flutter_foreground_task.service.ForegroundServiceManager
+import io.flutter.FlutterInjector
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 class MainActivity : FlutterActivity() {
     private lateinit var overlay: CaptionOverlay
@@ -31,6 +33,8 @@ class MainActivity : FlutterActivity() {
         overlayChannel.setMethodCallHandler(::onCall)
         MethodChannel(messenger, SYSTEM_AUDIO_CHANNEL)
             .setMethodCallHandler(::onSystemAudioCall)
+        MethodChannel(messenger, BUNDLED_MODELS_CHANNEL)
+            .setMethodCallHandler(::onBundledModelsCall)
         EventChannel(messenger, SYSTEM_AUDIO_PCM_CHANNEL)
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
@@ -84,6 +88,32 @@ class MainActivity : FlutterActivity() {
             // 服务未在运行。
         }
         super.onDestroy()
+    }
+
+    /**
+     * 内置模型（随 APK 打包的 Flutter asset）以流的方式复制到 [dest]。
+     * 模型文件有数百 MB，不能经 rootBundle 读入 Dart 内存。
+     */
+    private fun onBundledModelsCall(call: MethodCall, result: MethodChannel.Result) {
+        if (call.method != "copyAsset") {
+            result.notImplemented()
+            return
+        }
+        val asset = call.argument<String>("asset")!!
+        val dest = File(call.argument<String>("dest")!!)
+        val key = FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(asset)
+        Thread {
+            try {
+                dest.parentFile?.mkdirs()
+                assets.open(key).use { input ->
+                    dest.outputStream().use { output -> input.copyTo(output, 1 shl 20) }
+                }
+                runOnUiThread { result.success(null) }
+            } catch (e: Exception) {
+                dest.delete()
+                runOnUiThread { result.error("COPY_FAILED", e.message, null) }
+            }
+        }.start()
     }
 
     private fun onCall(call: MethodCall, result: MethodChannel.Result) {
@@ -145,5 +175,6 @@ class MainActivity : FlutterActivity() {
         private const val CHANNEL = "visio_iridis/overlay"
         private const val SYSTEM_AUDIO_CHANNEL = "visio_iridis/system_audio"
         private const val SYSTEM_AUDIO_PCM_CHANNEL = "visio_iridis/system_audio/pcm"
+        private const val BUNDLED_MODELS_CHANNEL = "visio_iridis/bundled_models"
     }
 }

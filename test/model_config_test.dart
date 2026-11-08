@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:visioiridis/model_store/bundled_model_store.dart';
 import 'package:visioiridis/model_store/config_repository.dart';
 import 'package:visioiridis/model_store/model_config.dart';
 import 'package:visioiridis/model_store/model_selector.dart';
@@ -145,6 +147,52 @@ void main() {
         resolveModel(config, 'unknown', null)?.id,
         'sense-voice-small-int8',
       );
+    });
+
+    test('a preferred (bundled) model wins the fallback if it fits', () {
+      const bundled = {'whisper-small-int8'};
+      expect(
+        resolveModel(config, 'zh', null, preferred: bundled)?.id,
+        'whisper-small-int8',
+      );
+      // 内置模型不支持该方言时仍取打分最高的模型。
+      expect(
+        resolveModel(config, 'wu', null, preferred: bundled)?.id,
+        'wenetspeech-wu-wenet-ctc-int8',
+      );
+      // 用户已选的模型不受影响。
+      expect(
+        resolveModel(
+          config,
+          'zh',
+          'telespeech-ctc-int8',
+          preferred: bundled,
+        )?.id,
+        'telespeech-ctc-int8',
+      );
+    });
+
+    test('bundled manifest parses and the committed one is empty', () {
+      final manifest = BundledModels.fromJson({
+        'models': ['whisper-small-int8'],
+        'files': {
+          'models/silero-vad/1/silero_vad.onnx': {
+            'asset': 'assets/bundled_models/silero-vad__1__silero_vad.onnx',
+            'size': 643854,
+          },
+        },
+      });
+      expect(manifest.modelIds, {'whisper-small-int8'});
+      expect(
+        manifest.files['models/silero-vad/1/silero_vad.onnx']?.size,
+        643854,
+      );
+      final committed = BundledModels.fromJson(
+        jsonDecode(
+          File('assets/bundled_models/manifest.json').readAsStringSync(),
+        ) as Map<String, dynamic>,
+      );
+      expect(committed.isEmpty, isTrue);
     });
 
     test('recognition language is auto unless the model supports it', () {

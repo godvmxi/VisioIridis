@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../asr/prepared_model.dart';
 import '../l10n/l10n.dart';
+import '../model_store/bundled_model_store.dart';
 import '../model_store/downloader.dart';
 import '../model_store/model_config.dart';
 import '../model_store/model_repository.dart';
@@ -15,9 +16,14 @@ import '../state/settings.dart';
 final modelPreparerProvider = Provider<ModelPreparer>(ModelPreparer.new);
 
 /// 模型长期保存在应用专属外置目录；盒子出厂时也可通过 adb 预置到这里。
+/// 内置版 APK 还可从 assets 中复制内置模型（只读，排在最后）。
 final modelStoresProvider = FutureProvider<List<ModelStore>>((ref) async {
   final appDir = await getExternalStorageDirectory();
-  return [if (appDir != null) DirectoryModelStore(appDir)];
+  final bundled = ref.watch(bundledModelsProvider);
+  return [
+    if (appDir != null) DirectoryModelStore(appDir),
+    if (!bundled.isEmpty) BundledModelStore(bundled),
+  ];
 });
 
 /// 点击“开始识别”前确保所需模型已就绪（PRD 4.5.3、4.5.5）。
@@ -42,6 +48,7 @@ class ModelPreparer {
         config,
         settings.asrLanguage,
         settings.asrModel,
+        preferred: _ref.read(bundledModelsProvider).modelIds,
       );
       if (model == null) {
         if (context.mounted) _toast(context, l10n.noModelForLanguages);
