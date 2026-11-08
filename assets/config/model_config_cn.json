@@ -403,8 +403,8 @@
           "size": 133299736,
           "sha256": "9de8678c491a35616647bb6f47aa433d4399efdf7901f6dcc305792e003410ed",
           "urls": [
-            "https://hf-mirror.com/csukuangfj/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/model.int8.onnx",
-            "https://huggingface.co/csukuangfj/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/model.int8.onnx"
+            "https://hf-mirror.com/csukuangfj2/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/model.int8.onnx",
+            "https://huggingface.co/csukuangfj2/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/model.int8.onnx"
           ]
         },
         {
@@ -412,8 +412,8 @@
           "size": 52303,
           "sha256": "7c74b54485b599842bf7a70c1c59d020f7dfb02a49036c211b4baf74d2c84fa9",
           "urls": [
-            "https://hf-mirror.com/csukuangfj/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/tokens.txt",
-            "https://huggingface.co/csukuangfj/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/tokens.txt"
+            "https://hf-mirror.com/csukuangfj2/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/tokens.txt",
+            "https://huggingface.co/csukuangfj2/sherpa-onnx-wenetspeech-wu-u2pp-conformer-ctc-zh-int8-2026-02-03/resolve/main/tokens.txt"
           ]
         }
       ],
