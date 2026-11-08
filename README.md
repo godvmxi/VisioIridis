@@ -35,7 +35,20 @@ Visio Iridis 是一款面向听障人士的实时语音转字幕工具。核心�
 
 ## 下载
 
-前往 [Releases](https://github.com/godvmxi/VisioIridis/releases) 页面下载最新 APK。
+前往 [Releases](https://github.com/godvmxi/VisioIridis/releases) 页面下载最新 APK。每个版本提供以下几种安装包，请按需选择**一个**安装：
+
+| 安装包 | 内置模型 | 适合 | 模型大小 |
+|---|---|---|---|
+| `VisioIridis-<版本>.apk` | 无（首次使用时下载） | 网络通畅，想按需选择模型 | — |
+| `VisioIridis-<版本>-SenseVoiceSmall-Mandarin-Cantonese-English-Japanese-Korean.apk` | SenseVoice Small | 普通话、粤语、英语、日语、韩语，**大多数用户推荐** | 约 240 MB |
+| `VisioIridis-<版本>-WenetSpeechYue-Cantonese.apk` | WenetSpeech-Yue | 粤语为主（兼顾普通话、英语） | 约 135 MB |
+| `VisioIridis-<版本>-WenetSpeechWu-Wu-Shanghainese.apk` | WenetSpeech-Wu | 吴语 / 上海话为主（兼顾普通话） | 约 133 MB |
+| `VisioIridis-<版本>-WhisperSmall-Multilingual.apk` | Whisper Small | 英语、法语、德语等多语种 | 约 375 MB |
+| `VisioIridis-<版本>.aab` | 无 | 应用商店上架用，个人无需下载 | — |
+
+- **内置模型版**安装后无需联网即可直接使用，适合网络不便（如大陆访问 HuggingFace 困难）或给老人、盒子等设备预装的场景。安装包体积会相应增大。
+- 第一次开始识别时，App 会把内置模型从安装包中复制出来并校验，需要几秒到几十秒，之后不再重复。
+- 各安装包功能完全相同，内置模型版仍可在设置中切换到其他模型（届时联网下载）。
 
 ---
 
@@ -47,6 +60,15 @@ Visio Iridis 是一款面向听障人士的实时语音转字幕工具。核心�
 flutter pub get
 flutter build apk --release
 ```
+
+构建内置模型版时，先用 [tool/bundle_model.py](tool/bundle_model.py) 下载并校验模型（模型 id 见 `assets/config/model_config.json`），再正常构建：
+
+```bash
+python3 tool/bundle_model.py sense-voice-small-int8
+flutter build apk --release
+```
+
+脚本会改写 `assets/bundled_models/manifest.json`，请勿提交该改动。推送 `v*` tag 时，GitHub Actions 会自动构建上述全部版本并发布到 Releases。
 
 ---
 

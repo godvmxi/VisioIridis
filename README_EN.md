@@ -35,7 +35,20 @@ Visio Iridis is a real-time speech-to-caption tool built for people who are deaf
 
 ## Download
 
-Get the latest APK from the [Releases](https://github.com/godvmxi/VisioIridis/releases) page.
+Get the latest APK from the [Releases](https://github.com/godvmxi/VisioIridis/releases) page. Each release ships several packages — install **one** of them:
+
+| Package | Built-in model | Best for | Model size |
+|---|---|---|---|
+| `VisioIridis-<version>.apk` | None (downloaded on first use) | Good connectivity; pick models as needed | — |
+| `VisioIridis-<version>-SenseVoiceSmall-Mandarin-Cantonese-English-Japanese-Korean.apk` | SenseVoice Small | Mandarin, Cantonese, English, Japanese, Korean — **recommended for most users** | ~240 MB |
+| `VisioIridis-<version>-WenetSpeechYue-Cantonese.apk` | WenetSpeech-Yue | Mainly Cantonese (also Mandarin, English) | ~135 MB |
+| `VisioIridis-<version>-WenetSpeechWu-Wu-Shanghainese.apk` | WenetSpeech-Wu | Mainly Wu / Shanghainese (also Mandarin) | ~133 MB |
+| `VisioIridis-<version>-WhisperSmall-Multilingual.apk` | Whisper Small | English, French, German and other languages | ~375 MB |
+| `VisioIridis-<version>.aab` | None | For app-store publishing; not needed by users | — |
+
+- **Built-in model packages** work right after install with no network — useful where HuggingFace is hard to reach, or when preinstalling on a TV box or a relative's phone. The package is larger accordingly.
+- The first time you start recognition, the app copies the built-in model out of the package and verifies it. This takes a few seconds to a minute and happens only once.
+- All packages have the same features; a built-in model package can still switch to another model in Settings (it will be downloaded then).
 
 ---
 
@@ -47,6 +60,15 @@ Requires Flutter 3.47+:
 flutter pub get
 flutter build apk --release
 ```
+
+To build a built-in model package, first download and verify the model with [tool/bundle_model.py](tool/bundle_model.py) (model ids are in `assets/config/model_config.json`), then build as usual:
+
+```bash
+python3 tool/bundle_model.py sense-voice-small-int8
+flutter build apk --release
+```
+
+The script rewrites `assets/bundled_models/manifest.json`; don't commit that change. Pushing a `v*` tag makes GitHub Actions build all the packages above and publish them to Releases.
 
 ---
 
